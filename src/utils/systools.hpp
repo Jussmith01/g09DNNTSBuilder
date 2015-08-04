@@ -16,7 +16,7 @@ namespace systls {
     in a buffer. This buffer is then
     returned.
 ------------------------------------------*/
-inline std::string exec(std::string cmd,size_t maxbuf) {
+inline std::string exec(const std::string &cmd,size_t maxbuf) {
 
     // Open a pipe and run command
     FILE* pipe = popen(cmd.c_str(), "r");
@@ -44,10 +44,13 @@ inline std::string exec(std::string cmd,size_t maxbuf) {
   most notably when the SCF fails to
   converge.
 ------------------------------------------*/
-inline bool execg09(std::string ipt) {
+inline bool execg09(const std::string &input) {
     // Build command
     std::stringstream sscmd;
-    sscmd << "g09 < " << ipt << " 2>&1"; // Redirect cerr to cout
+
+    sscmd << "#!/bin/sh\ng09 <<END 2>&1 " << input.c_str() << "END\n"; // Redirect cerr to cout
+
+    std::cout << "\"" << sscmd.str() << "\"" << std::endl;
 
     // Open a pipe and run command -- output saved in string 'out'.
     std::string out(exec(sscmd.str().c_str(),1000));
@@ -67,6 +70,41 @@ inline bool execg09(std::string ipt) {
     }
 
     return false;
+};
+
+/*----------------------------------------
+          Build G09 Input String
+    lot = level of theory
+    additional = more g09 parameters...
+       i.e. forces, opt
+    type = atom type .i.e. O or 8 for Oxygen
+    xyz = coordinates for the atom
+    mult = molecular multiplicity
+    charge = molecular charge
+    nproc = number of processors to use
+
+    Note: type and xyz must be of same size
+------------------------------------------*/
+inline std::string buildInputg09(std::string lot,std::string additional,const std::vector<std::string> &type,const std::vector<glm::vec3> &xyz,int mult,int charge,int nproc) {
+    // Error check
+    if (type.size()!=xyz.size())
+        throwException("type and xyz are not the same size.");
+
+    // Build input
+    std::stringstream tmpipt;
+    tmpipt.setf( std::ios::fixed, std::ios::floatfield );
+    tmpipt << "\n%nproc=" << nproc << "\n";
+    tmpipt << "#p " << lot << " " << additional << "\n\n";
+    tmpipt << "Something\n\n";
+    tmpipt << mult << "  " << charge << "\n";
+
+    for (uint32_t i = 0;i<type.size();++i)
+        tmpipt << type[i] << std::setprecision(5) << " " << xyz[i].x << " " << xyz[i].y << " " << xyz[i].z << "\n";
+
+    tmpipt << "\n";
+
+    // Return input string
+    return tmpipt.str();
 };
 
 };

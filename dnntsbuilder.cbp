@@ -34,10 +34,12 @@
 			<Add option="-Wall" />
 			<Add option="-Wno-comment" />
 		</Compiler>
+		<Unit filename="src/containers/internalcontainers.h" />
 		<Unit filename="src/errorhandlers.h" />
 		<Unit filename="src/main.cpp" />
 		<Unit filename="src/utils/input.h" />
 		<Unit filename="src/utils/randnormflt.h" />
+		<Unit filename="src/utils/readers.h" />
 		<Unit filename="src/utils/simpletools.hpp" />
 		<Unit filename="src/utils/systools.hpp" />
 		<Extensions>
