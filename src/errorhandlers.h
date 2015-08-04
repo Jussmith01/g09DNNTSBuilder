@@ -35,11 +35,11 @@
 };
 
 /*----------------------------------------------
-                 Standard Error
+             Standard Error
     Checks for if an input string is empty,
     if it is pass the string to FatalError.
 -----------------------------------------------*/
-#define dnntserrorcatch(_errchk)                             \
+#define dnntsErrorcatch(_errchk)                             \
 {                                                            \
     if(!_errchk.empty())                                     \
     {                                                        \
@@ -48,3 +48,16 @@
         FatalError(_error);                                  \
     }                                                        \
 };
+
+/*----------------------------------------------
+               Throw Exception
+    Pass the macro a char string with an error
+    and throw a std::string exception.
+-----------------------------------------------*/
+#define throwException(_errstr)                              \
+{                                                            \
+    throw std::string("In Function: ")                       \
+        + std::string(__FUNCTION__)                          \
+        + std::string("() -- ")                              \
+        + std::string(_errstr);                              \
+}
