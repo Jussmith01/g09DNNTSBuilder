@@ -5,12 +5,6 @@
 #ifndef SIMPLE_TOOLS_HPP
 #define SIMPLE_TOOLS_HPP
 
-#include <stdio.h>
-#include <string>
-#include <sstream>
-#include <fstream>
-#include <iostream>
-
 /*   The Simple Tools Namespace   */
 namespace simtls {
 /*----------------------------------------

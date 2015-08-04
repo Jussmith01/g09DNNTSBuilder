@@ -44,17 +44,26 @@ inline std::string exec(std::string cmd,size_t maxbuf) {
   most notably when the SCF fails to
   converge.
 ------------------------------------------*/
-inline bool execg09(std::string ipt,std::string opt) {
+inline bool execg09(std::string ipt) {
     // Build command
     std::stringstream sscmd;
-    sscmd << "g09 " << ipt << " " << opt << " 2>&1"; // Redirect cerr to cout
+    sscmd << "g09 < " << ipt << " 2>&1"; // Redirect cerr to cout
 
     // Open a pipe and run command -- output saved in string 'out'.
     std::string out(exec(sscmd.str().c_str(),1000));
 
     // Check for gaussian error in buffer
-    if (simtls::trim(out).find("Error: segmentation violation")!=std::string::npos) {
+    if (simtls::trim(out).find("Convergence failure -- run terminated")!=std::string::npos) {
         return true;
+    }
+
+    if (simtls::trim(out).find("Normal termination of Gaussian 09")==std::string::npos) {
+        std::ofstream gaue;
+        gaue.open("gauerror.log");
+        gaue << out << std::endl;
+        gaue.close();
+
+        throwException("Unrecognized Gaussian 09 Failure; saving output as gauerror.log");
     }
 
     return false;

@@ -13,6 +13,7 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
+					<Add directory="include" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
@@ -31,11 +32,14 @@
 		<Compiler>
 			<Add option="-std=c++11" />
 			<Add option="-Wall" />
+			<Add option="-Wno-comment" />
 		</Compiler>
 		<Unit filename="src/errorhandlers.h" />
 		<Unit filename="src/main.cpp" />
+		<Unit filename="src/utils/input.h" />
 		<Unit filename="src/utils/randnormflt.h" />
-		<Unit filename="src/utils/readinput.h" />
+		<Unit filename="src/utils/simpletools.hpp" />
+		<Unit filename="src/utils/systools.hpp" />
 		<Extensions>
 			<code_completion />
 			<debugger />
