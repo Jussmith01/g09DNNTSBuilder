@@ -50,8 +50,6 @@ inline bool execg09(const std::string &input) {
 
     sscmd << "#!/bin/sh\ng09 <<END 2>&1 " << input.c_str() << "END\n"; // Redirect cerr to cout
 
-    std::cout << "\"" << sscmd.str() << "\"" << std::endl;
-
     // Open a pipe and run command -- output saved in string 'out'.
     std::string out(exec(sscmd.str().c_str(),1000));
 
