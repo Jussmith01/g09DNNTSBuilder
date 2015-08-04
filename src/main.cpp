@@ -29,7 +29,7 @@ int main (int argc, char *argv[]) {
     //          Read input
     //--------------------------------
     try {
-        //ipt::readinput();
+        ipt::input testing(argv[1], argv[2]);
     } catch (std::string error) dnntsErrorcatch(error);
 
     //--------------------------------
