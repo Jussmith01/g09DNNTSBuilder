@@ -3,38 +3,34 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <fstream>
 
-#include "errorhandlers.h"
-
-#define Fatal(_error)                                 \
-{                                                     \
-    std::stringstream _location,_message;             \
-    _location << __FILE__ << ":" << __LINE__ << "\n"; \
-    _message << "Error -- " << _error << "\n";        \
-    std::cerr << "In " << _location << _message;      \
-    return(EXIT_FAILURE);                             \
-};
-
-#define checkArgs(_args)                            \
-{                                                   \
-    if(_args==NULL)                                 \
-    {                                               \
-        std::stringstream _error;                   \
-        _error << "Invalid arguments";              \
-        Fatal(_error);                              \
-    }                                               \
-};
+#include "errorhandlers.h" // Contains the error handlers.
+#include "utils/randnormflt.h"
+#include "utils/readinput.h"
 
 int main (int argc, char *argv[])
 {
-    checkArgs(argv[1]);
+    // Check input arguments via macro
+    //checkArgs(argv[1]);
+    //checkArgs(argv[2]);
 
-    /*if (argc != 4)
+    // Read input
+
+
+    // Generate Random Numbers
+    long int Nr(1000); // Number of random numbers
+
+    try
     {
-        std::cout << "Failure, wrong number of arguments.\n";
-        std::cout << "[executable] [inputfilename] [number of atoms] [number of steps]\n";
-        exit(EXIT_FAILURE);
-    }*/
+        NormRandomReal randflt(Nr,clock());
+
+        std::vector<float> rdnflts;
+        randflt.fillVector(0.0,0.1,rdnflts,Nr);
+    }
+    catch (std::string error) dnntserrorcatch(error);
+
+
 
     return 0;
 };

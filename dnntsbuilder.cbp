@@ -29,10 +29,13 @@
 			</Target>
 		</Build>
 		<Compiler>
+			<Add option="-std=c++11" />
 			<Add option="-Wall" />
 		</Compiler>
 		<Unit filename="src/errorhandlers.h" />
 		<Unit filename="src/main.cpp" />
+		<Unit filename="src/utils/randnormflt.h" />
+		<Unit filename="src/utils/readinput.h" />
 		<Extensions>
 			<code_completion />
 			<debugger />
