@@ -15,7 +15,8 @@
 #include "utils/simpletools.hpp"
 #include "utils/systools.hpp"
 
-int main (int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     //--------------------------------
     // Check input arguments via macro
     //--------------------------------
@@ -28,28 +29,34 @@ int main (int argc, char *argv[]) {
     //--------------------------------
     //          Read input
     //--------------------------------
-    try {
+    try
+    {
         ipt::input testing(argv[1], argv[2]);
-    } catch (std::string error) dnntsErrorcatch(error);
+    } catch (std::string error)
+    dnntsErrorcatch(error);
 
     //--------------------------------
     //     Generate Random Numbers
     //--------------------------------
     long int Nr(1000); // Number of random numbers
 
-    try {
-        NormRandomReal randflt(Nr,clock());
+    try
+    {
+        NormRandomReal randflt(Nr, clock());
 
         std::vector<float> rdnflts;
-        randflt.fillVector(0.0,0.1,rdnflts,Nr);
-    } catch (std::string error) dnntsErrorcatch(error);
+        randflt.fillVector(0.0, 0.1, rdnflts, Nr);
+    } catch (std::string error)
+    dnntsErrorcatch(error);
 
     //--------------------------------
     //          Run G09 Jobs
     //--------------------------------
-    try {
+    try
+    {
         std::cout << "G09 ERROR: " << systls::execg09("gtest.com") << std::endl;
-    } catch (std::string error) dnntsErrorcatch(error);
+    } catch (std::string error)
+    dnntsErrorcatch(error);
 
     return 0;
 };

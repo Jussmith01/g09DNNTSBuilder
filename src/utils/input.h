@@ -1,8 +1,9 @@
 #ifndef READINPUT_H
 #define READINPUT_H
 
-// GLM vector types and math
-#include <glm/glm.hpp>
+#include <string>
+#include <regex>
+#include <glm.hpp>
 
 namespace ipt
 {
@@ -16,6 +17,8 @@ namespace ipt
         { };
         int Nd; // Number of Data points to obtain
         int Na; // Number of atoms
+        int tts;    // Training set size
+        float std;  // Standard deviation of random coordinates
 
         std::string llt; // Low Level of Theory
         std::string hlt; // High Level of Theory
@@ -37,13 +40,48 @@ namespace ipt
 
         void readinput()
         {
+            //  Initiate search parameters
+            std::regex pattern_tts("TTS", std::regex_constants::icase);
+            std::regex pattern_std("STD", std::regex_constants::icase);
+            std::regex pattern_coords("coordinates", std::regex_constants::icase);
+            std::regex pattern_end("end", std::regex_constants::icase);
+            std::regex pattern_atom("^[A-Z[:d:]][[:s:]]");
+            std::regex pattern_integer("\-?[[:d:]]+");
+            std::regex pattern_float("\-?[[:d:]]*\.[[:d:]]+");
+
+            //  Search file
             std::string line;
             std::ifstream ifile(fname.c_str());
             if (ifile.is_open())
             {
                 while (getline(ifile, line))
                 {
-                    std::cout << line << '\n';
+                    //  Load the training set size
+                    std::smatch m;
+                    if (std::regex_search(line, pattern_tts))
+                    {
+                        if (std::regex_search(line, m, pattern_integer))
+                        {
+                            tts = atoi(m.str(0).c_str());
+                        }
+                    }
+                    if (std::regex_search(line, pattern_std))
+                    {
+                        if (std::regex_search(line, m, pattern_float))
+                        {
+                            std = atof(m.str(0).c_str());
+                        }
+                    }
+                    if (std::regex_search(line, pattern_coords))
+                    {
+                        while (getline(ifile, line) && !std::regex_search(line, pattern_end))
+                        {
+                            std::vector<float> coord_temp;
+                            std::sregex_iterator pos(line.begin(), line.end(), pattern_float);
+                            std::sregex_iterator end;
+                            for()
+                        }
+                    }
                 }
                 ifile.close();
             } else
