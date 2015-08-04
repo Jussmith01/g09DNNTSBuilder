@@ -76,10 +76,7 @@ namespace ipt
                     {
                         while (getline(ifile, line) && !std::regex_search(line, pattern_end))
                         {
-                            std::vector<float> coord_temp;
-                            std::sregex_iterator pos(line.begin(), line.end(), pattern_float);
-                            std::sregex_iterator end;
-                            for()
+                            std::cout << "hello" << std::endl;
                         }
                     }
                 }
