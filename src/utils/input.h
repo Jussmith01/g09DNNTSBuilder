@@ -3,7 +3,7 @@
 
 #include <string>
 #include <regex>
-#include <glm.hpp>
+#include <glm/glm.hpp>
 
 namespace ipt
 {

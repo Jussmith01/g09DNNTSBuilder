@@ -56,8 +56,11 @@
 -----------------------------------------------*/
 #define throwException(_errstr)                              \
 {                                                            \
-    throw std::string("In Function: ")                       \
-        + std::string(__FUNCTION__)                          \
-        + std::string("() -- ")                              \
-        + std::string(_errstr);                              \
-}
+    if (!std::string(_errstr).empty())                       \
+    {                                                        \
+        throw std::string("In Function: ")                   \
+            + std::string(__FUNCTION__)                      \
+            + std::string("() -- ")                          \
+            + std::string(_errstr);                          \
+    }                                                        \
+};
