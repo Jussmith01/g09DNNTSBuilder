@@ -16,7 +16,7 @@
 #include "utils/simpletools.hpp"
 #include "utils/systools.hpp"
 
-int main (int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     //--------------------------------
     // Check input arguments via macro
@@ -41,12 +41,14 @@ int main (int argc, char *argv[])
     int Nd = 10;
     long int Nr(3*Na*Nd); // Number of random numbers
 
-    try {
-        NormRandomReal randflt(Nr,clock());
+    try
+    {
+        NormRandomReal randflt(Nr, clock());
 
         std::vector<float> rdnflts;
-        randflt.fillVector(0.0,0.1,rdnflts,Nr);
-    } catch (std::string error) dnntsErrorcatch(error);
+        randflt.fillVector(0.0, 0.1, rdnflts, Nr);
+    } catch (std::string error)
+    dnntsErrorcatch(error);
 
     //--------------------------------
     //          Run G09 Jobs
