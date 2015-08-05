@@ -17,7 +17,8 @@
 #include "utils/simpletools.hpp"
 #include "utils/systools.hpp"
 
-//
+// Handlers
+#include "handlers/internalcoordinate.h"
 
 int main(int argc, char *argv[])
 {
@@ -53,10 +54,16 @@ int main(int argc, char *argv[])
     //--------------------------------
     //          Run G09 Jobs
     //--------------------------------
-    std::vector<std::pair<unsigned int,unsigned int>> bonds;
-    bonds.push_back(std::pair<unsigned int,unsigned int>(0,1));
-    bonds.push_back(std::pair<unsigned int,unsigned int>(0,2));
-    bonds.push_back(std::pair<unsigned int,unsigned int>(1,3));
+    std::vector<std::pair<int,int>> bonds;
+    bonds.push_back(std::pair<int,int>(2,1));
+    bonds.push_back(std::pair<int,int>(2,5));
+    bonds.push_back(std::pair<int,int>(5,1));
+    bonds.push_back(std::pair<int,int>(4,1));
+    bonds.push_back(std::pair<int,int>(2,3));
+
+    try {
+        itrnl::Internalcoordinates icrd(bonds);
+    } catch (std::string error) dnntsErrorcatch(error);
 
     std::vector<std::string> type;
     type.push_back("O");
