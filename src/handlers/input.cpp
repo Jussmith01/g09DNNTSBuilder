@@ -73,14 +73,13 @@ void ipt::input::readinput() {
             //  Find the bond links
             if (regex_search(line, pattern_bonds)) {
                 while (getline(ifile, line), !regex_search(line, pattern_end)) {
+                    vector<int> bonds_temp;
                     sregex_iterator pos(line.begin(), line.end(), pattern_integer);
                     sregex_iterator end;
                     for (; pos !=end; ++pos) {
-                        bonds.push_back(atoi(pos->str().c_str()));
+                        bonds_temp.push_back(atoi(pos->str().c_str()));
                     }
-                }
-                if (static_cast<int>(bonds.size()) >= Na) {
-                    throwException("Too many bonds! There should be less bonds than atoms.")
+                    bonds.push_back(glm::ivec2(bonds_temp[0], bonds_temp[1]));
                 }
             }
         }
