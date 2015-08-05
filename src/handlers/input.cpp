@@ -79,9 +79,6 @@ void ipt::input::readinput() {
                         bonds.push_back(atoi(pos->str().c_str()));
                     }
                 }
-                if (static_cast<int>(bonds.size()) >= Na) {
-                    throwException("Too many bonds! There should be less bonds than atoms.")
-                }
             }
         }
         ifile.close();

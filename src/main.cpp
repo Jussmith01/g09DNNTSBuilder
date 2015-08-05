@@ -7,6 +7,7 @@
 #include <fstream>
 #include <iomanip>
 #include <vector>
+#include <omp.h>
 
 // Error Handling
 #include "errorhandlers.h" // Contains the error handlers.
@@ -40,18 +41,51 @@ int main(int argc, char *argv[])
     //--------------------------------
     //     Generate Random Numbers
     //--------------------------------
-    int Na = 3;
-    int Nd = 10;
-    long int Nr(3*Na*Nd); // Number of random numbers
+    // This is passed to each thread and contain unique seeds for each
+    ParallelSeedGenerator seedGen(omp_get_max_threads());
 
-    try
+    // This is the termination string. If an error is caught it
+    // saves it here and the threads then exit.
+    std::string termstr("");
+
+    // Begin parallel region
+    #pragma omp parallel
     {
-        NormRandomReal randflt(Nr, clock());
+        // Number of sets to calculate
+        int N=100;
 
-        std::vector<float> rdnflts;
-        randflt.fillVector(0.0, 0.1, rdnflts, Nr);
-    } catch (std::string error)
-    dnntsErrorcatch(error);
+        // Thread ID
+        int tid = omp_get_thread_num();
+
+        // Prepare the random number seeds
+        std::vector<int> seedarray;
+        seedGen.getThreadSeeds(tid,seedarray);
+
+        // Prepare the random number generator
+        NormRandomReal rnGen;
+
+        int i=0;
+        while (i<N && termstr.empty()) {
+            try
+            {
+            std::vector<float> rn;
+            rnGen.fillVector(0.0,1.0,rn,10,seedarray);
+
+
+            ++i;
+            }
+            catch (std::string error)
+            {
+                #pragma omp critical
+                {
+                    termstr=error;
+                }
+            }
+        }
+    }
+
+    // Catch any errors from the threads
+    if (!termstr.empty()) dnntsErrorcatch(termstr);
 
     //--------------------------------
     //          Run G09 Jobs

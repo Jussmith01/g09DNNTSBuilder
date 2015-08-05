@@ -31,16 +31,21 @@
 		</Build>
 		<Compiler>
 			<Add option="-std=c++11" />
+			<Add option="-fopenmp" />
 			<Add option="-Wall" />
 			<Add option="-Wno-comment" />
 		</Compiler>
+		<Linker>
+			<Add library="gomp" />
+		</Linker>
 		<Unit filename="src/errorhandlers.h" />
+		<Unit filename="src/handlers/g09functions.hpp" />
+		<Unit filename="src/handlers/input.cpp" />
+		<Unit filename="src/handlers/input.h" />
 		<Unit filename="src/handlers/internalcoordinate.cpp" />
 		<Unit filename="src/handlers/internalcoordinate.h" />
 		<Unit filename="src/main.cpp" />
-		<Unit filename="src/utils/input.h" />
 		<Unit filename="src/utils/randnormflt.h" />
-		<Unit filename="src/utils/readers.h" />
 		<Unit filename="src/utils/simpletools.hpp" />
 		<Unit filename="src/utils/systools.hpp" />
 		<Extensions>

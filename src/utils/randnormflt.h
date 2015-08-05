@@ -3,6 +3,63 @@
 
 #include "ctime"
 #include "random"
+#include "cstring"
+
+class ParallelSeedGenerator {
+    std::vector<int> thrdseeds;
+
+    void Setup(int numthreads) {
+        time_t Time;
+        time(&Time);
+
+        thrdseeds.resize(4*numthreads);
+
+        std::seed_seq initseedseq = {(int)Time,(int)clock()};
+        initseedseq.generate(thrdseeds.begin(),thrdseeds.end());//Seed the generator
+    };
+
+    ParallelSeedGenerator() {};
+
+public:
+
+    ParallelSeedGenerator(int numthreads) {
+        Setup(numthreads);
+    };
+
+    void getThreadSeeds(int thread,std::vector<int> &seedfill) {
+        seedfill.resize(4);
+        memcpy(&seedfill[0],&thrdseeds[thread*4],4*sizeof(int));
+    };
+};
+
+/*-----------------------------------------------
+  ***********************************************
+  |                                             |
+  ***********************************************
+
+-------------------------------------------------*/
+class ThreadSeedGenerator {
+    std::seed_seq seedgen;
+
+    void getThreadSafeSeeds(std::vector<int> &seedfill) {
+        seedfill.resize(seedfill.size()+4);
+        seedgen.generate(seedfill.begin(),seedfill.end());
+    };
+
+public:
+
+    ThreadSeedGenerator(std::vector<int> &threadseeds,std::vector<int> &seeds) :
+        seedgen(threadseeds.begin(),threadseeds.end())
+    {
+        getThreadSafeSeeds(seeds);
+
+        for (int i=0;i<4;++i)
+        {
+            threadseeds[i]=seeds.back();
+            seeds.pop_back();
+        }
+    };
+};
 
 /*-----------------------------------------------
   ***********************************************
@@ -16,52 +73,24 @@ float someflt = GenRandReal(float mean,float std)
                    //mean is mean, duh
                    //std is standard deviation
 -------------------------------------------------*/
-class NormRandomReal {
+class NormRandomReal
+{
     std::default_random_engine generator;
-    std::vector<int> seeds;
-    int index;
 
 public:
+
     NormRandomReal() {};
-    NormRandomReal(int w,int seed) {
-        Setup(w,seed);
-    };
 
-    void Setup(int w,int i) {
-        time_t Time;
-        time(&Time);
-        int seedOffset=(int)Time;
-
-        seeds.resize(w);
-
-        std::seed_seq seed = {seedOffset,i};
-        seed.generate(seeds.begin(),seeds.end());//Seed the generator
-        index = 0;
-    };
-
-    float genflt(float mean,float stdev) {
-        if (index>=int(seeds.size())) {
-            throwException("Out of random numbers!");
-        } else {
-            generator.seed(seeds[index]);//Seed the generator
-            std::normal_distribution<float> distribution(mean,stdev);//Setup the distribution
-            float RN = (float)distribution(generator);//Denerate the random number
-            ++index;//Increase seed offset
-            return RN;
-        }
-    };
-
-    void fillVector(float mean,float stdev,std::vector<float> &rnv,int N) {
+    void fillVector(float mean,float stdev,std::vector<float> &rnv,int N,std::vector<int> &threadseeds) {
         rnv.resize(N);
-        for (auto && rn : rnv) {
-            if (index>=int(seeds.size())) {
-                throwException("Out of random numbers!");
-            } else {
-                generator.seed(seeds[index]);//Seed the generator
+
+        std::vector<int> seeds(N);
+        ThreadSeedGenerator seedGen(threadseeds,seeds);
+
+        for (int i=0;i<N;++i) {
+                generator.seed(seeds[i]);//Seed the generator
                 std::normal_distribution<float> distribution(mean,stdev);//Setup the distribution
-                rn = (float)distribution(generator);//Denerate the random number
-                ++index;//Increase seed index
-            }
+                rnv[i] = distribution(generator);//Denerate the random number
         }
     };
 };
