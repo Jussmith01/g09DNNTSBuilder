@@ -13,12 +13,14 @@
 
 // Utilities
 #include "utils/randnormflt.h"
-#include "utils/input.h"
 #include "utils/simpletools.hpp"
 #include "utils/systools.hpp"
 
 // Handlers
+#include "handlers/input.h"
+#include "handlers/g09functions.hpp"
 #include "handlers/internalcoordinate.h"
+
 
 int main(int argc, char *argv[])
 {
@@ -75,10 +77,10 @@ int main(int argc, char *argv[])
     } catch (std::string error) dnntsErrorcatch(error);
 
     try {
-        std::string input(systls::buildInputg09("AM1","force",type,xyz,0,1,1));
+        std::string input(g09::buildInputg09("AM1","force",type,xyz,0,1,1));
 
         //std::string input = "\n#p AM1 force\n\nwater\n\n0  1\nO 0.0000 0.0000 0.0000\nH 0.7500 0.0000 0.5200\nH 0.7500 0.0000 -0.520\n\n";
-        //std::cout << "G09 ERROR: " << systls::execg09(input) << std::endl;
+        //std::cout << "G09 ERROR: " << g09::execg09(input) << std::endl;
     } catch (std::string error) dnntsErrorcatch(error);
 
     return 0;
