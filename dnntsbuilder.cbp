@@ -34,8 +34,9 @@
 			<Add option="-Wall" />
 			<Add option="-Wno-comment" />
 		</Compiler>
-		<Unit filename="src/containers/internalcontainers.h" />
 		<Unit filename="src/errorhandlers.h" />
+		<Unit filename="src/handlers/internalcoordinate.cpp" />
+		<Unit filename="src/handlers/internalcoordinate.h" />
 		<Unit filename="src/main.cpp" />
 		<Unit filename="src/utils/input.h" />
 		<Unit filename="src/utils/randnormflt.h" />

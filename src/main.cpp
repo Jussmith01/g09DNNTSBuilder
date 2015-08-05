@@ -6,6 +6,7 @@
 #include <string>
 #include <fstream>
 #include <iomanip>
+#include <vector>
 
 // Error Handling
 #include "errorhandlers.h" // Contains the error handlers.
@@ -16,6 +17,8 @@
 #include "utils/simpletools.hpp"
 #include "utils/systools.hpp"
 
+//
+
 int main(int argc, char *argv[])
 {
     //--------------------------------
@@ -23,9 +26,6 @@ int main(int argc, char *argv[])
     //--------------------------------
     checkArgs(argv[1]);
     checkArgs(argv[2]);
-
-    //::inputData.fname = argv[1];
-    //ipt::inputData.oname = argv[2];
 
     //--------------------------------
     //          Read input
