@@ -6,6 +6,9 @@
 #define G09FUNCTIONS_H
 
 #include "../utils/systools.hpp"
+#include <string>
+#include <sstream>
+#include <regex>
 
 namespace g09 {
 
