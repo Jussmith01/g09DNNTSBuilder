@@ -3,7 +3,7 @@
 
 #include <string>
 #include <regex>
-#include <glm.hpp>
+#include <glm/glm.hpp>
 
 namespace ipt
 {
@@ -46,7 +46,7 @@ namespace ipt
             std::regex pattern_coords("coordinates", std::regex_constants::icase);
             std::regex pattern_end("end", std::regex_constants::icase);
             std::regex pattern_atom("^[A-Z[:d:]][[:s:]]");
-            std::regex pattern_integer("\-?[[:d:]]+");
+            std::regex pattern_integer("\\-?[[:d:]]+");
             std::regex pattern_float("\\-?[[:d:]]*\\.[[:d:]]+");
 
             //  Search file
