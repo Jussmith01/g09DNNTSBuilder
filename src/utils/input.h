@@ -93,6 +93,7 @@ namespace ipt
                             }
                             xyz.push_back(glm::vec3(coord_temp[0], coord_temp[1], coord_temp[2]));
                         }
+                        Na = static_cast<int>(xyz.size());
                     }
                     // Find low level of theory
                     if (regex_search(line, m, pattern_lot))
@@ -115,6 +116,10 @@ namespace ipt
                             {
                                 bonds.push_back(atoi(pos->str().c_str()));
                             }
+                        }
+                        if (static_cast<int>(bonds.size()) >= Na)
+                        {
+                            throwException("Too many bonds! There should be less bonds than atoms.")
                         }
                     }
                 }
