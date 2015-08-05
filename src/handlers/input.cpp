@@ -72,11 +72,17 @@ void ipt::input::readinput() {
             }
             //  Find the bond links
             if (regex_search(line, pattern_bonds)) {
+                int bond_idex = 0;
                 while (getline(ifile, line), !regex_search(line, pattern_end)) {
+                    ++bond_idex;
+                    if (bond_idex >= Na)
+                    {
+                        throwException("Too many bonds for number of atoms");
+                    }
                     vector<int> bonds_temp;
                     sregex_iterator pos(line.begin(), line.end(), pattern_integer);
                     sregex_iterator end;
-                    for (; pos !=end; ++pos) {
+                    for (; pos != end; ++pos) {
                         bonds_temp.push_back(atoi(pos->str().c_str()));
                     }
                     bonds.push_back(glm::ivec2(bonds_temp[0], bonds_temp[1]));
@@ -84,7 +90,6 @@ void ipt::input::readinput() {
             }
         }
         ifile.close();
-    } else
-        throwException("Unable to open file");
+    } else throwException("Unable to open file");
 };
 
