@@ -6,6 +6,9 @@
 #define G09FUNCTIONS_H
 
 #include "../utils/systools.hpp"
+#include <string>
+#include <sstream>
+#include <regex>
 
 namespace g09 {
 
@@ -21,10 +24,11 @@ std::string forceFinder(const std::string &filename)
     regex pattern_cart("Cartesian");
     regex pattern_value("\\-?[[:d:]]+\\.[[:d:]]+");
     string line;
-    /*while (getline(inFile, filename)) {
+    istringstream stream(filename);
+    while (getline(stream, line)) {
         if (regex_search(line, pattern_force)) {
             string line2;
-            while (getline(inFile, line2) && !regex_search(line2, pattern_cart)) {
+            while (getline(stream, line2) && !regex_search(line2, pattern_cart)) {
                 sregex_iterator pos(line2.begin(), line2.end(), pattern_value);
                 sregex_iterator end;
                 for (; pos != end; ++pos) {
@@ -32,7 +36,7 @@ std::string forceFinder(const std::string &filename)
                 }
             }
         }
-    }*/
+    }
     return force_csv;
 };
 

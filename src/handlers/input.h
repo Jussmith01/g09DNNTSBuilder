@@ -5,6 +5,7 @@
 #include <regex>
 
 // GLM Mathematics Library
+#include "../../include/glm/detail/type_vec.hpp"
 #include <glm/glm.hpp>
 
 namespace ipt
@@ -26,7 +27,7 @@ namespace ipt
         std::string hlt; // High Level of Theory
 
         std::vector<glm::vec3> xyz; // xyz coords of atoms
-        std::vector<int> bonds;
+        std::vector<glm::ivec2> bonds;
 
         std::string fname; // Input filename
         std::string oname; // Output filename
