@@ -5,8 +5,8 @@
 #include <regex>
 
 // GLM Mathematics Library
-#include <glm/glm.hpp>
 #include "../../include/glm/detail/type_vec.hpp"
+#include <glm/glm.hpp>
 
 namespace ipt
 {
