@@ -24,12 +24,13 @@
 /*---------Store the bond index------------
 
 ------------------------------------------*/
-void itrnl::Internalcoordinates::m_calculateBondIndex(std::vector< std::pair<int,int> > &mbond) {
+void itrnl::Internalcoordinates::m_calculateBondIndex(std::vector< glm::ivec2 > &mbond) {
+
     bidx.reserve(mbond.size());
     for (auto && bnd : mbond)
     {
-        int first(bnd.first);
-        int second(bnd.second);
+        int first(bnd.x);
+        int second(bnd.y);
 
         // Some error checking
         if (first==second)
@@ -39,9 +40,9 @@ void itrnl::Internalcoordinates::m_calculateBondIndex(std::vector< std::pair<int
 
         // Order the atoms by atom number
         if (first < second)
-            bidx.push_back(itrnl::CreateBondIndex(bnd.first,bnd.second));
+            bidx.push_back(itrnl::CreateBondIndex(first,second));
         else
-            bidx.push_back(itrnl::CreateBondIndex(bnd.second,bnd.first));
+            bidx.push_back(itrnl::CreateBondIndex(second,first));
 
         // Check that bond is unique
         for (int i=0;i<int(bidx.size())-1;++i)

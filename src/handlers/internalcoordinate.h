@@ -107,7 +107,7 @@ class Internalcoordinates {
     Internalcoordinates () {}; // Private default constructor
 
     // Calculate the bonding index
-    void m_calculateBondIndex(std::vector< std::pair<int,int> > &mbond);
+    void m_calculateBondIndex(std::vector< glm::ivec2 > &mbond);
 
     // Calculate the angle index
     void m_calculateAngleIndex();
@@ -130,7 +130,7 @@ class Internalcoordinates {
 public:
 
     // Only public constructor
-    Internalcoordinates (std::vector< std::pair<int,int> > &mbond) {
+    Internalcoordinates (std::vector< glm::ivec2 > &mbond) {
         m_calculateBondIndex(mbond);
         m_calculateAngleIndex();
         m_calculateDihedralIndex();

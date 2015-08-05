@@ -54,9 +54,9 @@ int main(int argc, char *argv[])
     //--------------------------------
     //          Run G09 Jobs
     //--------------------------------
-    std::vector< std::pair<int,int> > bonds;
-    bonds.push_back(std::pair<int,int>(0,1));
-    bonds.push_back(std::pair<int,int>(0,2));
+    std::vector< glm::ivec2 > bonds;
+    bonds.push_back(glm::ivec2(0,1));
+    bonds.push_back(glm::ivec2(0,2));
 
     std::vector<std::string> type;
     type.push_back("O");
