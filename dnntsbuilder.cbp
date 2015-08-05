@@ -31,13 +31,15 @@
 		</Build>
 		<Compiler>
 			<Add option="-std=c++11" />
-			<Add option="-fopenmp" />
 			<Add option="-Wall" />
+			<Add option="-fopenmp" />
 			<Add option="-Wno-comment" />
 		</Compiler>
 		<Linker>
 			<Add library="gomp" />
 		</Linker>
+		<Unit filename="src/core/tsbuilder.cpp" />
+		<Unit filename="src/core/tsbuilder.h" />
 		<Unit filename="src/errorhandlers.h" />
 		<Unit filename="src/handlers/g09functions.hpp" />
 		<Unit filename="src/handlers/input.cpp" />

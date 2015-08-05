@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     //          Read input
     //--------------------------------
     try {
-        ipt::input testing(argv[1],argv[2]);
+        ipt::input iptdata(argv[1],argv[2]);
     } catch (std::string error) dnntsErrorcatch(error);
 
     //--------------------------------
@@ -113,7 +113,6 @@ int main(int argc, char *argv[])
     try {
         std::string input(g09::buildInputg09("AM1","force",type,xyz,0,1,1));
 
-        //std::string input = "\n#p AM1 force\n\nwater\n\n0  1\nO 0.0000 0.0000 0.0000\nH 0.7500 0.0000 0.5200\nH 0.7500 0.0000 -0.520\n\n";
         //std::cout << "G09 ERROR: " << g09::execg09(input) << std::endl;
     } catch (std::string error) dnntsErrorcatch(error);
 
