@@ -45,29 +45,44 @@ inline std::string exec(const std::string &cmd,size_t maxbuf) {
   converge.
 ------------------------------------------*/
 inline bool execg09(const std::string &input) {
-    // Build command
+    // Build bash command for launching g09
     std::stringstream sscmd;
-
     sscmd << "#!/bin/sh\ng09 <<END 2>&1 " << input.c_str() << "END\n"; // Redirect cerr to cout
 
-    // Open a pipe and run command -- output saved in string 'out'.
+    // Open a pipe and run g09 command -- output saved in string 'out'.
     std::string out(exec(sscmd.str().c_str(),1000));
 
-    // Check for gaussian error in buffer
-    if (simtls::trim(out).find("Convergence failure -- run terminated")!=std::string::npos) {
+    // If normal termination is detected the the program returns false.
+    if (out.find("Normal termination of Gaussian 09")!=std::string::npos) {
+        return false;
+    }
+
+    // Check if gaussian failed to converge - return true if it fails.
+    if (out.find("Convergence failure -- run terminated")!=std::string::npos) {
+        std::cout << "CVF!" << std::endl;
         return true;
     }
 
-    if (simtls::trim(out).find("Normal termination of Gaussian 09")==std::string::npos) {
-        std::ofstream gaue;
-        gaue.open("gauerror.log");
-        gaue << out << std::endl;
-        gaue.close();
-
-        throwException("Unrecognized Gaussian 09 Failure; saving output as gauerror.log");
+    // Check if interatomic distances were too close  - return true if it fails.
+    if (out.find("Small interatomic distances encountered")!=std::string::npos) {
+        std::cout << "SIADF!" << std::endl;
+        return true;
     }
 
-    return false;
+    // Check if g09 was found, if not the
+    if (out.find("g09: not found")!=std::string::npos) {
+        throwException("Gaussian 09 program not found; make sure it is exported to PATH.");
+    }
+
+    // If the function has not returned yet then something is wrong
+    std::ofstream gaue;
+    gaue.open("gauerror.log");
+    gaue << out << std::endl;
+    gaue.close();
+
+    throwException("Unrecognized Gaussian 09 Failure; saving output as gauerror.log");
+
+    return true;
 };
 
 /*----------------------------------------
@@ -88,7 +103,7 @@ inline std::string buildInputg09(std::string lot,std::string additional,const st
     if (type.size()!=xyz.size())
         throwException("type and xyz are not the same size.");
 
-    // Build input
+    // Build gaussian 09 input
     std::stringstream tmpipt;
     tmpipt.setf( std::ios::fixed, std::ios::floatfield );
     tmpipt << "\n%nproc=" << nproc << "\n";

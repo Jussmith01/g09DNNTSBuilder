@@ -4,8 +4,7 @@
 namespace itrnl
 {
 
-/*----------------------------
-           Bond Index
+/*----------Bond Index-------------
 
 Consists of:
 bndindex - 8 byte aligned
@@ -26,8 +25,7 @@ bndCompare() - A function that
 struct bndindex {int v1,v2;} __attribute__ ((__aligned__(8)));
 
 // Function for creating bond indexes
-inline bndindex CreateBondIndex(const int v1,const int v2)
-{
+inline bndindex CreateBondIndex(const int v1,const int v2) {
     bndindex tmpidx;
     tmpidx.v1=v1;
     tmpidx.v2=v2;
@@ -35,13 +33,12 @@ inline bndindex CreateBondIndex(const int v1,const int v2)
 };
 
 // Function for less than comparing bndindex types -- for use by std::sort
-inline bool bndComparelt (bndindex i,bndindex j) { return (i.v1<j.v1); }
+inline bool bndComparelt (bndindex i,bndindex j) { return ((i.v1<=j.v1) && (i.v2<j.v2)); }
 
 // Function for equality comparing bndindex types
 inline bool bndCompareeq (bndindex i,bndindex j) { return ((i.v1==j.v1) && (i.v2==j.v2)); }
 
-/*----------------------------
-        Angle Index
+/*---------Angle Index------------
 
 Consists of:
 angindex - 8 byte aligned
@@ -52,12 +49,11 @@ CreateAngleIndex() - A function
            that produces a
            angindex type from
            3 values.
-------------------------------*/
+----------------------------------*/
 // 8 byte alignment forced to prevent cache mis-alignment
-struct angindex {int v1,v2,v3;} __attribute__ ((__aligned__(8)));
+struct angindex {int v1,v2,v3;} __attribute__ ((__aligned__(16)));
 
-inline angindex CreateAngleIndex(const int v1,const int v2,const int v3)
-{
+inline angindex CreateAngleIndex(const int v1,const int v2,const int v3) {
     angindex tmpidx;
     tmpidx.v1=v1;
     tmpidx.v2=v2;
@@ -65,8 +61,10 @@ inline angindex CreateAngleIndex(const int v1,const int v2,const int v3)
     return tmpidx;
 };
 
-/*-----------------------------
-         Dihedral Index
+// Function for less than comparing bndindex types -- for use by std::sort
+inline bool angComparelt (angindex i,angindex j) { return (i.v1<j.v1); }
+
+/*----------Dihedral Index------------
 
 Consists of:
 dhlindex - 8 byte aligned
@@ -77,12 +75,11 @@ CreateDihedralIndex() - A
            function that
            produces a dhlindex
            type from 4 values.
-------------------------------*/
+-------------------------------------*/
 // 8 byte alignment forced to prevent cache mis-alignment
-struct dhlindex {int v1,v2,v3,v4;} __attribute__ ((__aligned__(8)));
+struct dhlindex {int v1,v2,v3,v4;} __attribute__ ((__aligned__(16)));
 
-inline dhlindex CreateDihedralIndex(const int v1,const int v2,const int v3,const int v4)
-{
+inline dhlindex CreateDihedralIndex(const int v1,const int v2,const int v3,const int v4) {
     dhlindex tmpidx;
     tmpidx.v1=v1;
     tmpidx.v2=v2;
@@ -92,18 +89,20 @@ inline dhlindex CreateDihedralIndex(const int v1,const int v2,const int v3,const
 };
 
 
-/*---------------------------
- Internal Coordinates Class
+/*--------Internal Coordinates Class----------
 
-This class stores the indexes
-for the bonds, angles and
-dihedrals of the molecule.
----------------------------*/
-class Internalcoordinates
-{
+
+This class stores the indexes for the bonds,
+angles and dihedrals of the molecule.
+----------------------------------------------*/
+class Internalcoordinates {
     std::vector<bndindex> bidx; // Bonding index
     std::vector<angindex> aidx; // Angle index
     std::vector<dhlindex> didx; // Dihedral index
+
+    std::vector<float> bnds; // Working storage for bonds
+    std::vector<float> angs; // Working storage for angles
+    std::vector<float> dhls; // Working storage for dihedrals
 
     Internalcoordinates () {}; // Private default constructor
 
@@ -116,14 +115,44 @@ class Internalcoordinates
     // Calculate the dihedral index
     void m_calculateDihedralIndex();
 
+    // Calculate bond lengths
+    void m_calculateBonds(const std::vector<glm::vec3> &xyz);
+
+    // Calculate angles
+    void m_calculateAngles(const std::vector<glm::vec3> &xyz);
+
+    // Calculate dihedrals
+    void m_calculateDihedrals(const std::vector<glm::vec3> &xyz);
+
+    // Create and return Comma Separated Values Internal Coordinates string
+    std::string m_createCSVICstring();
+
 public:
 
-    Internalcoordinates (std::vector< std::pair<int,int> > &mbond)
-    {
+    // Only public constructor
+    Internalcoordinates (std::vector< std::pair<int,int> > &mbond) {
         m_calculateBondIndex(mbond);
         m_calculateAngleIndex();
         m_calculateDihedralIndex();
+
+        bnds.resize(bidx.size());
+        angs.resize(aidx.size());
+        dhls.resize(didx.size());
     };
+
+    // Calculate the CSV (Comma Separated Values) string of internal coords based on xyz input
+    std::string calculateCSVInternalCoordinates(const std::vector<glm::vec3> &xyz);
+
+    // Destructor
+    ~Internalcoordinates() {
+        bidx.clear();
+        aidx.clear();
+        didx.clear();
+
+        bnds.clear();
+        angs.clear();
+        dhls.clear();
+    }
 };
 
 };
