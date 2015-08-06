@@ -21,7 +21,7 @@ namespace ipt
 
         void printdata()
         {
-            std::cout << "\033[1;30mInput Parameters\033[0m" << std::endl;
+            std::cout << "Input Parameters" << std::endl;
             std::cout << "Number of Atoms: " << Na << std::endl;
             std::cout << "Training Set size: " << tts << std::endl;
             std::cout << "STd. Dev. of random numbers: " << std << std::endl;

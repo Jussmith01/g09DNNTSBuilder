@@ -150,7 +150,7 @@ public:
     // Data Printer
     void printdata()
     {
-        std::cout << "\033[1;30mInternal Coordinates\033[0m" << std::endl;
+        std::cout << "Internal Coordinates" << std::endl;
         std::cout << "Bonds: " << bidx.size() << std::endl;
         std::cout << "Angles: " << aidx.size() << std::endl;
         std::cout << "Dihedrals: " << didx.size() << std::endl;

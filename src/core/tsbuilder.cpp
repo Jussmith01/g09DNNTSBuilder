@@ -21,6 +21,7 @@
 #include "../utils/simpletools.hpp"
 #include "../utils/systools.hpp"
 #include "../utils/randnormflt.h"
+#include "../utils/micro_timer.h"
 
 // Handlers
 #include "../handlers/g09functions.hpp"
@@ -30,14 +31,47 @@
 // Class Definition
 #include "tsbuilder.h"
 
+/*--------Loop Printer Functions---------
+
+These functions supply different file output
+styles for different output interfaces
+
+print_for_file -- Formatted for file output
+Contains no ANSI Escape Sequences
+
+print_for_cout -- Formatted for terminal output
+Contains ANSI Escape Sequences
+
+A function pointer called loopPrinter in
+Trainingsetbuilder::calculateTrainingSet
+is set before the loop and used to point
+whcih of these functions is requested.
+----------------------------------------*/
+void print_for_file(int tid,int N,int i,int gfail)
+{
+    int trdcomp = static_cast<int>(round((i/float(N))*100.0));
+
+    if (trdcomp % 5 == 0)
+    {
+        std::cout << "Thread " << tid << " is " << trdcomp << "% complete. G09 Fails " << gfail << "\n";
+    }
+};
+
+void print_for_cout(int tid,int N,int i,int gfail)
+{
+    std::cout << "\033["<< tid+1 <<"A\033[K\033[1;30mThread " << tid << " is " << round((i/float(N))*100.0) << "% complete. G09 Fails " << gfail << "\033["<< tid+1 <<"B\033[100D\033[0m";
+};
+
 /*--------Calculate Training Set---------
 
+This function contians the main loop for
+building the training set.
 ----------------------------------------*/
 void Trainingsetbuilder::calculateTrainingSet()
 {
-    std::cout << "\033[1;30m------------------------------" << std::endl;
+    std::cout << "------------------------------" << std::endl;
     std::cout << "  Begin building training set " << std::endl;
-    std::cout << "------------------------------\033[0m\n" << std::endl;
+    std::cout << "------------------------------\n" << std::endl;
 
     // Store working parameters
     ipt::Params params(iptData->getparams());
@@ -54,7 +88,23 @@ void Trainingsetbuilder::calculateTrainingSet()
     // Get the maximum number of threads
     int MaxT = omp_get_max_threads();
     std::cout << "Using " << MaxT << " threads." << std::endl;
-    for (int i=0;i<MaxT;++i) {std::cout << std::endl;}
+
+    // Setup loop output function
+    int lotype = 0;
+    void (*loopPrinter)(int tid,int N,int i,int gfail);
+    switch (lotype) {
+        case 0: {
+            std::cout << "Output setup for terminal writing." << std::endl;
+            loopPrinter = &print_for_cout;
+            for (int i=0;i<MaxT;++i) {std::cout << std::endl;}
+            break;
+        }
+        case 1: {
+            std::cout << "Output setup for file writing." << std::endl;
+            loopPrinter = &print_for_file;
+            break;
+        }
+    }
 
     // Prepare private thread output filenames
     std::vector<std::stringstream> outname(MaxT);
@@ -89,8 +139,9 @@ void Trainingsetbuilder::calculateTrainingSet()
         // Allocate space for new coordinates
         std::vector<glm::vec3> wxyz(params.Na);
 
-        // Initialize counter
-        int i(0);
+        // Initialize counters
+        int i(0); // Loop counter
+        int f(0); // Fail counter
 
         // Initialize some containers
         std::string datapoint;
@@ -102,33 +153,55 @@ void Trainingsetbuilder::calculateTrainingSet()
         std::ofstream tsoutt;
         tsoutt.open(outname[tid].str());
 
+        // Thread timers
+        MicroTimer mttimer; // Time the whole loop
+        MicroTimer mrtimer; // Time the random structure generation
+        MicroTimer mgtimer; // Time the gaussian 09 runs
+        MicroTimer mstimer; // Time the string generation
+
         // Begin main loop
+        mttimer.start_point();
         while (i<N && termstr.empty())
         {
             try
             {
                 bool gchk = true;
 
+                // This loop continues as long as the structure fails.
+                // This ensures that we get the N requested data points
                 while (gchk)
                 {
                     // Default to no failures detected
                     gchk = false;
 
+                    /*------Structure Generation------
+
+                    ---------------------------------*/
                     // Generate the random structure
+                    mrtimer.start_point();
                     wxyz = m_generateRandomStructure(ixyz,rnGen);
 
                     // Determine if structure is viable, if it is not, restart the loop.
                     if (m_checkRandomStructure(wxyz)) {
                         gchk=true;
+                        mrtimer.end_point();
+                        ++f;
                         continue;
                     }
+                    mrtimer.end_point();
 
+                    /*------Gaussian 09 Running-------
+
+                    ---------------------------------*/
+                    mgtimer.start_point();
                     // Build the g09 input file for the low level of theory
                     g09::buildInputg09(input,params.llt,"force",types,wxyz,0,1,1);
 
                     // Execute the g09 run, if failure occures we restart the loop
                     if (g09::execg09(input,outputll)) {
                         gchk=true;
+                        ++f;
+                        mgtimer.end_point();
                         continue;
                     }
 
@@ -138,13 +211,22 @@ void Trainingsetbuilder::calculateTrainingSet()
                     // Execute the g09 run, if failure occures we restart the loop
                     if (g09::execg09(input,outputhl)) {
                         gchk=true;
+                        ++f;
+                        mgtimer.end_point();
                         continue;
                     }
+                    mgtimer.end_point();
+
+                    /*----Creating CSV Datapoint------
+
+                    ---------------------------------*/
+                    mstimer.start_point();
 
                     // Append the data to the datapoint string
                     datapoint.append(licrd->calculateCSVInternalCoordinates(wxyz));
                     datapoint.append(g09::forceFinder(outputll));
                     datapoint.append(g09::forceFinder(outputhl));
+                    mstimer.end_point();
                 }
 
                 // Save the data point to the threads private output file output
@@ -154,7 +236,7 @@ void Trainingsetbuilder::calculateTrainingSet()
 
                 #pragma omp critical
                 {
-                    std::cout << "\033["<< tid+1 <<"A\033[K\033[1;30mThread " << tid << " is " << round((i/float(N))*100.0) << "% complete.\033["<< tid+1 <<"B\033[100D";
+                    loopPrinter(tid,N,i,f);
                 }
 
                 ++i;
@@ -169,45 +251,62 @@ void Trainingsetbuilder::calculateTrainingSet()
                 }
             }
         }
+        mttimer.end_point();
 
         #pragma omp critical
         {
-            std::cout << "\033["<< tid+1 <<"A\033[K\033[1;30mThread " << tid << " is " << 100 << "% complete.\033["<< tid+1 <<"B\033[100D";
+            loopPrinter(tid,1,1,f);
         }
 
         // Close the threads output before exiting
         tsoutt.close();
+
+        #pragma omp barrier
+
+        #pragma omp critical
+        {
+            std::cout << "\n|----Thread " << tid << " info----|" << std::endl;
+            mttimer.print_generic_to_cout(std::string("Total"));
+            mrtimer.print_generic_to_cout(std::string("Struc. Gen."));
+            mgtimer.print_generic_to_cout(std::string("Gau. 09."));
+            mstimer.print_generic_to_cout(std::string("CSV Gen."));
+            std::cout << "Number of failed structures: " << f << std::endl;
+            std::cout << "|---------------------|\n" << std::endl;
+        }
     }
 
     std::cout << std::endl;
 
     // Combine all threads output
+    MicroTimer fttimer;
     std::ofstream tsout;
     tsout.open(iptData->getoname().c_str(),std::ios_base::binary);
 
+    fttimer.start_point();
     std::vector<std::stringstream>::iterator nameit;
     for (nameit = outname.begin();nameit != outname.end();nameit++)
     {
         // Move files individualy into the main output
         std::ifstream infile((*nameit).str().c_str(),std::ios_base::binary);
-        std::cout << "Moving file " << (*nameit).str() << " -> " << iptData->getoname() << std::endl;
+        std::cout << "Transferring file " << (*nameit).str() << " -> " << iptData->getoname() << std::endl;
         tsout << infile.rdbuf();
 
         // Remove old output once moved
         std::stringstream rm;
         rm << "rm " << (*nameit).str();
-        std::cout << rm.str() << std::endl;
         systls::exec(rm.str(),100);
     }
+    fttimer.end_point();
+    fttimer.print_generic_to_cout(std::string("File transfer"));
 
     tsout.close();
 
     // Catch any errors from the threads
     if (!termstr.empty()) dnntsErrorcatch(termstr);
 
-    std::cout << "\n\033[1;30m------------------------------" << std::endl;
+    std::cout << "\n------------------------------" << std::endl;
     std::cout << "Finished building training set" << std::endl;
-    std::cout << "------------------------------\033[1;0m" << std::endl;
+    std::cout << "------------------------------" << std::endl;
 };
 
 /*-----Generate a Random Structure-------
