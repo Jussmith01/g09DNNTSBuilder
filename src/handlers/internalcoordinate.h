@@ -104,10 +104,10 @@ class Internalcoordinates {
     std::vector<float> angs; // Working storage for angles
     std::vector<float> dhls; // Working storage for dihedrals
 
-    Internalcoordinates () {}; // Private default constructor
+    //Internalcoordinates () {}; // Private default constructor
 
     // Calculate the bonding index
-    void m_calculateBondIndex(std::vector< glm::ivec2 > &mbond);
+    void m_calculateBondIndex(const std::vector< glm::ivec2 > &mbond);
 
     // Calculate the angle index
     void m_calculateAngleIndex();
@@ -130,7 +130,9 @@ class Internalcoordinates {
 public:
 
     // Only public constructor
-    Internalcoordinates (std::vector< glm::ivec2 > &mbond) {
+    Internalcoordinates (const std::vector< glm::ivec2 > &mbond) {
+        try {
+
         m_calculateBondIndex(mbond);
         m_calculateAngleIndex();
         m_calculateDihedralIndex();
@@ -138,10 +140,22 @@ public:
         bnds.resize(bidx.size());
         angs.resize(aidx.size());
         dhls.resize(didx.size());
+
+        } catch (std::string error) dnntsErrorcatch(error);
     };
 
     // Calculate the CSV (Comma Separated Values) string of internal coords based on xyz input
     std::string calculateCSVInternalCoordinates(const std::vector<glm::vec3> &xyz);
+
+    // Data Printer
+    void printdata()
+    {
+        std::cout << "\033[1;30mInternal Coordinates\033[0m" << std::endl;
+        std::cout << "Bonds: " << bidx.size() << std::endl;
+        std::cout << "Angles: " << aidx.size() << std::endl;
+        std::cout << "Dihedrals: " << didx.size() << std::endl;
+        std::cout << std::endl;
+    };
 
     // Destructor
     ~Internalcoordinates() {

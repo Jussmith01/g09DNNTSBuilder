@@ -1,3 +1,5 @@
+#include <iostream>
+
 /*----------------------------------------------
                  Fatal Error
     Aborts runtime with location and _error
@@ -12,7 +14,7 @@
               << _location.str() << "\n"              \
               << _message.str() << "\n"               \
               << "Aborting!" << "\n";                 \
-    return(EXIT_FAILURE);                             \
+    exit(EXIT_FAILURE);                               \
 };
 
 /*----------------------------------------------

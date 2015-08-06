@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <vector>
 #include <omp.h>
+#include <regex>
 
 // Error Handling
 #include "errorhandlers.h" // Contains the error handlers.
@@ -22,6 +23,8 @@
 #include "handlers/g09functions.hpp"
 #include "handlers/internalcoordinate.h"
 
+// Core
+#include "core/tsbuilder.h"
 
 int main(int argc, char *argv[])
 {
@@ -34,87 +37,26 @@ int main(int argc, char *argv[])
     //--------------------------------
     //          Read input
     //--------------------------------
-    try {
-        ipt::input iptdata(argv[1],argv[2]);
-    } catch (std::string error) dnntsErrorcatch(error);
+    ipt::input iptdata(argv[1],argv[2]);
 
     //--------------------------------
-    //     Generate Random Numbers
+    //        Main Loop Class
     //--------------------------------
-    // This is passed to each thread and contain unique seeds for each
-    ParallelSeedGenerator seedGen(omp_get_max_threads());
+    // Construct/prepare the class
+    Trainingsetbuilder tsb(&iptdata);
 
-    // This is the termination string. If an error is caught it
-    // saves it here and the threads then exit.
-    std::string termstr("");
+    //
+    tsb.calculateTrainingSet();
 
-    // Begin parallel region
-    #pragma omp parallel
-    {
-        // Number of sets to calculate
-        int N=100;
+    //try {
+        //Trainingsetbuilder tsb(iptdata);
+    //} catch (std::string error) dnntsErrorcatch(error);
 
-        // Thread ID
-        int tid = omp_get_thread_num();
-
-        // Prepare the random number seeds
-        std::vector<int> seedarray;
-        seedGen.getThreadSeeds(tid,seedarray);
-
-        // Prepare the random number generator
-        NormRandomReal rnGen;
-
-        int i=0;
-        while (i<N && termstr.empty()) {
-            try
-            {
-            std::vector<float> rn;
-            rnGen.fillVector(0.0,1.0,rn,10,seedarray);
-
-
-            ++i;
-            }
-            catch (std::string error)
-            {
-                #pragma omp critical
-                {
-                    termstr=error;
-                }
-            }
-        }
-    }
-
-    // Catch any errors from the threads
-    if (!termstr.empty()) dnntsErrorcatch(termstr);
-
-    //--------------------------------
-    //          Run G09 Jobs
-    //--------------------------------
-    std::vector< glm::ivec2 > bonds;
-    bonds.push_back(glm::ivec2(0,1));
-    bonds.push_back(glm::ivec2(0,2));
-
-    std::vector<std::string> type;
-    type.push_back("O");
-    type.push_back("H");
-    type.push_back("H");
-
-    std::vector<glm::vec3> xyz;
-    xyz.push_back(glm::vec3(0.000,0.000,0.000));
-    xyz.push_back(glm::vec3(0.750,0.000,0.520));
-    xyz.push_back(glm::vec3(0.750,0.000,-0.52));
-
-    try {
-        itrnl::Internalcoordinates icrd(bonds);
-        std::cout << "STRING: " << icrd.calculateCSVInternalCoordinates(xyz) << std::endl;;
-
-    } catch (std::string error) dnntsErrorcatch(error);
-
-    try {
+    /*try {
         std::string input(g09::buildInputg09("AM1","force",type,xyz,0,1,1));
 
         //std::cout << "G09 ERROR: " << g09::execg09(input) << std::endl;
-    } catch (std::string error) dnntsErrorcatch(error);
+    } catch (std::string error) dnntsErrorcatch(error);*/
 
     return 0;
 };
