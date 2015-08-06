@@ -5,9 +5,6 @@
 
 ----------------------------------------------*/
 class Trainingsetbuilder {
-    // Output to the training set
-    std::ofstream tsout;
-
     // Class for calculating input coordinates
     itrnl::Internalcoordinates icrd;
     ipt::input *iptData;
@@ -27,17 +24,10 @@ public:
         this->iptData = iptData;
         if (this->iptData == NULL)
             dnntsErrorcatch(std::string("Input data has not been declared!"));
-
-        // Open the training set output
-        tsout.open(this->iptData->getoname().c_str());
     };
 
     // Destructor
-    ~Trainingsetbuilder()
-    {
-        // Close training set output
-        tsout.close();
-    };
+    ~Trainingsetbuilder() {};
 
     // This holds the main loop for calculating the training set
     void calculateTrainingSet();

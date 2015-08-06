@@ -51,11 +51,18 @@ void Trainingsetbuilder::calculateTrainingSet()
     itrnl::Internalcoordinates* licrd = &icrd;
     licrd->printdata();
 
-    // This is passed to each thread and contain unique seeds for each
+    // Get the maximum number of threads
     int MaxT = omp_get_max_threads();
     std::cout << "Using " << MaxT << " threads." << std::endl;
     for (int i=0;i<MaxT;++i) {std::cout << std::endl;}
 
+    // Prepare private thread output filenames
+    std::vector<std::stringstream> outname(MaxT);
+    std::vector<std::stringstream>::iterator it;
+    for (it = outname.begin();it != outname.end();it++)
+        *it << iptData->getoname() << "_thread" << it - outname.begin();
+
+    // This is passed to each thread and contain unique seeds for each
     ParallelSeedGenerator seedGen(MaxT);
 
     // This is the termination string. If an error is caught it
@@ -88,7 +95,12 @@ void Trainingsetbuilder::calculateTrainingSet()
         // Initialize some containers
         std::string datapoint;
         std::string input;
-        std::string output;
+        std::string outputll;
+        std::string outputhl;
+
+        // Define and open thread output
+        std::ofstream tsoutt;
+        tsoutt.open(outname[tid].str());
 
         // Begin main loop
         while (i<N && termstr.empty())
@@ -99,28 +111,49 @@ void Trainingsetbuilder::calculateTrainingSet()
 
                 while (gchk)
                 {
+                    // Default to no failures detected
                     gchk = false;
+
+                    // Generate the random structure
                     wxyz = m_generateRandomStructure(ixyz,rnGen);
-                    gchk = m_checkRandomStructure(wxyz);
 
-                    datapoint.append(licrd->calculateCSVInternalCoordinates(wxyz));
+                    // Determine if structure is viable, if it is not, restart the loop.
+                    if (m_checkRandomStructure(wxyz)) {
+                        gchk=true;
+                        continue;
+                    }
 
+                    // Build the g09 input file for the low level of theory
                     g09::buildInputg09(input,params.llt,"force",types,wxyz,0,1,1);
-                    if (g09::execg09(input,output)) {gchk=true;}
-                    datapoint.append(g09::forceFinder(output));
 
+                    // Execute the g09 run, if failure occures we restart the loop
+                    if (g09::execg09(input,outputll)) {
+                        gchk=true;
+                        continue;
+                    }
+
+                    // Build the g09 input file for the high level of theory
                     g09::buildInputg09(input,params.hlt,"force",types,wxyz,0,1,1);
-                    if (g09::execg09(input,output)) {gchk=true;}
-                    datapoint.append(g09::forceFinder(output));
 
-                    //if (gchk)
+                    // Execute the g09 run, if failure occures we restart the loop
+                    if (g09::execg09(input,outputhl)) {
+                        gchk=true;
+                        continue;
+                    }
+
+                    // Append the data to the datapoint string
+                    datapoint.append(licrd->calculateCSVInternalCoordinates(wxyz));
+                    datapoint.append(g09::forceFinder(outputll));
+                    datapoint.append(g09::forceFinder(outputhl));
                 }
+
+                // Save the data point to the threads private output file output
+                datapoint.pop_back();
+                tsoutt << datapoint << std::endl;
+                datapoint.clear();
 
                 #pragma omp critical
                 {
-                    datapoint.pop_back();
-                    tsout << datapoint << std::endl;
-                    datapoint.clear();
                     std::cout << "\033["<< tid+1 <<"A\033[K\033[1;30mThread " << tid << " is " << round((i/float(N))*100.0) << "% complete.\033["<< tid+1 <<"B\033[100D";
                 }
 
@@ -130,6 +163,7 @@ void Trainingsetbuilder::calculateTrainingSet()
             {
                 #pragma omp critical
                 {
+                    // Close the output if failure is detected
                     termstr=error;
                     #pragma omp flush (termstr)
                 }
@@ -140,7 +174,33 @@ void Trainingsetbuilder::calculateTrainingSet()
         {
             std::cout << "\033["<< tid+1 <<"A\033[K\033[1;30mThread " << tid << " is " << 100 << "% complete.\033["<< tid+1 <<"B\033[100D";
         }
+
+        // Close the threads output before exiting
+        tsoutt.close();
     }
+
+    std::cout << std::endl;
+
+    // Combine all threads output
+    std::ofstream tsout;
+    tsout.open(iptData->getoname().c_str(),std::ios_base::binary);
+
+    std::vector<std::stringstream>::iterator nameit;
+    for (nameit = outname.begin();nameit != outname.end();nameit++)
+    {
+        // Move files individualy into the main output
+        std::ifstream infile((*nameit).str().c_str(),std::ios_base::binary);
+        std::cout << "Moving file " << (*nameit).str() << " -> " << iptData->getoname() << std::endl;
+        tsout << infile.rdbuf();
+
+        // Remove old output once moved
+        std::stringstream rm;
+        rm << "rm " << (*nameit).str();
+        std::cout << rm.str() << std::endl;
+        systls::exec(rm.str(),100);
+    }
+
+    tsout.close();
 
     // Catch any errors from the threads
     if (!termstr.empty()) dnntsErrorcatch(termstr);

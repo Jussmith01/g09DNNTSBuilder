@@ -45,18 +45,8 @@ int main(int argc, char *argv[])
     // Construct/prepare the class
     Trainingsetbuilder tsb(&iptdata);
 
-    //
+    // Calculate the training set
     tsb.calculateTrainingSet();
-
-    //try {
-        //Trainingsetbuilder tsb(iptdata);
-    //} catch (std::string error) dnntsErrorcatch(error);
-
-    /*try {
-        std::string input(g09::buildInputg09("AM1","force",type,xyz,0,1,1));
-
-        //std::cout << "G09 ERROR: " << g09::execg09(input) << std::endl;
-    } catch (std::string error) dnntsErrorcatch(error);*/
 
     return 0;
 };
