@@ -1,3 +1,4 @@
 obj/
 *.depend
 *.layout
+*.opt
