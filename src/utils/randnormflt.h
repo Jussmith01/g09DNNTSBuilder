@@ -76,12 +76,16 @@ float someflt = GenRandReal(float mean,float std)
 class NormRandomReal
 {
     std::default_random_engine generator;
+    std::vector<int> threadseeds;
 
 public:
+    // Constructor
+    NormRandomReal(std::vector<int> seedarray) :
+        threadseeds(seedarray)
+    {};
 
-    NormRandomReal() {};
-
-    void fillVector(float mean,float stdev,std::vector<float> &rnv,int N,std::vector<int> &threadseeds) {
+    // Fill a vector with random floats
+    void fillVector(float mean,float stdev,std::vector<float> &rnv,int N) {
         rnv.resize(N);
 
         std::vector<int> seeds(N);

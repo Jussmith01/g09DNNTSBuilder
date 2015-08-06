@@ -5,6 +5,8 @@
 #ifndef SYSTEM_TOOLS_HPP
 #define SYSTEM_TOOLS_HPP
 
+#include "../errorhandlers.h"
+
 /*   The System Tools Namespace   */
 namespace systls {
 

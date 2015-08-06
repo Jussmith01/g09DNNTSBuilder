@@ -24,7 +24,7 @@
 /*---------Store the bond index------------
 
 ------------------------------------------*/
-void itrnl::Internalcoordinates::m_calculateBondIndex(std::vector< glm::ivec2 > &mbond) {
+void itrnl::Internalcoordinates::m_calculateBondIndex(const std::vector< glm::ivec2 > &mbond) {
 
     bidx.reserve(mbond.size());
     for (auto && bnd : mbond)
@@ -89,7 +89,7 @@ void itrnl::Internalcoordinates::m_calculateAngleIndex() {
 Requires the angle index aidx to be populated.
 ----------------------------------------------------*/
 void itrnl::Internalcoordinates::m_calculateDihedralIndex() {
-    if (aidx.empty()) throwException("Cannot calculate dihedrals; Angles have not been defined");
+    //if (aidx.empty()) throwException("Cannot calculate dihedrals; Angles have not been defined");
 
     for (uint32_t i=0;i<aidx.size();++i)
     {
@@ -138,13 +138,14 @@ void itrnl::Internalcoordinates::m_calculateDihedralIndex() {
 Requires the bond index, bidx, to be populated.
 ------------------------------------------*/
 void itrnl::Internalcoordinates::m_calculateBonds(const std::vector<glm::vec3> &xyz) {
-    if (bidx.empty()) throwException("Cannot calculate internals with no bonds");
+    if (bidx.empty()) throwException("Cannot calculate internals without bonds");
+    if (xyz.empty()) throwException("Cannot calculate internals without coordinates");
 
-    std::cout << "Bonds: \n";
+    //std::cout << "Bonds: " << " \n";
     for (uint32_t i=0;i<bidx.size();++i)
     {
         bnds[i] = glm::length(xyz[bidx[i].v1]-xyz[bidx[i].v2]);
-        std::cout << bidx[i].v1 << ":" << bidx[i].v2 << " = " << bnds[i] << std::endl;
+        //std::cout << bidx[i].v1 << ":" << bidx[i].v2 << " = " << bnds[i] << std::endl;
     }
 };
 
@@ -169,11 +170,11 @@ void itrnl::Internalcoordinates::m_calculateAngles(const std::vector<glm::vec3> 
         angs[i] = std::acos(angs[i]);
     }
 
-    std::cout << "Angles: \n";
-    for (uint32_t i=0;i<aidx.size();++i)
-    {
-        std::cout << aidx[i].v1 << ":" << aidx[i].v2 << ":" << aidx[i].v3 << " = " << angs[i] << std::endl;
-    }
+    //std::cout << "Angles: \n";
+    //for (uint32_t i=0;i<aidx.size();++i)
+    //{
+    //   std::cout << aidx[i].v1 << ":" << aidx[i].v2 << ":" << aidx[i].v3 << " = " << angs[i] << std::endl;
+    //}
 };
 
 /*--------Calculate the Dihedrals----------
@@ -205,11 +206,11 @@ void itrnl::Internalcoordinates::m_calculateDihedrals(const std::vector<glm::vec
         dhls[i] = std::acos(dhls[i]);
     }
 
-    std::cout << "Dihedrals: \n";
-    for (uint32_t i=0;i<didx.size();++i)
-    {
-        std::cout << didx[i].v1 << ":" << didx[i].v2 << ":" << didx[i].v3 << ":" << didx[i].v4 << " = " << dhls[i] <<  std::endl;
-    }
+    //std::cout << "Dihedrals: \n";
+    //for (uint32_t i=0;i<didx.size();++i)
+    //{
+    //    std::cout << didx[i].v1 << ":" << didx[i].v2 << ":" << didx[i].v3 << ":" << didx[i].v4 << " = " << dhls[i] <<  std::endl;
+    //}
 };
 
 /*--------Create CVSIC String----------
@@ -248,9 +249,13 @@ Then creates a Comma Separated Value (CSV)
 string of the IC.
 ------------------------------------------*/
 std::string itrnl::Internalcoordinates::calculateCSVInternalCoordinates(const std::vector<glm::vec3> &xyz) {
+    try {
+
     m_calculateBonds(xyz);
     m_calculateAngles(xyz);
     m_calculateDihedrals(xyz);
+
+    } catch (std::string error) dnntsErrorcatch(error);
 
     return m_createCSVICstring();;
 };

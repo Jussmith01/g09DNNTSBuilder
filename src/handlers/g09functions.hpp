@@ -5,18 +5,13 @@
 #ifndef G09FUNCTIONS_H
 #define G09FUNCTIONS_H
 
-#include "../utils/systools.hpp"
-#include <string>
-#include <sstream>
-#include <regex>
-
 namespace g09 {
 
 /*----------------------------------------
  Get Forces from a Gaussian Output String
 
 ------------------------------------------*/
-std::string forceFinder(const std::string &filename)
+inline std::string forceFinder(const std::string &filename)
 {
     using namespace std;
     string force_csv;
@@ -48,14 +43,14 @@ std::string forceFinder(const std::string &filename)
   most notably when the SCF fails to
   converge.
 ------------------------------------------*/
-inline bool execg09(const std::string &input)
+inline bool execg09(const std::string &input,std::string &out)
 {
     // Build bash command for launching g09
     std::stringstream sscmd;
     sscmd << "#!/bin/sh\ng09 <<END 2>&1 " << input.c_str() << "END\n"; // Redirect cerr to cout
 
     // Open a pipe and run g09 command -- output saved in string 'out'.
-    std::string out(systls::exec(sscmd.str().c_str(),1000));
+    out = systls::exec(sscmd.str().c_str(),1000);
 
     // If normal termination is detected the the program returns false.
     if (out.find("Normal termination of Gaussian 09")!=std::string::npos) {
@@ -64,13 +59,13 @@ inline bool execg09(const std::string &input)
 
     // Check if gaussian failed to converge - return true if it fails.
     if (out.find("Convergence failure -- run terminated")!=std::string::npos) {
-        std::cout << "CVF!" << std::endl;
+        //std::cout << "CVF!" << std::endl;
         return true;
     }
 
     // Check if interatomic distances were too close  - return true if it fails.
     if (out.find("Small interatomic distances encountered")!=std::string::npos) {
-        std::cout << "SIADF!" << std::endl;
+        //std::cout << "SIADF!" << std::endl;
         return true;
     }
 
@@ -103,7 +98,7 @@ inline bool execg09(const std::string &input)
 
     Note: type and xyz must be of same size
 ------------------------------------------*/
-inline std::string buildInputg09(std::string lot,std::string additional,const std::vector<std::string> &type,const std::vector<glm::vec3> &xyz,int mult,int charge,int nproc)
+inline void buildInputg09(std::string &input,std::string lot,std::string additional,const std::vector<std::string> &type,const std::vector<glm::vec3> &xyz,int mult,int charge,int nproc)
 {
     // Error check
     if (type.size()!=xyz.size())
@@ -123,7 +118,7 @@ inline std::string buildInputg09(std::string lot,std::string additional,const st
     tmpipt << "\n";
 
     // Return input string
-    return tmpipt.str();
+    input = tmpipt.str();
 };
 
 };

@@ -11,23 +11,37 @@
 namespace ipt
 {
 
-    class input
-    {
-        /*----------------------------------------
-          Data Container for the Program
-        ------------------------------------------*/
-        input()
-        { };
-        int Nd; // Number of Data points to obtain
+    struct Params {
         int Na; // Number of atoms
-        int tts;    // Training set size
+        int tts;    // Training set size to obtain
         float std;  // Standard deviation of random coordinates
 
         std::string llt; // Low Level of Theory
         std::string hlt; // High Level of Theory
 
+        void printdata()
+        {
+            std::cout << "\033[1;30mInput Parameters\033[0m" << std::endl;
+            std::cout << "Number of Atoms: " << Na << std::endl;
+            std::cout << "Training Set size: " << tts << std::endl;
+            std::cout << "STd. Dev. of random numbers: " << std << std::endl;
+            std::cout << "Low Level of Theory: " << llt << std::endl;
+            std::cout << "High Level of Theory: " << hlt << std::endl;
+            std::cout << std::endl;
+        };
+    };
+
+    class input
+    {
+        /*----------------------------------------
+          Data Container for the Program
+        ------------------------------------------*/
+        Params params;
+
         std::vector<glm::vec3> xyz; // xyz coords of atoms
-        std::vector<glm::ivec2> bonds;
+        std::vector<std::string> types; //  Atom types
+        std::vector<glm::ivec2> bonds; // bonding index
+
 
         std::string fname; // Input filename
         std::string oname; // Output filename
@@ -44,15 +58,38 @@ namespace ipt
         input(const std::string &input, const std::string &output) :
                 fname(input), oname(output)
         {
+            try {
             readinput();
+            } catch (std::string error) dnntsErrorcatch(error);
+        }
+
+        ~input() {
+            xyz.clear();
+            bonds.clear();
         }
 
         // Member access functions
-        std::vector<glm::vec3>* getxyz()
-        {
-            return &xyz;
+
+        //Access xyz
+        const std::vector<glm::vec3>& getxyz() {
+            return xyz;
         }
 
+        const std::vector<std::string>& gettypes() {
+            return types;
+        }
+
+        const std::vector<glm::ivec2>& getbonds() {
+            return bonds;
+        }
+
+        const std::string& getoname() {
+            return oname;
+        }
+
+        const Params& getparams() {
+            return params;
+        }
     };
 
 };

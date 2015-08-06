@@ -9,6 +9,9 @@
 // Error Handlers
 #include "../errorhandlers.h"
 
+// Utilities
+#include "../utils/simpletools.hpp"
+
 // Class definition
 #include "input.h"
 
@@ -40,18 +43,28 @@ void ipt::input::readinput() {
             //  Find Training Set Size
             if (regex_search(line, pattern_tts)) {
                 if (regex_search(line, m, pattern_integer)) {
-                    tts = atoi(m.str(0).c_str());
+                    params.tts = atoi(m.str(0).c_str());
+                } else {
+                    throwException("STD is not an integer number! Check your input");
                 }
             }
             // Find Standard Deviation
             if (regex_search(line, pattern_std)) {
                 if (regex_search(line, m, pattern_float)) {
-                    std = atof(m.str(0).c_str());
+                    params.std = atof(m.str(0).c_str());
+                } else {
+                    throwException("STD is not a floating point number! Check your input");
                 }
             }
             //  Find Coordinates
             if (regex_search(line, pattern_coords)) {
                 while (getline(ifile, line) && !std::regex_search(line, pattern_end)) {
+                    sregex_iterator typ(line.begin(), line.end(), pattern_atom);
+
+                    // Save types
+                    types.push_back(simtls::trim(typ->str()));
+
+                    // Save coords
                     vector<float> coord_temp;
                     sregex_iterator pos(line.begin(), line.end(), pattern_float);
                     sregex_iterator end;
@@ -60,22 +73,22 @@ void ipt::input::readinput() {
                     }
                     xyz.push_back(glm::vec3(coord_temp[0], coord_temp[1], coord_temp[2]));
                 }
-                Na = static_cast<int>(xyz.size());
+                params.Na = static_cast<int>(xyz.size());
             }
             // Find low level of theory
             if (regex_search(line, m, pattern_lot)) {
-                llt = m.str(1);
+                params.llt = m.str(1);
             }
             // Find high level of theory
             if (regex_search(line, m, pattern_hot)) {
-                hlt = m.str(1);
+                params.hlt = m.str(1);
             }
             //  Find the bond links
             if (regex_search(line, pattern_bonds)) {
                 int bond_idex = 0;
                 while (getline(ifile, line), !regex_search(line, pattern_end)) {
                     ++bond_idex;
-                    if (bond_idex >= Na)
+                    if (bond_idex >= params.Na)
                     {
                         throwException("Too many bonds for number of atoms");
                     }
@@ -83,7 +96,14 @@ void ipt::input::readinput() {
                     sregex_iterator pos(line.begin(), line.end(), pattern_integer);
                     sregex_iterator end;
                     for (; pos != end; ++pos) {
-                        bonds_temp.push_back(atoi(pos->str().c_str()));
+                        int idx(atoi(pos->str().c_str()));
+                        if (idx >= params.Na || idx < 0)
+                        {
+                            std::stringstream ss;
+                            ss << "Bond " << bond_idex << " has an index (" << idx << ") that is out of bounds!\nCheck your input";
+                            throwException(ss.str());
+                        }
+                        bonds_temp.push_back(idx);
                     }
 
                     bonds.push_back(glm::ivec2(bonds_temp[0], bonds_temp[1]));
