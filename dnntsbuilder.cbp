@@ -13,7 +13,6 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
-					<Add directory="include" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
@@ -22,7 +21,8 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
-					<Add option="-O2" />
+					<Add option="-O3" />
+					<Add option="-Wno-strict-aliasing" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -34,6 +34,7 @@
 			<Add option="-Wall" />
 			<Add option="-fopenmp" />
 			<Add option="-Wno-comment" />
+			<Add directory="include" />
 		</Compiler>
 		<Linker>
 			<Add library="gomp" />
@@ -47,6 +48,9 @@
 		<Unit filename="src/handlers/internalcoordinate.cpp" />
 		<Unit filename="src/handlers/internalcoordinate.h" />
 		<Unit filename="src/main.cpp" />
+		<Unit filename="src/utils/flaghandler.h" />
+		<Unit filename="src/utils/micro_timer.cpp" />
+		<Unit filename="src/utils/micro_timer.h" />
 		<Unit filename="src/utils/randnormflt.h" />
 		<Unit filename="src/utils/simpletools.hpp" />
 		<Unit filename="src/utils/systools.hpp" />

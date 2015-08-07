@@ -10,6 +10,7 @@
 #include <omp.h>
 #include <regex>
 #include <cmath>
+#include <unordered_map>
 
 // GLM Mathematics
 #include <glm/glm.hpp>
@@ -22,6 +23,7 @@
 #include "../utils/systools.hpp"
 #include "../utils/randnormflt.h"
 #include "../utils/micro_timer.h"
+#include "../utils/flaghandler.h"
 
 // Handlers
 #include "../handlers/g09functions.hpp"
@@ -90,9 +92,8 @@ void Trainingsetbuilder::calculateTrainingSet()
     std::cout << "Using " << MaxT << " threads." << std::endl;
 
     // Setup loop output function
-    int lotype = 0;
     void (*loopPrinter)(int tid,int N,int i,int gfail);
-    switch (lotype) {
+    switch (routecout) {
         case 0: {
             std::cout << "Output setup for terminal writing." << std::endl;
             loopPrinter = &print_for_cout;
@@ -216,24 +217,25 @@ void Trainingsetbuilder::calculateTrainingSet()
                         continue;
                     }
                     mgtimer.end_point();
-
-                    /*----Creating CSV Datapoint------
-
-                    ---------------------------------*/
-                    mstimer.start_point();
-
-                    // Append the data to the datapoint string
-                    datapoint.append(licrd->calculateCSVInternalCoordinates(wxyz));
-                    datapoint.append(g09::forceFinder(outputll));
-                    datapoint.append(g09::forceFinder(outputhl));
-                    mstimer.end_point();
                 }
+
+                /*----Creating CSV Datapoint------
+
+                ---------------------------------*/
+                mstimer.start_point();
+
+                // Append the data to the datapoint string
+                datapoint.append(licrd->calculateCSVInternalCoordinates(wxyz));
+                datapoint.append(g09::forceFinder(outputll));
+                datapoint.append(g09::forceFinder(outputhl));
+                mstimer.end_point();
 
                 // Save the data point to the threads private output file output
                 datapoint.pop_back();
                 tsoutt << datapoint << std::endl;
                 datapoint.clear();
 
+                // Loop printer.
                 #pragma omp critical
                 {
                     loopPrinter(tid,N,i,f);
@@ -253,16 +255,19 @@ void Trainingsetbuilder::calculateTrainingSet()
         }
         mttimer.end_point();
 
+        // Final print, shows 100%
         #pragma omp critical
         {
             loopPrinter(tid,1,1,f);
         }
 
-        // Close the threads output before exiting
+        // Close the threads output
         tsoutt.close();
 
+        // Wait for the whole team to finish
         #pragma omp barrier
 
+        // Print stats for each thread in the team
         #pragma omp critical
         {
             std::cout << "\n|----Thread " << tid << " info----|" << std::endl;

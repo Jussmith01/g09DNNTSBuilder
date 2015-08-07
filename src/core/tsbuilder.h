@@ -8,6 +8,10 @@ class Trainingsetbuilder {
     // Class for calculating input coordinates
     itrnl::Internalcoordinates icrd;
     ipt::input *iptData;
+    FlagHandler *args;
+
+    bool routecout;
+    //std::streambuf *coutbuf;
 
     // This generates a random structure from the minimum
     std::vector<glm::vec3> m_generateRandomStructure(const std::vector<glm::vec3> &ixyz,NormRandomReal &rnGen);
@@ -17,13 +21,25 @@ class Trainingsetbuilder {
 
 public:
     // Constructor
-    Trainingsetbuilder (ipt::input *iptData) :
-        icrd(iptData->getbonds())
+    Trainingsetbuilder (ipt::input *iptData,FlagHandler *args) :
+        icrd(iptData->getbonds()),routecout(false)
     {
-        // Save a point to the input data class
+        // Save a pointer to the input data class
         this->iptData = iptData;
         if (this->iptData == NULL)
             dnntsErrorcatch(std::string("Input data has not been declared!"));
+
+        // Save a pointer to the input data class
+        this->args = args;
+        if (this->args == NULL)
+            dnntsErrorcatch(std::string("Arguments has not been declared!"));
+
+        // Route cout to output file if output was supplied
+        if (!this->args->getflag("-o").empty())
+        {
+            routecout = true;
+            freopen(this->args->getflag("-o").c_str(),"w",stdout);
+        }
     };
 
     // Destructor

@@ -54,7 +54,7 @@ class FlagHandler
         else if ((*it).find("-v")!=std::string::npos) {
                 std::unordered_map<std::string,std::string>::
                     iterator get = flagshash.find("-v");
-                std::regex pattern_verbose("[0-3]");
+                std::regex pattern_verbose("^[0-3](\\s)*(?!.)");
                 if (!std::regex_search(*(it+1),pattern_verbose))
                 {
                     throwException("-v flag expects a positive integer!");
@@ -119,10 +119,9 @@ public:
         std::vector<std::string>::iterator it;
 
         for (it=flags.begin();it!=flags.end();it++)
-        {
-            std::cout << "ARGS! : " << argv[it-flags.begin()] << std::endl;
             *it=argv[it-flags.begin()];
-        }
+
+        if (argc == 1) {flags.push_back("-h");}
 
         Defaults(); // Set the default flags
 
