@@ -358,6 +358,6 @@ bool Trainingsetbuilder::m_checkRandomStructure(const std::vector<glm::vec3> &xy
         if (failchk) {break;}
     }
 
-    return false;
+    return failchk;
 };
 
