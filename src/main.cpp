@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
     mtimer.start_point();
     Trainingsetbuilder tsb(&iptdata,&args);
     mtimer.end_point();
-    mtimer.print_generic_to_cout(std::string("Traininset builder class preparation time --\n"));
+    mtimer.print_generic_to_cout(std::string("Training set builder class preparation time --\n"));
 
     // Calculate the training set
     mtimer.start_point();

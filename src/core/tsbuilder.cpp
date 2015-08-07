@@ -41,6 +41,7 @@ styles for different output interfaces
 print_for_file -- Formatted for file output
 Contains no ANSI Escape Sequences
 
+
 print_for_cout -- Formatted for terminal output
 Contains ANSI Escape Sequences
 
@@ -49,19 +50,19 @@ Trainingsetbuilder::calculateTrainingSet
 is set before the loop and used to point
 whcih of these functions is requested.
 ----------------------------------------*/
-void print_for_file(int tid,int N,int i,int gfail)
+void print_for_file(int tid,int N,int i,int gcfail,int gdfail)
 {
     int trdcomp = static_cast<int>(round((i/float(N))*100.0));
 
     if (trdcomp % 5 == 0)
     {
-        std::cout << "Thread " << tid << " is " << trdcomp << "% complete. G09 Fails " << gfail << "\n";
+        std::cout << "Thread " << tid << " is " << trdcomp << "% complete. G09 Convergence Fails " << gcfail << " Distance Fails: " << gdfail << "\n";
     }
 };
 
-void print_for_cout(int tid,int N,int i,int gfail)
+void print_for_cout(int tid,int N,int i,int gcfail,int gdfail)
 {
-    std::cout << "\033["<< tid+1 <<"A\033[K\033[1;30mThread " << tid << " is " << round((i/float(N))*100.0) << "% complete. G09 Fails " << gfail << "\033["<< tid+1 <<"B\033[100D\033[0m";
+    std::cout << "\033["<< tid+1 <<"A\033[K\033[1;30mThread " << tid << " is " << round((i/float(N))*100.0) << "% complete. G09 Convergence Fails " << gcfail << " Distance Fails: " << gdfail << "\033["<< tid+1 <<"B\033[100D\033[0m";
 };
 
 /*--------Calculate Training Set---------
@@ -92,7 +93,7 @@ void Trainingsetbuilder::calculateTrainingSet()
     std::cout << "Using " << MaxT << " threads." << std::endl;
 
     // Setup loop output function
-    void (*loopPrinter)(int tid,int N,int i,int gfail);
+    void (*loopPrinter)(int tid,int N,int i,int gcfail,int gdfail);
     switch (routecout) {
         case 0: {
             std::cout << "Output setup for terminal writing." << std::endl;
@@ -142,7 +143,8 @@ void Trainingsetbuilder::calculateTrainingSet()
 
         // Initialize counters
         int i(0); // Loop counter
-        int f(0); // Fail counter
+        int gcf(0); // Gaussian Convergence Fail counter
+        int gdf(0); // Geometry distance failure
 
         // Initialize some containers
         std::string datapoint;
@@ -186,7 +188,7 @@ void Trainingsetbuilder::calculateTrainingSet()
                     if (m_checkRandomStructure(wxyz)) {
                         gchk=true;
                         mrtimer.end_point();
-                        ++f;
+                        ++gdf;
                         continue;
                     }
                     mrtimer.end_point();
@@ -201,7 +203,7 @@ void Trainingsetbuilder::calculateTrainingSet()
                     // Execute the g09 run, if failure occures we restart the loop
                     if (g09::execg09(input,outputll)) {
                         gchk=true;
-                        ++f;
+                        ++gcf;
                         mgtimer.end_point();
                         continue;
                     }
@@ -212,7 +214,7 @@ void Trainingsetbuilder::calculateTrainingSet()
                     // Execute the g09 run, if failure occures we restart the loop
                     if (g09::execg09(input,outputhl)) {
                         gchk=true;
-                        ++f;
+                        ++gcf;
                         mgtimer.end_point();
                         continue;
                     }
@@ -238,7 +240,7 @@ void Trainingsetbuilder::calculateTrainingSet()
                 // Loop printer.
                 #pragma omp critical
                 {
-                    loopPrinter(tid,N,i,f);
+                    loopPrinter(tid,N,i,gcf,gdf);
                 }
 
                 ++i;
@@ -258,7 +260,7 @@ void Trainingsetbuilder::calculateTrainingSet()
         // Final print, shows 100%
         #pragma omp critical
         {
-            loopPrinter(tid,1,1,f);
+            loopPrinter(tid,1,1,gcf,gdf);
         }
 
         // Close the threads output
@@ -275,7 +277,8 @@ void Trainingsetbuilder::calculateTrainingSet()
             mrtimer.print_generic_to_cout(std::string("Struc. Gen."));
             mgtimer.print_generic_to_cout(std::string("Gau. 09."));
             mstimer.print_generic_to_cout(std::string("CSV Gen."));
-            std::cout << "Number of failed structures: " << f << std::endl;
+            std::cout << "Number of gaussian convergence failures: " << gcf << std::endl;
+            std::cout << "Number of geometry distance check failures: " << gcf << std::endl;
             std::cout << "|---------------------|\n" << std::endl;
         }
     }
@@ -339,6 +342,21 @@ std::vector<glm::vec3> Trainingsetbuilder::m_generateRandomStructure(const std::
 ----------------------------------------*/
 bool Trainingsetbuilder::m_checkRandomStructure(const std::vector<glm::vec3> &xyz)
 {
+    bool failchk = false; // Defaults to no failure
+
+    for (uint32_t i=0;i<xyz.size();++i)
+    {
+        for (uint32_t j=i+1;j<xyz.size();++j)
+        {
+            if (glm::length(xyz[i]-xyz[j]) < 0.5)
+            {
+                failchk = true;
+                break;
+            }
+        }
+
+        if (failchk) {break;}
+    }
 
     return false;
 };
