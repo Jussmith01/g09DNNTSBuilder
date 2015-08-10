@@ -3,3 +3,9 @@ obj/
 *.layout
 *.opt
 *.dat*
+*.int
+*.rwf
+*.scr
+*.inp
+*.chk
+*.d2e
