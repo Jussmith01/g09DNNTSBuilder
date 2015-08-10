@@ -15,6 +15,7 @@ namespace ipt
         int Na; // Number of atoms
         int tts;    // Training set size to obtain
         float std;  // Standard deviation of random coordinates
+        float mean;
 
         std::string llt; // Low Level of Theory
         std::string hlt; // High Level of Theory

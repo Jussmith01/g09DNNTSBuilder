@@ -38,6 +38,7 @@
 		</Compiler>
 		<Linker>
 			<Add library="gomp" />
+			<Add directory="lib" />
 		</Linker>
 		<Unit filename="src/core/tsbuilder.cpp" />
 		<Unit filename="src/core/tsbuilder.h" />

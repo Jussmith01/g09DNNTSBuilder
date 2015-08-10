@@ -136,7 +136,7 @@ void Trainingsetbuilder::calculateTrainingSet()
         seedGen.getThreadSeeds(tid,seedarray);
 
         // Prepare the random number generator
-        NormRandomReal rnGen(seedarray);
+        RandomReal rnGen(seedarray,params.mean,params.std,args->getflag("-r"));
 
         // Allocate space for new coordinates
         std::vector<glm::vec3> wxyz(params.Na);
@@ -320,12 +320,13 @@ void Trainingsetbuilder::calculateTrainingSet()
 /*-----Generate a Random Structure-------
 
 ----------------------------------------*/
-std::vector<glm::vec3> Trainingsetbuilder::m_generateRandomStructure(const std::vector<glm::vec3> &ixyz,NormRandomReal &rnGen)
+std::vector<glm::vec3> Trainingsetbuilder::m_generateRandomStructure(const std::vector<glm::vec3> &ixyz,RandomReal &rnGen)
 {
     std::vector<glm::vec3> wxyz(ixyz.size());
 
     std::vector<float> rn;
-    rnGen.fillVector(0.0,1.0,rn,3*ixyz.size());
+
+    rnGen.fillVector(rn,3*ixyz.size());
 
     for (uint32_t i=0;i<ixyz.size();++i)
     {

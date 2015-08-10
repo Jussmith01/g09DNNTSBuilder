@@ -18,12 +18,13 @@ class FlagHandler
     void Defaults() {
         std::unordered_map<std::string,std::string>
             defaults = {
-          //{flag,default descrip  },
-            {"-v" , "0" /*Unused*/ }, // Verbose
-            {"-p" , "-1"/*Unused*/ }, // Number of Processors
-            {"-i" , ""  /*Error*/  }, // Input file
-            {"-o" , ""  /*cout */  }, // Output file
-            {"-d" , "trainingdata.dat" }  // Training data file
+          //{flag , default      descrip  },
+            {"-v" , "0"        /*Unused*/ }, // Verbose
+            {"-p" , "-1"       /*Unused*/ }, // Number of Processors
+            {"-i" , ""         /*Error*/  }, // Input file
+            {"-o" , ""         /*cout */  }, // Output file
+            {"-r" , "normal"   /*random */}, // Random type normal or uniform distribution
+            {"-d" , "trainingdata.dat"    }  // Training data file
             };
 
         flagshash.insert(defaults.begin(),defaults.end());
@@ -100,6 +101,17 @@ class FlagHandler
                     throwException("-d flag expects a .dat filename!!");
                 };
                 get->second = *(it+1);
+        }
+        else if ((*it).find("-r")!=std::string::npos) {
+                std::unordered_map<std::string,std::string>::
+                    iterator get = flagshash.find("-r");
+
+                get->second = *(it+1);
+
+                if (get->second.find("uniform")==std::string::npos && get->second.find("normal")==std::string::npos)
+                {
+                    throwException("-r flag expects 'uniform' or 'normal'!!");
+                };
         }
     }
 
