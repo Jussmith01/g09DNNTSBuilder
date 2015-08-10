@@ -1,7 +1,8 @@
-TTS=10 # Training Set Size
+TTS=750000 # Training Set Size
 LOT=AM1 # Low level of theory
 HOT=PM6 # High level of theory
-std=.1  # Standard Deviation of random numbers
+std=1.5  # Standard Deviation of random numbers or max for uniform
+mean=-1.5 # Mean or min for uniform
 coordinates # Minimized initial coordinates
 O 0.0000 0.0000 0.0000
 H 0.7500 0.0000 0.5200
