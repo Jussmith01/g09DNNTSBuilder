@@ -24,6 +24,7 @@
 #include "../utils/randnormflt.h"
 #include "../utils/micro_timer.h"
 #include "../utils/flaghandler.h"
+#include "../utils/conservation.h"
 
 // Handlers
 #include "../handlers/g09functions.hpp"
@@ -33,8 +34,6 @@
 // Class Definition
 #include "tsbuilder.h"
 
-#include "mkl_lapack.h"
-#include "mkl_cblas.h"
 
 /*--------Loop Printer Functions---------
 
