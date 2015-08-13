@@ -130,31 +130,6 @@ void Trainingsetbuilder::calculateTrainingSet()
     // saves it here and the threads then exit.
     std::string termstr("");
 
-    //**************** Center of Mass Calculator **************//
-    // We will assume that the rotation axis is the center of mass
-    float mass_oxygen = 15.9994;
-    float mass_hydrogen = 1.00794;
-    float total_mass = 2.0f * mass_hydrogen + mass_oxygen;
-    glm::vec3 center_of_mass = (1.0f/total_mass) *(ixyz[0] * mass_oxygen + ixyz[1] * mass_hydrogen + ixyz[2] * mass_hydrogen);
-    std::cout << "****Calculating Center of Mass****" << std::endl;
-    std::cout << center_of_mass.x << " " << center_of_mass.y << " " << center_of_mass.z << std::endl;
-    std::cout << "Moving center of mass to the origin" << std::endl;
-    for (auto i = ixyz.begin(); i != ixyz.end(); ++i)
-    {
-        *i = *i - center_of_mass;
-    }
-    std::cout << "New initial coordinates have center of mass:" << std::endl;
-    center_of_mass = (1.0f/total_mass) *(ixyz[0] * mass_oxygen + ixyz[1] * mass_hydrogen + ixyz[2] * mass_hydrogen);
-    std::cout << center_of_mass.x << " " << center_of_mass.y << " " << center_of_mass.z << std::endl;
-
-    //**************** Angular Momentum Calculator *************//
-
-
-
-
-
-
-
     // Begin parallel region
     #pragma omp parallel default(shared) firstprivate(types,ixyz,params,MaxT,licrd)
     {

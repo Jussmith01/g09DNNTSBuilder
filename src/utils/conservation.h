@@ -17,8 +17,6 @@ public:
     void conserve(std::vector<glm::vec3> &xyz_n);
 
 private:
-
-    conservation(){};
     arma::mat coord_read(const std::vector<glm::vec3> &xyz);
     std::vector<glm::vec3> matrix_read(const arma::mat &M);
     void zero_round(arma::mat &M);
