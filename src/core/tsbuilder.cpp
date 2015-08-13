@@ -33,6 +33,9 @@
 // Class Definition
 #include "tsbuilder.h"
 
+#include "mkl_lapack.h"
+#include "mkl_cblas.h"
+
 /*--------Loop Printer Functions---------
 
 These functions supply different file output
@@ -65,6 +68,13 @@ void print_for_cout(int tid,int N,int i,int gcfail,int gdfail)
     std::cout << "\033["<< tid+1 <<"A\033[K\033[1;30mThread " << tid << " is " << round((i/float(N))*100.0) << "% complete. G09 Convergence Fails " << gcfail << " Distance Fails: " << gdfail << "\033["<< tid+1 <<"B\033[100D\033[0m";
 };
 
+
+/********* External force regulator struct *********/
+struct efrs
+{
+
+};
+
 /*--------Calculate Training Set---------
 
 This function contians the main loop for
@@ -94,7 +104,7 @@ void Trainingsetbuilder::calculateTrainingSet()
 
     // Setup loop output function
     void (*loopPrinter)(int tid,int N,int i,int gcfail,int gdfail);
-    switch (routecout) {
+    switch ((int)routecout) {
         case 0: {
             std::cout << "Output setup for terminal writing." << std::endl;
             loopPrinter = &print_for_cout;
@@ -120,6 +130,31 @@ void Trainingsetbuilder::calculateTrainingSet()
     // This is the termination string. If an error is caught it
     // saves it here and the threads then exit.
     std::string termstr("");
+
+    //**************** Center of Mass Calculator **************//
+    // We will assume that the rotation axis is the center of mass
+    float mass_oxygen = 15.9994;
+    float mass_hydrogen = 1.00794;
+    float total_mass = 2.0f * mass_hydrogen + mass_oxygen;
+    glm::vec3 center_of_mass = (1.0f/total_mass) *(ixyz[0] * mass_oxygen + ixyz[1] * mass_hydrogen + ixyz[2] * mass_hydrogen);
+    std::cout << "****Calculating Center of Mass****" << std::endl;
+    std::cout << center_of_mass.x << " " << center_of_mass.y << " " << center_of_mass.z << std::endl;
+    std::cout << "Moving center of mass to the origin" << std::endl;
+    for (auto i = ixyz.begin(); i != ixyz.end(); ++i)
+    {
+        *i = *i - center_of_mass;
+    }
+    std::cout << "New initial coordinates have center of mass:" << std::endl;
+    center_of_mass = (1.0f/total_mass) *(ixyz[0] * mass_oxygen + ixyz[1] * mass_hydrogen + ixyz[2] * mass_hydrogen);
+    std::cout << center_of_mass.x << " " << center_of_mass.y << " " << center_of_mass.z << std::endl;
+
+    //**************** Angular Momentum Calculator *************//
+
+
+
+
+
+
 
     // Begin parallel region
     #pragma omp parallel default(shared) firstprivate(types,ixyz,params,MaxT,licrd)
