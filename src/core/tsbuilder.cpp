@@ -184,7 +184,7 @@ void Trainingsetbuilder::calculateTrainingSet()
                 // This ensures that we get the N requested data points
                 while (gchk)
                 {
-                    std::cout << i << std::endl;
+                    //std::cout << i << std::endl;
                     // Default to no failures detected
                     gchk = false;
 
@@ -202,7 +202,8 @@ void Trainingsetbuilder::calculateTrainingSet()
                         ++gdf;
                         continue;
                     }
-                    water.conserve(wxyz);
+                    /*ASDUJASIDHIUADHASD*/
+                    //water.conserve(wxyz);
                     mrtimer.end_point();
 
                     /*------Gaussian 09 Running-------
