@@ -8,6 +8,9 @@
 #include "../../include/glm/detail/type_vec.hpp"
 #include <glm/glm.hpp>
 
+// Atom Masses
+#include "atom_masses.h"
+
 namespace ipt
 {
 
@@ -42,6 +45,7 @@ namespace ipt
         std::vector<glm::vec3> xyz; // xyz coords of atoms
         std::vector<std::string> types; //  Atom types
         std::vector<glm::ivec2> bonds; // bonding index
+        std::vector<double> _m; // masses of the atoms
 
 
         std::string fname; // Input filename
@@ -82,6 +86,10 @@ namespace ipt
 
         const std::vector<glm::ivec2>& getbonds() {
             return bonds;
+        }
+
+        const std::vector<double>& getmasses() {
+            return _m;
         }
 
         const std::string& getoname() {

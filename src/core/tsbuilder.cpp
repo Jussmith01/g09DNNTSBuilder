@@ -68,12 +68,6 @@ void print_for_cout(int tid,int N,int i,int gcfail,int gdfail)
 };
 
 
-/********* External force regulator struct *********/
-struct efrs
-{
-
-};
-
 /*--------Calculate Training Set---------
 
 This function contians the main loop for
@@ -92,6 +86,7 @@ void Trainingsetbuilder::calculateTrainingSet()
     // Store input coordinates and atom types locally
     std::vector<glm::vec3> ixyz(iptData->getxyz());
     std::vector<std::string> types(iptData->gettypes());
+    std::vector<double> masses(iptData->getmasses());
 
     // Local pointer to icrd for passing a private class to threads
     itrnl::Internalcoordinates* licrd = &icrd;
@@ -131,8 +126,14 @@ void Trainingsetbuilder::calculateTrainingSet()
     std::string termstr("");
 
     // Begin parallel region
-    #pragma omp parallel default(shared) firstprivate(types,ixyz,params,MaxT,licrd)
+    #pragma omp parallel default(shared) firstprivate(types,ixyz,masses,params,MaxT,licrd)
     {
+        std::vector<glm::vec3> ixyz_center;
+        ixyz_center = ixyz;
+
+        // Create the conservation object;
+        conservation water(ixyz_center,masses);
+
         // Thread ID
         int tid = omp_get_thread_num();
 
@@ -183,6 +184,7 @@ void Trainingsetbuilder::calculateTrainingSet()
                 // This ensures that we get the N requested data points
                 while (gchk)
                 {
+                    std::cout << i << std::endl;
                     // Default to no failures detected
                     gchk = false;
 
@@ -200,6 +202,7 @@ void Trainingsetbuilder::calculateTrainingSet()
                         ++gdf;
                         continue;
                     }
+                    water.conserve(wxyz);
                     mrtimer.end_point();
 
                     /*------Gaussian 09 Running-------

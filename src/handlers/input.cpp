@@ -11,6 +11,7 @@
 
 // Utilities
 #include "../utils/simpletools.hpp"
+#include "atom_masses.h"
 
 // Class definition
 #include "input.h"
@@ -120,6 +121,7 @@ void ipt::input::readinput() {
             }
         }
         ifile.close();
+        _m = find_masses(types);
     } else throwException("Unable to open file");
 };
 

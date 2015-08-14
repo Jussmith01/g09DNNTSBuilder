@@ -10,6 +10,7 @@ conservation::conservation(std::vector<glm::vec3> &xyz, const std::vector<double
     _N = static_cast<int>(m.size());
     /* Importing the coordinates into an armadillo matrix, note that each row is an atom */
     mat X = coord_read(xyz);
+    xyz = matrix_read(X);
     move_center(X);
     mat I = inertia_tensor(X);
     _IX = I * X.t();
@@ -166,7 +167,7 @@ void conservation::conserve(std::vector<glm::vec3> &xyz_n) {
 std::vector<glm::vec3> conservation::matrix_read(const arma::mat &M) {
     using namespace arma;
     using namespace std;
-    vector<glm::vec3> xyz_temp;
+    vector<glm::vec3> xyz_temp(3);
     for (int i=0; i!=_N; ++i)
     {
         xyz_temp[i].x = M(i,0);
