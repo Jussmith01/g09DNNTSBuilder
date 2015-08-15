@@ -132,7 +132,7 @@ void Trainingsetbuilder::calculateTrainingSet()
         ixyz_center = ixyz;
 
         // Create the conservation object;
-        conservation water(ixyz_center,masses);
+        //conservation water(ixyz_center,masses);
 
         // Thread ID
         int tid = omp_get_thread_num();
