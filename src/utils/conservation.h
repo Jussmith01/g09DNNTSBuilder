@@ -20,11 +20,17 @@ private:
     Eigen::MatrixXd coord_read(const std::vector<glm::vec3> &xyz);
     std::vector<glm::vec3> matrix_read(const Eigen::MatrixXd &M);
     void zero_round(Eigen::MatrixXd &M);
-    void normalize(Eigen::VectorXd &V);
     void move_center(Eigen::MatrixXd &A);
+    Eigen::Vector3d& unit(Eigen::Vector3d &v);
     Eigen::Matrix3d inertia_tensor(const Eigen::MatrixXd &M);
+    Eigen::Matrix3d rotation_matrix(const Eigen::Vector3d &v1, const Eigen::Vector3d &v2);
+    std::vector<Eigen::Vector3d> determine_vectors(const Eigen::Matrix3d X);
+    Eigen::Vector3d determine_init_plane_vector(const std::vector<Eigen::Vector3d> &V);
+    Eigen::Vector3d determine_init_inertia_vector(const std::vector<Eigen::Vector3d> &V);
 
 
+    Eigen::Vector3d X_plane;
+    Eigen::Vector3d X_inert;
     Eigen::Matrix3d _IX;
     std::vector<double> _m; // Mass of each atom
     int _N;  // Number of atoms

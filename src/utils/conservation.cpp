@@ -8,12 +8,14 @@ conservation::conservation(std::vector<glm::vec3> &xyz, const std::vector<double
     using namespace Eigen;
     using namespace std;
     _N = static_cast<int>(m.size());
-    /* Importing the coordinates into an armadillo matrix, note that each row is an atom */
     MatrixXd X = coord_read(xyz);
     xyz = matrix_read(X);
     move_center(X);
     Matrix3d I = inertia_tensor(X);
     _IX = I * X.transpose();
+    vector<Vector3d> X_vecs = determine_vectors(X);
+    X_plane = determine_init_plane_vector(X_vecs);
+    X_inert = determine_init_inertia_vector(X_vecs);
 }
 
 void conservation::zero_round(Eigen::MatrixXd &M) {
@@ -26,22 +28,6 @@ void conservation::zero_round(Eigen::MatrixXd &M) {
                 M(i, j) = 0.0;
             }
         }
-    }
-}
-
-/************** Normalizer ***********************/
-/* Simply makes a unit vector out of an armadillo
- * vector */
-void conservation::normalize(Eigen::VectorXd &V) {
-    double normal = 0;
-    for (auto i = 0; i < V.rows(); ++i)
-    {
-        normal += pow(V(i), 2);
-    }
-    normal = pow(normal, 0.5);
-    for (auto i = 0; i < V.rows(); ++i)
-    {
-        V(i) /= normal;
     }
 }
 
@@ -138,11 +124,18 @@ void conservation::conserve(std::vector<glm::vec3> &xyz_n) {
     using namespace std;
     MatrixXd Y = coord_read(xyz_n);
     move_center(Y);
-    Matrix3d I = inertia_tensor(Y);
-    MatrixXd IY = I * Y.transpose();
-    MatrixXd R_t = IY.colPivHouseholderQr().solve(_IX);
-    Y = R_t.transpose() * Y;
-    xyz_n = matrix_read(Y);
+    vector<Vector3d> Y_vecs = determine_vectors(Y);
+    Vector3d Y_plane = determine_init_plane_vector(Y_vecs);
+
+    /* Rotate to plane */
+    Matrix3d R = rotation_matrix(Y_plane, X_plane);
+    Y = Y * R.transpose();
+
+    /* Rotate to inertia vector */
+    Y_vecs = determine_vectors(Y);
+    Vector3d Y_inert = determine_init_inertia_vector(Y_vecs);
+    R = rotation_matrix(Y_inert, X_inert);
+    Y = Y * R.transpose();
 }
 
 std::vector<glm::vec3> conservation::matrix_read(const Eigen::MatrixXd &M) {
@@ -158,4 +151,63 @@ std::vector<glm::vec3> conservation::matrix_read(const Eigen::MatrixXd &M) {
     return xyz_temp;
 }
 
+Eigen::Matrix3d conservation::rotation_matrix(const Eigen::Vector3d &v1, const Eigen::Vector3d &v2) {
+    using namespace Eigen;
+    Vector3d v = v1.cross(v2);
+    double s = sqrt(v.dot(v));
+    double c = v1.dot(v2);
+    Matrix3d R;
+    if (s > 1e-12 || s < -1e-12)
+    {
+        Matrix3d vx;
+        vx << 0, -v(2), v(1),
+                v(2), 0, -v(0),
+                -v(1), v(0), 0;
+        Matrix3d I = Matrix3d::Identity();
+        R = I + vx + vx * vx * (1 - c) / (s * s);
+    }
+    else
+    {
+        R = Matrix3d::Identity();
+    }
+    return  R;
+}
 
+Eigen::Vector3d conservation::determine_init_inertia_vector(const std::vector<Eigen::Vector3d> &V) {
+    using namespace Eigen;
+    Vector3d v1 = V[0];
+    Vector3d v2 = V[1];
+    Vector3d v1_weighted;
+    v1_weighted = _m[1] * v1.dot(v1) * unit(v1);
+    Vector3d v2_weighted;
+    v2_weighted = _m[2] * v2.dot(v2) * unit(v2);
+    Vector3d init_inerteria_vector;
+    init_inerteria_vector = v1_weighted + v2_weighted;
+    init_inerteria_vector = unit(init_inerteria_vector);
+    return init_inerteria_vector;
+}
+
+Eigen::Vector3d &conservation::unit(Eigen::Vector3d &v) {
+    v = v/sqrt(v.dot(v));
+}
+
+std::vector<Eigen::Vector3d> conservation::determine_vectors(const Eigen::Matrix3d X) {
+    using namespace std;
+    using namespace Eigen;
+    vector<Vector3d> vectors;
+    /* Determining the plane vector using the cross product of the O-H bonds */
+    Vector3d v1, v2;
+    v1 << X(1, 0) - X(0, 0), X(1, 1) - X(0, 1), X(1, 2) - X(0, 2);
+    v2 << X(2, 0) - X(0, 0), X(2, 1) - X(0, 1), X(2, 2) - X(0, 2);
+    vectors.push_back(v1);
+    vectors.push_back(v2);
+    return vectors;
+}
+
+Eigen::Vector3d conservation::determine_init_plane_vector(const std::vector<Eigen::Vector3d> &V) {
+    using namespace Eigen;
+    using namespace std;
+    Vector3d init_plane_vector = V[0].cross(V[1]);
+    init_plane_vector = init_plane_vector / sqrt(init_plane_vector.dot(init_plane_vector));
+    return  init_plane_vector;
+}
