@@ -203,10 +203,7 @@ void Trainingsetbuilder::calculateTrainingSet()
                         continue;
                     }
                     /*ASDUJASIDHIUADHASD*/
-                    #pragma omp critical
-                    {
-                        water.conserve(wxyz);
-                    }
+                    water.conserve(wxyz);
                     mrtimer.end_point();
 
                     /*------Gaussian 09 Running-------
