@@ -203,7 +203,7 @@ void Trainingsetbuilder::calculateTrainingSet()
                         continue;
                     }
                     /*ASDUJASIDHIUADHASD*/
-                    //water.conserve(wxyz);
+                    water.conserve(wxyz);
                     mrtimer.end_point();
 
                     /*------Gaussian 09 Running-------
