@@ -6,6 +6,7 @@ set(CMAKE_CXX_COMPILER "g++")
 include_directories("$src/utils")
 include_directories("include")
 include_directories("/home/jsmith48/scratch/compilers/usr/include/c++/5.2.0")
+include_directories("/home/jsmith48/scratch/compilers/usr/include/c++/5.2.0/x86_64-unknown-linux-gnu")
 include_directories("/home/jsmith48/scratch/compilers/usr/include")
 
 set(SOURCE_FILES src/main.cpp src/handlers/input.cpp
