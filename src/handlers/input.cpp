@@ -11,6 +11,7 @@
 
 // Utilities
 #include "../utils/simpletools.hpp"
+#include "atom_masses.h"
 
 // Class definition
 #include "input.h"
@@ -26,6 +27,7 @@ void ipt::input::readinput() {
     regex pattern_lot("LOT[[:s:]]*=[[:s:]]*([[:w:]]+)", regex_constants::icase);
     regex pattern_hot("HOT[[:s:]]*=[[:s:]]*([[:w:]]+)", regex_constants::icase);
     regex pattern_std("STD", regex_constants::icase);
+    regex pattern_mean("MEAN", regex_constants::icase);
     regex pattern_coords("coordinates", regex_constants::icase);
     regex pattern_bonds("bonds", regex_constants::icase);
     regex pattern_end("end", regex_constants::icase);
@@ -45,7 +47,7 @@ void ipt::input::readinput() {
                 if (regex_search(line, m, pattern_integer)) {
                     params.tts = atoi(m.str(0).c_str());
                 } else {
-                    throwException("STD is not an integer number! Check your input");
+                    throwException("TTS is not an integer number! Check your input");
                 }
             }
             // Find Standard Deviation
@@ -54,6 +56,14 @@ void ipt::input::readinput() {
                     params.std = atof(m.str(0).c_str());
                 } else {
                     throwException("STD is not a floating point number! Check your input");
+                }
+            }
+            // Find Standard Deviation
+            if (regex_search(line, pattern_mean)) {
+                if (regex_search(line, m, pattern_float)) {
+                    params.mean = atof(m.str(0).c_str());
+                } else {
+                    throwException("MEAN is not a floating point number! Check your input");
                 }
             }
             //  Find Coordinates
@@ -111,6 +121,7 @@ void ipt::input::readinput() {
             }
         }
         ifile.close();
+        _m = find_masses(types);
     } else throwException("Unable to open file");
 };
 

@@ -8,6 +8,9 @@
 #include "../../include/glm/detail/type_vec.hpp"
 #include <glm/glm.hpp>
 
+// Atom Masses
+#include "atom_masses.h"
+
 namespace ipt
 {
 
@@ -15,6 +18,7 @@ namespace ipt
         int Na; // Number of atoms
         int tts;    // Training set size to obtain
         float std;  // Standard deviation of random coordinates
+        float mean;
 
         std::string llt; // Low Level of Theory
         std::string hlt; // High Level of Theory
@@ -41,6 +45,7 @@ namespace ipt
         std::vector<glm::vec3> xyz; // xyz coords of atoms
         std::vector<std::string> types; //  Atom types
         std::vector<glm::ivec2> bonds; // bonding index
+        std::vector<double> _m; // masses of the atoms
 
 
         std::string fname; // Input filename
@@ -81,6 +86,10 @@ namespace ipt
 
         const std::vector<glm::ivec2>& getbonds() {
             return bonds;
+        }
+
+        const std::vector<double>& getmasses() {
+            return _m;
         }
 
         const std::string& getoname() {
