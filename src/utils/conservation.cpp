@@ -160,9 +160,9 @@ Eigen::Matrix3d conservation::rotation_matrix(const Eigen::Vector3d &v1, const E
     if (s > 1e-12 || s < -1e-12)
     {
         Matrix3d vx;
-        vx << 0, -v(2), v(1),
-                v(2), 0, -v(0),
-                -v(1), v(0), 0;
+        vx << 0  , -v(2),  v(1),
+             v(2),   0  , -v(0),
+            -v(1),  v(0),   0  ;
         Matrix3d I = Matrix3d::Identity();
         R = I + vx + vx * vx * (1 - c) / (s * s);
     }
@@ -187,8 +187,9 @@ Eigen::Vector3d conservation::determine_init_inertia_vector(const std::vector<Ei
     return init_inerteria_vector;
 }
 
-Eigen::Vector3d &conservation::unit(Eigen::Vector3d &v) {
-    v = v/sqrt(v.dot(v));
+/// Sould this be returning something?
+Eigen::Vector3d conservation::unit(const Eigen::Vector3d &v) {
+    return v/sqrt(v.dot(v));
 }
 
 std::vector<Eigen::Vector3d> conservation::determine_vectors(const Eigen::Matrix3d X) {

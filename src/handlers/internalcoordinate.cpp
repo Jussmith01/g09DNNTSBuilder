@@ -220,7 +220,7 @@ Internal Coordinates string. Values put in
 the string with the following format:
 Nb,Na,Nd,[Bonds CSV],[Angles CSV],[Dihedrals CSV]
 ------------------------------------------*/
-std::string itrnl::Internalcoordinates::m_createCSVICstring() {
+std::string itrnl::Internalcoordinates::m_createCSVICstring(const std::vector<glm::vec3> &xyz) {
     std::stringstream csvint;
 
     csvint << bnds.size() << "," << angs.size() << "," << dhls.size() << ",";
@@ -234,6 +234,9 @@ std::string itrnl::Internalcoordinates::m_createCSVICstring() {
 
     for (auto&& d : dhls)
         csvint << std::setprecision(7) << d << ",";
+
+    for (auto&& c : xyz)
+        csvint << std::setprecision(7) << c.x << "," << c.y << "," << c.y << ",";
 
     std::string rtn(csvint.str());
     //rtn.pop_back();
@@ -257,7 +260,7 @@ std::string itrnl::Internalcoordinates::calculateCSVInternalCoordinates(const st
 
     } catch (std::string error) dnntsErrorcatch(error);
 
-    return m_createCSVICstring();;
+    return m_createCSVICstring(xyz);;
 };
 
 

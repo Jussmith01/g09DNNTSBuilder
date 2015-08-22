@@ -35,20 +35,25 @@
 			<Add option="-fopenmp" />
 			<Add option="-Wno-comment" />
 			<Add directory="include" />
+			<Add directory="/usr/local/include/eigen3" />
 		</Compiler>
 		<Linker>
 			<Add library="gomp" />
 			<Add directory="lib" />
+			<Add directory="/opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/intel64/" />
 		</Linker>
 		<Unit filename="src/core/tsbuilder.cpp" />
 		<Unit filename="src/core/tsbuilder.h" />
 		<Unit filename="src/errorhandlers.h" />
+		<Unit filename="src/handlers/atom_masses.h" />
 		<Unit filename="src/handlers/g09functions.hpp" />
 		<Unit filename="src/handlers/input.cpp" />
 		<Unit filename="src/handlers/input.h" />
 		<Unit filename="src/handlers/internalcoordinate.cpp" />
 		<Unit filename="src/handlers/internalcoordinate.h" />
 		<Unit filename="src/main.cpp" />
+		<Unit filename="src/utils/conservation.cpp" />
+		<Unit filename="src/utils/conservation.h" />
 		<Unit filename="src/utils/flaghandler.h" />
 		<Unit filename="src/utils/micro_timer.cpp" />
 		<Unit filename="src/utils/micro_timer.h" />

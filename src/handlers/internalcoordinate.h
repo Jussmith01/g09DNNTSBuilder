@@ -125,7 +125,7 @@ class Internalcoordinates {
     void m_calculateDihedrals(const std::vector<glm::vec3> &xyz);
 
     // Create and return Comma Separated Values Internal Coordinates string
-    std::string m_createCSVICstring();
+    std::string m_createCSVICstring(const std::vector<glm::vec3> &xyz);
 
 public:
 
