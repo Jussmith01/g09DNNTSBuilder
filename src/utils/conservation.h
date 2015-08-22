@@ -21,7 +21,7 @@ private:
     std::vector<glm::vec3> matrix_read(const Eigen::MatrixXd &M);
     void zero_round(Eigen::MatrixXd &M);
     void move_center(Eigen::MatrixXd &A);
-    Eigen::Vector3d& unit(Eigen::Vector3d &v);
+    Eigen::Vector3d unit(const Eigen::Vector3d &v);
     Eigen::Matrix3d inertia_tensor(const Eigen::MatrixXd &M);
     Eigen::Matrix3d rotation_matrix(const Eigen::Vector3d &v1, const Eigen::Vector3d &v2);
     std::vector<Eigen::Vector3d> determine_vectors(const Eigen::Matrix3d X);
