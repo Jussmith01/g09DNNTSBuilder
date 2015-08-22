@@ -188,8 +188,9 @@ Eigen::Vector3d conservation::determine_init_inertia_vector(const std::vector<Ei
 }
 
 /// Sould this be returning something?
-Eigen::Vector3d &conservation::unit(Eigen::Vector3d &v) {
+Eigen::Vector3d &conservation::unit(const Eigen::Vector3d &v) {
     v = v/sqrt(v.dot(v));
+    return v;
 }
 
 std::vector<Eigen::Vector3d> conservation::determine_vectors(const Eigen::Matrix3d X) {

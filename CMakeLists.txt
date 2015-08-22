@@ -15,7 +15,6 @@ else()
     message(FATAL_ERROR "${PROJECT_NAME} requires gcc >= 4.9")
 endif()
 
-
 include_directories("$src/utils")
 include_directories("include")
 include_directories("/opt/intel/composer_xe_2015.3.187/mkl/include")
