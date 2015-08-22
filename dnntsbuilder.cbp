@@ -35,11 +35,10 @@
 			<Add option="-fopenmp" />
 			<Add option="-Wno-comment" />
 			<Add directory="include" />
+			<Add directory="/usr/local/include/eigen3" />
 		</Compiler>
 		<Linker>
 			<Add library="gomp" />
-			<Add library="mkl_sequential" />
-			<Add library="armadillo" />
 			<Add directory="lib" />
 			<Add directory="/opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/intel64/" />
 		</Linker>
