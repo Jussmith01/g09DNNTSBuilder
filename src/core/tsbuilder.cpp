@@ -175,6 +175,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
         MicroTimer mttimer; // Time the whole loop
         MicroTimer mrtimer; // Time the random structure generation
         MicroTimer mgtimer; // Time the gaussian 09 runs
+        MicroTimer mgtimer; // Time the gaussian 09 runs
         MicroTimer mstimer; // Time the string generation
 
         // Begin main loop
