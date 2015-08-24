@@ -17,6 +17,7 @@ namespace ipt
     struct Params {
         int Na; // Number of atoms
         int tts;    // Training set size to obtain
+        int nrpg;   // Number of runs per gaussian
         float std;  // Standard deviation of random coordinates
         float mean;
 
