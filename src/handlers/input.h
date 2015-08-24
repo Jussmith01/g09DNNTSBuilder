@@ -32,6 +32,7 @@ namespace ipt
             std::cout << "STd. Dev. of random numbers: " << std << std::endl;
             std::cout << "Low Level of Theory: " << llt << std::endl;
             std::cout << "High Level of Theory: " << hlt << std::endl;
+            std::cout << "Number of Runs Gaussians Per Inputs: " << nrpg << std::endl;
             std::cout << std::endl;
         };
     };
