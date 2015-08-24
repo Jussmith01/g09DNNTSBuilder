@@ -130,12 +130,15 @@ void Trainingsetbuilder::calculateTrainingSet() {
         ixyz_center = ixyz;
 
         // Create the conservation object;
-        conservation water(ixyz_center,masses);
+        //conservation water(ixyz_center,masses);
 
         // Thread ID
         int tid = omp_get_thread_num();
 
-        // Number of sets for this thread to calculate
+        // Some local variables
+        int nrpg = params.nrpg;
+
+        // Minimimum number of sets for this thread to calculate
         int N = floor(params.tts/MaxT);
         if (tid < params.tts % MaxT) {
             ++N;
@@ -149,7 +152,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
         RandomReal rnGen(seedarray,params.mean,params.std,args->getflag("-r"));
 
         // Allocate space for new coordinates
-        std::vector<glm::vec3> wxyz(params.Na);
+        std::vector<glm::vec3> wxyz(params.Na*nrpg);
 
         // Initialize counters
         int i(0); // Loop counter
@@ -159,8 +162,10 @@ void Trainingsetbuilder::calculateTrainingSet() {
         // Initialize some containers
         std::string datapoint;
         std::string input;
-        std::string outputll;
-        std::string outputhl;
+        std::vector<std::string> outsll(nrpg);
+        std::vector<bool> chkoutsll(nrpg);
+        std::vector<std::string> outshl(nrpg);
+        std::vector<bool> chkoutshl(nrpg);
 
         // Define and open thread output
         std::ofstream tsoutt;
@@ -176,76 +181,58 @@ void Trainingsetbuilder::calculateTrainingSet() {
         mttimer.start_point();
         while (i<N && termstr.empty()) {
             try {
-                bool gchk = true;
+                //std::cout << i << std::endl;
 
-                // This loop continues as long as the structure fails.
-                // This ensures that we get the N requested data points
-                while (gchk) {
-                    //std::cout << i << std::endl;
-                    // Default to no failures detected
-                    gchk = false;
+                /*------Structure Generation------
 
-                    /*------Structure Generation------
+                ---------------------------------*/
+                // Generate the random structure
+                mrtimer.start_point();
+                m_generateRandomStructure(nrpg,ixyz,wxyz,rnGen);
 
-                    ---------------------------------*/
-                    // Generate the random structure
-                    mrtimer.start_point();
-                    wxyz = m_generateRandomStructure(ixyz,rnGen);
+                /*ASDUJASIDHIUADHASD*/
+                //water.conserve(wxyz);
+                mrtimer.end_point();
 
-                    // Determine if structure is viable, if it is not, restart the loop.
-                    if (m_checkRandomStructure(wxyz)) {
-                        gchk=true;
-                        mrtimer.end_point();
-                        ++gdf;
-                        continue;
-                    }
-                    /*ASDUJASIDHIUADHASD*/
-                    water.conserve(wxyz);
-                    mrtimer.end_point();
+                /*------Gaussian 09 Running-------
 
-                    /*------Gaussian 09 Running-------
+                ---------------------------------*/
+                mgtimer.start_point();
+                // Build the g09 input file for the low level of theory
+                g09::buildInputg09(nrpg,input,params.llt,"force",types,wxyz,0,1,1);
 
-                    ---------------------------------*/
-                    mgtimer.start_point();
-                    // Build the g09 input file for the low level of theory
-                    g09::buildInputg09(input,params.llt,"force",types,wxyz,0,1,1);
+                // Execute the g09 run, if failure occures we restart the loop
+                g09::execg09(nrpg,input,outsll,chkoutsll);
 
-                    // Execute the g09 run, if failure occures we restart the loop
-                    if (g09::execg09(input,outputll)) {
-                        gchk=true;
-                        ++gcf;
-                        mgtimer.end_point();
-                        continue;
-                    }
+                // Build the g09 input file for the high level of theory
+                g09::buildInputg09(nrpg,input,params.hlt,"force",types,wxyz,0,1,1);
 
-                    // Build the g09 input file for the high level of theory
-                    g09::buildInputg09(input,params.hlt,"force",types,wxyz,0,1,1);
-
-                    // Execute the g09 run, if failure occures we restart the loop
-                    if (g09::execg09(input,outputhl)) {
-                        gchk=true;
-                        ++gcf;
-                        mgtimer.end_point();
-                        continue;
-                    }
-                    mgtimer.end_point();
-                }
+                // Execute the g09 run, if failure occures we restart the loop
+                g09::execg09(nrpg,input,outshl,chkoutshl);
+                mgtimer.end_point();
 
                 /*----Creating CSV Datapoint------
 
                 ---------------------------------*/
                 mstimer.start_point();
-
                 // Append the data to the datapoint string
-                datapoint.append(licrd->calculateCSVInternalCoordinates(wxyz));
-                datapoint.append(g09::forceFinder(outputll));
-                datapoint.append(g09::forceFinder(outputhl));
-                mstimer.end_point();
+                for (int j=0; j<nrpg; ++j) {
+                    if (!chkoutshl[j] && !chkoutsll[j]) {
+                        std::vector<glm::vec3> xyzind(ixyz.size());
+                        std::memcpy(&xyzind[0],&wxyz[j*ixyz.size()],ixyz.size()*sizeof(glm::vec3));
+                        datapoint.append(licrd->calculateCSVInternalCoordinates(xyzind));
+                        datapoint.append(g09::forceFinder(outsll[j]));
+                        datapoint.append(g09::forceFinder(outshl[j]));
 
-                // Save the data point to the threads private output file output
-                datapoint.pop_back();
-                tsoutt << datapoint << std::endl;
-                datapoint.clear();
+                        // Save the data point to the threads private output file output
+                        tsoutt << datapoint << std::endl;
+                        datapoint.clear();
+                        ++i;
+                    } else {
+                        ++gcf;
+                    }
+                }
+                mstimer.end_point();
 
                 // Loop printer.
                 #pragma omp critical
@@ -253,7 +240,6 @@ void Trainingsetbuilder::calculateTrainingSet() {
                     loopPrinter(tid,N,i,gcf,gdf);
                 }
 
-                ++i;
             } catch (std::string error) {
                 #pragma omp critical
                 {
@@ -327,20 +313,37 @@ void Trainingsetbuilder::calculateTrainingSet() {
 /*-----Generate a Random Structure-------
 
 ----------------------------------------*/
-std::vector<glm::vec3> Trainingsetbuilder::m_generateRandomStructure(const std::vector<glm::vec3> &ixyz,RandomReal &rnGen) {
-    std::vector<glm::vec3> wxyz(ixyz.size());
+void Trainingsetbuilder::m_generateRandomStructure(int nrpg,const std::vector<glm::vec3> &ixyz,std::vector<glm::vec3> &oxyz,RandomReal &rnGen) {
+    // Number of coords per molecules
+    int N = ixyz.size();
 
-    std::vector<float> rn;
+    // Do this for all nrpg gaussian inputs
+    for (int j=0; j<nrpg; ++j) {
+        bool sgot = false;
+        while (!sgot) {
+            std::vector<glm::vec3> wxyz(ixyz.size());
+            std::vector<float> rn;
 
-    rnGen.fillVector(rn,3*ixyz.size());
+            rnGen.fillVector(rn,3*ixyz.size());
 
-    for (uint32_t i=0; i<ixyz.size(); ++i) {
-        wxyz[i].x = ixyz[i].x + rn[i*3];
-        wxyz[i].y = ixyz[i].y + rn[i*3+1];
-        wxyz[i].z = ixyz[i].z + rn[i*3+2];
+            for (uint32_t i=0; i<ixyz.size(); ++i) {
+                //wxyz[i].x = ixyz[i].x + rn[i*3];
+                wxyz[i].x = ixyz[i].x;
+                //wxyz[i].y = ixyz[i].y + rn[i*3+1];
+                wxyz[i].y = ixyz[i].y;
+                wxyz[i].z = ixyz[i].z + rn[i*3+2];
+            }
+
+            // Check structure distances for viability
+            if (!m_checkRandomStructure(wxyz)) {
+                // Save structure in output xyz vector
+                for (uint32_t i=0; i<ixyz.size(); ++i) {
+                    oxyz[j*N+i] = wxyz[i];
+                }
+                sgot=true;
+            }
+        }
     }
-
-    return wxyz;
 };
 
 /*------Check a Random Structure--------

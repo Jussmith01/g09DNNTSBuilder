@@ -14,7 +14,7 @@ class Trainingsetbuilder {
     //std::streambuf *coutbuf;
 
     // This generates a random structure from the minimum
-    std::vector<glm::vec3> m_generateRandomStructure(const std::vector<glm::vec3> &ixyz,RandomReal &rnGen);
+    void m_generateRandomStructure(int nrpg,const std::vector<glm::vec3> &ixyz,std::vector<glm::vec3> &oxyz,RandomReal &rnGen);
 
     // This checks if a random structure is okay for gaussian
     bool m_checkRandomStructure(const std::vector<glm::vec3> &xyz);

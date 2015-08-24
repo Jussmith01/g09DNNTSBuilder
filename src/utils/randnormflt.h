@@ -83,12 +83,16 @@ class RandomReal {
 public:
     // Constructor
     RandomReal(std::vector<int> seedarray,float a1,float a2,std::string dist) :
-        threadseeds(seedarray),arg1(a1),arg2(a2) {
-        if (dist.compare("uniform")==0) {
-            std::cout << "Random number generator: Using uniform distribution from " << arg1 << " to " << arg2 << std::endl;
+        threadseeds(seedarray),arg1(a1),arg2(a2)
+    {
+        if (dist.compare("uniform")==0)
+        {
+            //std::cout << "Random number generator: Using uniform distribution from " << arg1 << " to " << arg2 << std::endl;
             randGen=&RandomReal::fillVectorUniformDist;
-        } else if (dist.compare("normal")==0) {
-            std::cout << "Random number generator: Using normal distribution w/ mean " << arg1 << " std. dev. " << arg2 << std::endl;
+        }
+        else if (dist.compare("normal")==0)
+        {
+            //std::cout << "Random number generator: Using normal distribution w/ mean " << arg1 << " std. dev. " << arg2 << std::endl;
             randGen=&RandomReal::fillVectorNormalDist;
         } else
             dnntsErrorcatch(std::string("Random Distribution not found!"));

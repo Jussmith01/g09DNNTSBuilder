@@ -221,7 +221,7 @@ std::string itrnl::Internalcoordinates::m_createCSVICstring(const std::vector<gl
         csvint << std::setprecision(7) << d << ",";
 
     for (auto&& c : xyz)
-        csvint << std::setprecision(7) << c.x << "," << c.y << "," << c.y << ",";
+        csvint << std::setprecision(7) << c.x << "," << c.y << "," << c.z << ",";
 
     std::string rtn(csvint.str());
     //rtn.pop_back();

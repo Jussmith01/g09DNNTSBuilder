@@ -1,4 +1,5 @@
 TTS=50000 # Training Set Size
+NRPG=10 # Number of runs per gaussian input
 LOT=AM1 # Low level of theory
 HOT=PM6 # High level of theory
 std=1.5  # Standard Deviation of random numbers
