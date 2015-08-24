@@ -1,0 +1,21 @@
+cmake_minimum_required(VERSION 2.8)
+
+SET(CMAKE_C_COMPILER "gcc")
+set(CMAKE_CXX_COMPILER "g++")
+
+project(g09DNNTSBuilder)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-comments -fopenmp -std=c++11")
+
+include_directories("$src/utils")
+include_directories("include")
+include_directories("/usr/gnu5.2/include/c++/5.2.0")
+include_directories("/usr/gnu5.2/include/c++/5.2.0/x86_64-unknown-linux-gnu")
+include_directories("/usr/gnu5.2/include")
+include_directories("/usr/gnu5.2/include/eigen3")
+
+set(SOURCE_FILES src/main.cpp src/handlers/input.cpp
+src/handlers/internalcoordinate.cpp src/core/tsbuilder.cpp
+src/utils/micro_timer.cpp src/utils/conservation.cpp )
+add_executable(bin/CmakeBuild/g09DNNTSBuilder ${SOURCE_FILES})
+
