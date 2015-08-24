@@ -1,14 +1,13 @@
-TTS=12 # Training Set Size
+TTS=50000 # Training Set Size
 LOT=AM1 # Low level of theory
 HOT=PM6 # High level of theory
-std=1.5  # UNIFORM HIGH Standard Deviation of random numbers
-mean=-1.5 # UNIFORM LOAD
+std=2.5  # Standard Deviation of random numbers
+mean=-2.5 #
+nrpg=25 #
 coordinates # Minimized initial coordinates
-O 0.0000 0.0000 0.0000
-H 0.7500 0.0000 0.5200
-H 0.7500 0.0000 -0.5200
+H     0.000000    0.000000    0.338298
+H     0.000000    0.000000   -0.338298
 end coordinates
 bonds # Bond links
 0 1
-0 2
 end bonds

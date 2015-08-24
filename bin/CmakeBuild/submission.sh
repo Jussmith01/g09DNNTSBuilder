@@ -4,18 +4,19 @@
 #PBS -e pbsjob.err
 #PBS -M jsmith48@ufl.edu
 #PBS -r n
-#PBS -l walltime=12:00:00
-#PBS -l nodes=1:ppn=1
-#PBS -l pmem=1gb
+#PBS -l walltime=24:00:00
+#PBS -l nodes=1:ppn=21
+#PBS -l pmem=8gb
 
 cd $PBS_O_WORKDIR
 
-module load mkl
-module load gaussian/g09
+g09root="/apps"
+export g09root
+. $g09root/g09/bsd/g09.profile
 
-export LD_RUN_PATH="/home/jsmith48/scratch/compilers/usr/lib64:$LD_RUN_PATH"
+export LD_RUN_PATH="/usr/gnu5.2/lib64:$LD_RUN_PATH"
 
-export OMP_NUM_THREADS=
+export OMP_NUM_THREADS=21
 
-./g09DNNTSBuilder -i input.ipt -o output.opt -d tdata.dat
+./g09DNNTSBuilder -r uniform -i input.ipt -o outputH2UNI2.5.opt -d tdataH2UNI2.5.dat
 
