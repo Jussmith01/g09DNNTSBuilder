@@ -43,14 +43,16 @@ inline std::string forceFinder(const std::string &filename)
   most notably when the SCF fails to
   converge.
 ------------------------------------------*/
-inline bool execg09(const std::string &input,std::string &out)
+inline std::vector<bool> execg09(int nrpg,const std::string &input,std::vector<std::string> &out)
 {
     // Build bash command for launching g09
     std::stringstream sscmd;
     sscmd << "#!/bin/sh\ng09 <<END 2>&1 " << input.c_str() << "END\n"; // Redirect cerr to cout
 
     // Open a pipe and run g09 command -- output saved in string 'out'.
-    out = systls::exec(sscmd.str().c_str(),1000);
+    std::string mout(systls::exec(sscmd.str().c_str(),10000));
+
+    parseg09OutputLinks(mout,out);
 
     // If normal termination is detected the the program returns false.
     if (out.find("Normal termination of Gaussian 09")!=std::string::npos) {
@@ -98,8 +100,7 @@ inline bool execg09(const std::string &input,std::string &out)
 
     Note: type and xyz must be of same size
 ------------------------------------------*/
-inline void buildInputg09(std::string &input,std::string lot,std::string additional,const std::vector<std::string> &type,const std::vector<glm::vec3> &xyz,int mult,int charge,int nproc)
-{
+inline void buildInputg09(int nrpg,std::string &input,std::string lot,std::string additional,const std::vector<std::string> &type,const std::vector<glm::vec3> &xyz,int mult,int charge,int nproc) {
     // Error check
     if (type.size()!=xyz.size())
         throwException("type and xyz are not the same size.");
@@ -119,6 +120,23 @@ inline void buildInputg09(std::string &input,std::string lot,std::string additio
 
     // Return input string
     input = tmpipt.str();
+};
+
+/*----------------------------------------
+        Parse a Multi Gaussian Run
+Parse many output into individual outputs.
+------------------------------------------*/
+inline void parseg09OutputLinks(int nrpg,std::string &multioutput,std::vector<std::string> indoutputs) {
+    size_t lpos = multioutput.find("Entering Link 1");
+    multioutput=multioutput.substr(lpos+1);
+
+    for (unsigned int i=0;i<nrpg;++i)
+    {
+        lpos = multioutput.find("Entering Link 1");
+        indoutputs.push_back(multioutput.substr(0,lpos));
+        multioutput=multioutput.substr(lpos+1);
+    }
+
 };
 
 };
