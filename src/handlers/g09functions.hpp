@@ -11,8 +11,7 @@ namespace g09 {
  Get Forces from a Gaussian Output String
 
 ------------------------------------------*/
-inline std::string forceFinder(const std::string &filename)
-{
+inline std::string forceFinder(const std::string &filename) {
     using namespace std;
     string force_csv;
     regex pattern_force("Hartrees/Bohr");
@@ -43,8 +42,7 @@ inline std::string forceFinder(const std::string &filename)
   most notably when the SCF fails to
   converge.
 ------------------------------------------*/
-inline bool execg09(const std::string &input,std::string &out)
-{
+inline bool execg09(const std::string &input,std::string &out) {
     // Build bash command for launching g09
     std::stringstream sscmd;
     sscmd << "#!/bin/sh\ng09 <<END 2>&1 " << input.c_str() << "END\n"; // Redirect cerr to cout
@@ -98,8 +96,7 @@ inline bool execg09(const std::string &input,std::string &out)
 
     Note: type and xyz must be of same size
 ------------------------------------------*/
-inline void buildInputg09(std::string &input,std::string lot,std::string additional,const std::vector<std::string> &type,const std::vector<glm::vec3> &xyz,int mult,int charge,int nproc)
-{
+inline void buildInputg09(std::string &input,std::string lot,std::string additional,const std::vector<std::string> &type,const std::vector<glm::vec3> &xyz,int mult,int charge,int nproc) {
     // Error check
     if (type.size()!=xyz.size())
         throwException("type and xyz are not the same size.");

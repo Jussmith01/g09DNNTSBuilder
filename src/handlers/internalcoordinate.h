@@ -1,8 +1,7 @@
 #ifndef INTERNALS_H
 #define INTERNALS_H
 
-namespace itrnl
-{
+namespace itrnl {
 
 /*----------Bond Index-------------
 
@@ -22,7 +21,9 @@ bndCompare() - A function that
             sorting the bonds.
 -----------------------------*/
 // 8 byte alignment forced to prevent cache mis-alignment
-struct bndindex {int v1,v2;} __attribute__ ((__aligned__(8)));
+struct bndindex {
+    int v1,v2;
+} __attribute__ ((__aligned__(8)));
 
 // Function for creating bond indexes
 inline bndindex CreateBondIndex(const int v1,const int v2) {
@@ -33,10 +34,14 @@ inline bndindex CreateBondIndex(const int v1,const int v2) {
 };
 
 // Function for less than comparing bndindex types -- for use by std::sort
-inline bool bndComparelt (bndindex i,bndindex j) { return ((i.v1<=j.v1) && (i.v2<j.v2)); }
+inline bool bndComparelt (bndindex i,bndindex j) {
+    return ((i.v1<=j.v1) && (i.v2<j.v2));
+}
 
 // Function for equality comparing bndindex types
-inline bool bndCompareeq (bndindex i,bndindex j) { return ((i.v1==j.v1) && (i.v2==j.v2)); }
+inline bool bndCompareeq (bndindex i,bndindex j) {
+    return ((i.v1==j.v1) && (i.v2==j.v2));
+}
 
 /*---------Angle Index------------
 
@@ -51,7 +56,9 @@ CreateAngleIndex() - A function
            3 values.
 ----------------------------------*/
 // 8 byte alignment forced to prevent cache mis-alignment
-struct angindex {int v1,v2,v3;} __attribute__ ((__aligned__(16)));
+struct angindex {
+    int v1,v2,v3;
+} __attribute__ ((__aligned__(16)));
 
 inline angindex CreateAngleIndex(const int v1,const int v2,const int v3) {
     angindex tmpidx;
@@ -62,7 +69,9 @@ inline angindex CreateAngleIndex(const int v1,const int v2,const int v3) {
 };
 
 // Function for less than comparing bndindex types -- for use by std::sort
-inline bool angComparelt (angindex i,angindex j) { return (i.v1<j.v1); }
+inline bool angComparelt (angindex i,angindex j) {
+    return (i.v1<j.v1);
+}
 
 /*----------Dihedral Index------------
 
@@ -77,7 +86,9 @@ CreateDihedralIndex() - A
            type from 4 values.
 -------------------------------------*/
 // 8 byte alignment forced to prevent cache mis-alignment
-struct dhlindex {int v1,v2,v3,v4;} __attribute__ ((__aligned__(16)));
+struct dhlindex {
+    int v1,v2,v3,v4;
+} __attribute__ ((__aligned__(16)));
 
 inline dhlindex CreateDihedralIndex(const int v1,const int v2,const int v3,const int v4) {
     dhlindex tmpidx;
@@ -133,13 +144,13 @@ public:
     Internalcoordinates (const std::vector< glm::ivec2 > &mbond) {
         try {
 
-        m_calculateBondIndex(mbond);
-        m_calculateAngleIndex();
-        m_calculateDihedralIndex();
+            m_calculateBondIndex(mbond);
+            m_calculateAngleIndex();
+            m_calculateDihedralIndex();
 
-        bnds.resize(bidx.size());
-        angs.resize(aidx.size());
-        dhls.resize(didx.size());
+            bnds.resize(bidx.size());
+            angs.resize(aidx.size());
+            dhls.resize(didx.size());
 
         } catch (std::string error) dnntsErrorcatch(error);
     };
@@ -148,8 +159,7 @@ public:
     std::string calculateCSVInternalCoordinates(const std::vector<glm::vec3> &xyz);
 
     // Data Printer
-    void printdata()
-    {
+    void printdata() {
         std::cout << "Internal Coordinates" << std::endl;
         std::cout << "Bonds: " << bidx.size() << std::endl;
         std::cout << "Angles: " << aidx.size() << std::endl;

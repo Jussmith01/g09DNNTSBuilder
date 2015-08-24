@@ -6,8 +6,7 @@
 //                               Timer Class
 //                  Holds timer variables and class functions
 //      *************************************************************     //
-class MicroTimer
-{
+class MicroTimer {
     //--------------------------
     //Private Class Declarations
     //--------------------------
@@ -31,8 +30,8 @@ class MicroTimer
 public:
     // Default constructor
     MicroTimer() :
-        wt_count(0),accumtime(0),ct_count(0),accumclock(0)
-    {};
+        wt_count(0),accumtime(0),ct_count(0),accumclock(0) {
+    };
 
     //-----------------------------
     //Public Member Class Functions

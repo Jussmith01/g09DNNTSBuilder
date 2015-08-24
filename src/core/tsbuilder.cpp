@@ -52,18 +52,15 @@ Trainingsetbuilder::calculateTrainingSet
 is set before the loop and used to point
 whcih of these functions is requested.
 ----------------------------------------*/
-void print_for_file(int tid,int N,int i,int gcfail,int gdfail)
-{
+void print_for_file(int tid,int N,int i,int gcfail,int gdfail) {
     int trdcomp = static_cast<int>(round((i/float(N))*100.0));
 
-    if (trdcomp % 5 == 0)
-    {
+    if (trdcomp % 5 == 0) {
         std::cout << "Thread " << tid << " is " << trdcomp << "% complete. G09 Convergence Fails " << gcfail << " Distance Fails: " << gdfail << "\n";
     }
 };
 
-void print_for_cout(int tid,int N,int i,int gcfail,int gdfail)
-{
+void print_for_cout(int tid,int N,int i,int gcfail,int gdfail) {
     std::cout << "\033["<< tid+1 <<"A\033[K\033[1;30mThread " << tid << " is " << round((i/float(N))*100.0) << "% complete. G09 Convergence Fails " << gcfail << " Distance Fails: " << gdfail << "\033["<< tid+1 <<"B\033[100D\033[0m";
 };
 
@@ -73,8 +70,7 @@ void print_for_cout(int tid,int N,int i,int gcfail,int gdfail)
 This function contians the main loop for
 building the training set.
 ----------------------------------------*/
-void Trainingsetbuilder::calculateTrainingSet()
-{
+void Trainingsetbuilder::calculateTrainingSet() {
     std::cout << "------------------------------" << std::endl;
     std::cout << "  Begin building training set " << std::endl;
     std::cout << "------------------------------\n" << std::endl;
@@ -99,23 +95,25 @@ void Trainingsetbuilder::calculateTrainingSet()
     // Setup loop output function
     void (*loopPrinter)(int tid,int N,int i,int gcfail,int gdfail);
     switch ((int)routecout) {
-        case 0: {
-            std::cout << "Output setup for terminal writing." << std::endl;
-            loopPrinter = &print_for_cout;
-            for (int i=0;i<MaxT;++i) {std::cout << std::endl;}
-            break;
+    case 0: {
+        std::cout << "Output setup for terminal writing." << std::endl;
+        loopPrinter = &print_for_cout;
+        for (int i=0; i<MaxT; ++i) {
+            std::cout << std::endl;
         }
-        case 1: {
-            std::cout << "Output setup for file writing." << std::endl;
-            loopPrinter = &print_for_file;
-            break;
-        }
+        break;
+    }
+    case 1: {
+        std::cout << "Output setup for file writing." << std::endl;
+        loopPrinter = &print_for_file;
+        break;
+    }
     }
 
     // Prepare private thread output filenames
     std::vector<std::stringstream> outname(MaxT);
     std::vector<std::stringstream>::iterator it;
-    for (it = outname.begin();it != outname.end();it++)
+    for (it = outname.begin(); it != outname.end(); it++)
         *it << iptData->getoname() << "_thread" << it - outname.begin();
 
     // This is passed to each thread and contain unique seeds for each
@@ -139,7 +137,9 @@ void Trainingsetbuilder::calculateTrainingSet()
 
         // Number of sets for this thread to calculate
         int N = floor(params.tts/MaxT);
-        if (tid < params.tts % MaxT) {++N;}
+        if (tid < params.tts % MaxT) {
+            ++N;
+        }
 
         // Prepare the random number seeds
         std::vector<int> seedarray;
@@ -174,16 +174,13 @@ void Trainingsetbuilder::calculateTrainingSet()
 
         // Begin main loop
         mttimer.start_point();
-        while (i<N && termstr.empty())
-        {
-            try
-            {
+        while (i<N && termstr.empty()) {
+            try {
                 bool gchk = true;
 
                 // This loop continues as long as the structure fails.
                 // This ensures that we get the N requested data points
-                while (gchk)
-                {
+                while (gchk) {
                     //std::cout << i << std::endl;
                     // Default to no failures detected
                     gchk = false;
@@ -257,9 +254,7 @@ void Trainingsetbuilder::calculateTrainingSet()
                 }
 
                 ++i;
-            }
-            catch (std::string error)
-            {
+            } catch (std::string error) {
                 #pragma omp critical
                 {
                     // Close the output if failure is detected
@@ -305,8 +300,7 @@ void Trainingsetbuilder::calculateTrainingSet()
 
     fttimer.start_point();
     std::vector<std::stringstream>::iterator nameit;
-    for (nameit = outname.begin();nameit != outname.end();nameit++)
-    {
+    for (nameit = outname.begin(); nameit != outname.end(); nameit++) {
         // Move files individualy into the main output
         std::ifstream infile((*nameit).str().c_str(),std::ios_base::binary);
         std::cout << "Transferring file " << (*nameit).str() << " -> " << iptData->getoname() << std::endl;
@@ -333,16 +327,14 @@ void Trainingsetbuilder::calculateTrainingSet()
 /*-----Generate a Random Structure-------
 
 ----------------------------------------*/
-std::vector<glm::vec3> Trainingsetbuilder::m_generateRandomStructure(const std::vector<glm::vec3> &ixyz,RandomReal &rnGen)
-{
+std::vector<glm::vec3> Trainingsetbuilder::m_generateRandomStructure(const std::vector<glm::vec3> &ixyz,RandomReal &rnGen) {
     std::vector<glm::vec3> wxyz(ixyz.size());
 
     std::vector<float> rn;
 
     rnGen.fillVector(rn,3*ixyz.size());
 
-    for (uint32_t i=0;i<ixyz.size();++i)
-    {
+    for (uint32_t i=0; i<ixyz.size(); ++i) {
         wxyz[i].x = ixyz[i].x + rn[i*3];
         wxyz[i].y = ixyz[i].y + rn[i*3+1];
         wxyz[i].z = ixyz[i].z + rn[i*3+2];
@@ -354,22 +346,20 @@ std::vector<glm::vec3> Trainingsetbuilder::m_generateRandomStructure(const std::
 /*------Check a Random Structure--------
 
 ----------------------------------------*/
-bool Trainingsetbuilder::m_checkRandomStructure(const std::vector<glm::vec3> &xyz)
-{
+bool Trainingsetbuilder::m_checkRandomStructure(const std::vector<glm::vec3> &xyz) {
     bool failchk = false; // Defaults to no failure
 
-    for (uint32_t i=0;i<xyz.size();++i)
-    {
-        for (uint32_t j=i+1;j<xyz.size();++j)
-        {
-            if (glm::length(xyz[i]-xyz[j]) < 0.5)
-            {
+    for (uint32_t i=0; i<xyz.size(); ++i) {
+        for (uint32_t j=i+1; j<xyz.size(); ++j) {
+            if (glm::length(xyz[i]-xyz[j]) < 0.5) {
                 failchk = true;
                 break;
             }
         }
 
-        if (failchk) {break;}
+        if (failchk) {
+            break;
+        }
     }
 
     return failchk;
