@@ -90,12 +90,12 @@ public:
     {
         if (dist.compare("uniform")==0)
         {
-            std::cout << "Random number generator: Using uniform distribution from " << arg1 << " to " << arg2 << std::endl;
+            //std::cout << "Random number generator: Using uniform distribution from " << arg1 << " to " << arg2 << std::endl;
             randGen=&RandomReal::fillVectorUniformDist;
         }
         else if (dist.compare("normal")==0)
         {
-            std::cout << "Random number generator: Using normal distribution w/ mean " << arg1 << " std. dev. " << arg2 << std::endl;
+            //std::cout << "Random number generator: Using normal distribution w/ mean " << arg1 << " std. dev. " << arg2 << std::endl;
             randGen=&RandomReal::fillVectorNormalDist;
         }
         else

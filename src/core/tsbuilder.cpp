@@ -52,18 +52,15 @@ Trainingsetbuilder::calculateTrainingSet
 is set before the loop and used to point
 whcih of these functions is requested.
 ----------------------------------------*/
-void print_for_file(int tid,int N,int i,int gcfail,int gdfail)
-{
+void print_for_file(int tid,int N,int i,int gcfail,int gdfail) {
     int trdcomp = static_cast<int>(round((i/float(N))*100.0));
 
-    if (trdcomp % 5 == 0)
-    {
+    if (trdcomp % 5 == 0) {
         std::cout << "Thread " << tid << " is " << trdcomp << "% complete. G09 Convergence Fails " << gcfail << " Distance Fails: " << gdfail << "\n";
     }
 };
 
-void print_for_cout(int tid,int N,int i,int gcfail,int gdfail)
-{
+void print_for_cout(int tid,int N,int i,int gcfail,int gdfail) {
     std::cout << "\033["<< tid+1 <<"A\033[K\033[1;30mThread " << tid << " is " << round((i/float(N))*100.0) << "% complete. G09 Convergence Fails " << gcfail << " Distance Fails: " << gdfail << "\033["<< tid+1 <<"B\033[100D\033[0m";
 };
 
@@ -73,8 +70,7 @@ void print_for_cout(int tid,int N,int i,int gcfail,int gdfail)
 This function contians the main loop for
 building the training set.
 ----------------------------------------*/
-void Trainingsetbuilder::calculateTrainingSet()
-{
+void Trainingsetbuilder::calculateTrainingSet() {
     std::cout << "------------------------------" << std::endl;
     std::cout << "  Begin building training set " << std::endl;
     std::cout << "------------------------------\n" << std::endl;
@@ -99,23 +95,25 @@ void Trainingsetbuilder::calculateTrainingSet()
     // Setup loop output function
     void (*loopPrinter)(int tid,int N,int i,int gcfail,int gdfail);
     switch ((int)routecout) {
-        case 0: {
-            std::cout << "Output setup for terminal writing." << std::endl;
-            loopPrinter = &print_for_cout;
-            for (int i=0;i<MaxT;++i) {std::cout << std::endl;}
-            break;
+    case 0: {
+        std::cout << "Output setup for terminal writing." << std::endl;
+        loopPrinter = &print_for_cout;
+        for (int i=0; i<MaxT; ++i) {
+            std::cout << std::endl;
         }
-        case 1: {
-            std::cout << "Output setup for file writing." << std::endl;
-            loopPrinter = &print_for_file;
-            break;
-        }
+        break;
+    }
+    case 1: {
+        std::cout << "Output setup for file writing." << std::endl;
+        loopPrinter = &print_for_file;
+        break;
+    }
     }
 
     // Prepare private thread output filenames
     std::vector<std::stringstream> outname(MaxT);
     std::vector<std::stringstream>::iterator it;
-    for (it = outname.begin();it != outname.end();it++)
+    for (it = outname.begin(); it != outname.end(); it++)
         *it << iptData->getoname() << "_thread" << it - outname.begin();
 
     // This is passed to each thread and contain unique seeds for each
@@ -132,14 +130,19 @@ void Trainingsetbuilder::calculateTrainingSet()
         ixyz_center = ixyz;
 
         // Create the conservation object;
-        conservation water(ixyz_center,masses);
+        //conservation water(ixyz_center,masses);
 
         // Thread ID
         int tid = omp_get_thread_num();
 
-        // Number of sets for this thread to calculate
+        // Some local variables
+        int nrpg = params.nrpg;
+
+        // Minimimum number of sets for this thread to calculate
         int N = floor(params.tts/MaxT);
-        if (tid < params.tts % MaxT) {++N;}
+        if (tid < params.tts % MaxT) {
+            ++N;
+        }
 
         // Prepare the random number seeds
         std::vector<int> seedarray;
@@ -149,7 +152,7 @@ void Trainingsetbuilder::calculateTrainingSet()
         RandomReal rnGen(seedarray,params.mean,params.std,args->getflag("-r"));
 
         // Allocate space for new coordinates
-        std::vector<glm::vec3> wxyz(params.Na);
+        std::vector<glm::vec3> wxyz(params.Na*nrpg);
 
         // Initialize counters
         int i(0); // Loop counter
@@ -159,8 +162,10 @@ void Trainingsetbuilder::calculateTrainingSet()
         // Initialize some containers
         std::string datapoint;
         std::string input;
-        std::string outputll;
-        std::string outputhl;
+        std::vector<std::string> outsll(nrpg);
+        std::vector<bool> chkoutsll(nrpg);
+        std::vector<std::string> outshl(nrpg);
+        std::vector<bool> chkoutshl(nrpg);
 
         // Define and open thread output
         std::ofstream tsoutt;
@@ -170,85 +175,65 @@ void Trainingsetbuilder::calculateTrainingSet()
         MicroTimer mttimer; // Time the whole loop
         MicroTimer mrtimer; // Time the random structure generation
         MicroTimer mgtimer; // Time the gaussian 09 runs
+        MicroTimer mgtimer; // Time the gaussian 09 runs
         MicroTimer mstimer; // Time the string generation
 
         // Begin main loop
         mttimer.start_point();
-        while (i<N && termstr.empty())
-        {
-            try
-            {
-                bool gchk = true;
+        while (i<N && termstr.empty()) {
+            try {
+                //std::cout << i << std::endl;
 
-                // This loop continues as long as the structure fails.
-                // This ensures that we get the N requested data points
-                while (gchk)
-                {
-                    //std::cout << i << std::endl;
-                    // Default to no failures detected
-                    gchk = false;
+                /*------Structure Generation------
 
-                    /*------Structure Generation------
+                ---------------------------------*/
+                // Generate the random structure
+                mrtimer.start_point();
+                m_generateRandomStructure(nrpg,ixyz,wxyz,rnGen);
 
-                    ---------------------------------*/
-                    // Generate the random structure
-                    mrtimer.start_point();
-                    wxyz = m_generateRandomStructure(ixyz,rnGen);
+                /*ASDUJASIDHIUADHASD*/
+                //water.conserve(wxyz);
+                mrtimer.end_point();
 
-                    // Determine if structure is viable, if it is not, restart the loop.
-                    if (m_checkRandomStructure(wxyz)) {
-                        gchk=true;
-                        mrtimer.end_point();
-                        ++gdf;
-                        continue;
-                    }
-                    /*ASDUJASIDHIUADHASD*/
-                    water.conserve(wxyz);
-                    mrtimer.end_point();
+                /*------Gaussian 09 Running-------
 
-                    /*------Gaussian 09 Running-------
+                ---------------------------------*/
+                mgtimer.start_point();
+                // Build the g09 input file for the low level of theory
+                g09::buildInputg09(nrpg,input,params.llt,"force",types,wxyz,0,1,1);
 
-                    ---------------------------------*/
-                    mgtimer.start_point();
-                    // Build the g09 input file for the low level of theory
-                    g09::buildInputg09(input,params.llt,"force",types,wxyz,0,1,1);
+                // Execute the g09 run, if failure occures we restart the loop
+                g09::execg09(nrpg,input,outsll,chkoutsll);
 
-                    // Execute the g09 run, if failure occures we restart the loop
-                    if (g09::execg09(input,outputll)) {
-                        gchk=true;
-                        ++gcf;
-                        mgtimer.end_point();
-                        continue;
-                    }
+                // Build the g09 input file for the high level of theory
+                g09::buildInputg09(nrpg,input,params.hlt,"force",types,wxyz,0,1,1);
 
-                    // Build the g09 input file for the high level of theory
-                    g09::buildInputg09(input,params.hlt,"force",types,wxyz,0,1,1);
-
-                    // Execute the g09 run, if failure occures we restart the loop
-                    if (g09::execg09(input,outputhl)) {
-                        gchk=true;
-                        ++gcf;
-                        mgtimer.end_point();
-                        continue;
-                    }
-                    mgtimer.end_point();
-                }
+                // Execute the g09 run, if failure occures we restart the loop
+                g09::execg09(nrpg,input,outshl,chkoutshl);
+                mgtimer.end_point();
 
                 /*----Creating CSV Datapoint------
 
                 ---------------------------------*/
                 mstimer.start_point();
-
                 // Append the data to the datapoint string
-                datapoint.append(licrd->calculateCSVInternalCoordinates(wxyz));
-                datapoint.append(g09::forceFinder(outputll));
-                datapoint.append(g09::forceFinder(outputhl));
-                mstimer.end_point();
+                for (int j=0; j<nrpg; ++j) {
+                    if (!chkoutshl[j] && !chkoutsll[j]) {
+                        std::vector<glm::vec3> xyzind(ixyz.size());
+                        std::memcpy(&xyzind[0],&wxyz[j*ixyz.size()],ixyz.size()*sizeof(glm::vec3));
+                        datapoint.append(licrd->calculateCSVInternalCoordinates(xyzind));
+                        datapoint.append(g09::forceFinder(outsll[j]));
+                        datapoint.append(g09::forceFinder(outshl[j]));
 
-                // Save the data point to the threads private output file output
-                datapoint.pop_back();
-                tsoutt << datapoint << std::endl;
-                datapoint.clear();
+                        // Save the data point to the threads private output file output
+                        tsoutt << datapoint << std::endl;
+                        datapoint.clear();
+                        ++i;
+                    } else {
+                        ++gcf;
+                    }
+                }
+                mstimer.end_point();
 
                 // Loop printer.
                 #pragma omp critical
@@ -256,10 +241,7 @@ void Trainingsetbuilder::calculateTrainingSet()
                     loopPrinter(tid,N,i,gcf,gdf);
                 }
 
-                ++i;
-            }
-            catch (std::string error)
-            {
+            } catch (std::string error) {
                 #pragma omp critical
                 {
                     // Close the output if failure is detected
@@ -305,8 +287,7 @@ void Trainingsetbuilder::calculateTrainingSet()
 
     fttimer.start_point();
     std::vector<std::stringstream>::iterator nameit;
-    for (nameit = outname.begin();nameit != outname.end();nameit++)
-    {
+    for (nameit = outname.begin(); nameit != outname.end(); nameit++) {
         // Move files individualy into the main output
         std::ifstream infile((*nameit).str().c_str(),std::ios_base::binary);
         std::cout << "Transferring file " << (*nameit).str() << " -> " << iptData->getoname() << std::endl;
@@ -333,43 +314,56 @@ void Trainingsetbuilder::calculateTrainingSet()
 /*-----Generate a Random Structure-------
 
 ----------------------------------------*/
-std::vector<glm::vec3> Trainingsetbuilder::m_generateRandomStructure(const std::vector<glm::vec3> &ixyz,RandomReal &rnGen)
-{
-    std::vector<glm::vec3> wxyz(ixyz.size());
+void Trainingsetbuilder::m_generateRandomStructure(int nrpg,const std::vector<glm::vec3> &ixyz,std::vector<glm::vec3> &oxyz,RandomReal &rnGen) {
+    // Number of coords per molecules
+    int N = ixyz.size();
 
-    std::vector<float> rn;
+    // Do this for all nrpg gaussian inputs
+    for (int j=0; j<nrpg; ++j) {
+        bool sgot = false;
+        while (!sgot) {
+            std::vector<glm::vec3> wxyz(ixyz.size());
+            std::vector<float> rn;
 
-    rnGen.fillVector(rn,3*ixyz.size());
+            rnGen.fillVector(rn,3*ixyz.size());
 
-    for (uint32_t i=0;i<ixyz.size();++i)
-    {
-        wxyz[i].x = ixyz[i].x + rn[i*3];
-        wxyz[i].y = ixyz[i].y + rn[i*3+1];
-        wxyz[i].z = ixyz[i].z + rn[i*3+2];
+            for (uint32_t i=0; i<ixyz.size(); ++i) {
+                //wxyz[i].x = ixyz[i].x + rn[i*3];
+                wxyz[i].x = ixyz[i].x;
+                //wxyz[i].y = ixyz[i].y + rn[i*3+1];
+                wxyz[i].y = ixyz[i].y;
+                wxyz[i].z = ixyz[i].z + rn[i*3+2];
+            }
+
+            // Check structure distances for viability
+            if (!m_checkRandomStructure(wxyz)) {
+                // Save structure in output xyz vector
+                for (uint32_t i=0; i<ixyz.size(); ++i) {
+                    oxyz[j*N+i] = wxyz[i];
+                }
+                sgot=true;
+            }
+        }
     }
-
-    return wxyz;
 };
 
 /*------Check a Random Structure--------
 
 ----------------------------------------*/
-bool Trainingsetbuilder::m_checkRandomStructure(const std::vector<glm::vec3> &xyz)
-{
+bool Trainingsetbuilder::m_checkRandomStructure(const std::vector<glm::vec3> &xyz) {
     bool failchk = false; // Defaults to no failure
 
-    for (uint32_t i=0;i<xyz.size();++i)
-    {
-        for (uint32_t j=i+1;j<xyz.size();++j)
-        {
-            if (glm::length(xyz[i]-xyz[j]) < 0.5)
-            {
+    for (uint32_t i=0; i<xyz.size(); ++i) {
+        for (uint32_t j=i+1; j<xyz.size(); ++j) {
+            if (glm::length(xyz[i]-xyz[j]) < 0.5) {
                 failchk = true;
                 break;
             }
         }
 
-        if (failchk) {break;}
+        if (failchk) {
+            break;
+        }
     }
 
     return failchk;

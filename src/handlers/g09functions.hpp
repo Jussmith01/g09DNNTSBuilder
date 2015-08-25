@@ -11,8 +11,7 @@ namespace g09 {
  Get Forces from a Gaussian Output String
 
 ------------------------------------------*/
-inline std::string forceFinder(const std::string &filename)
-{
+inline std::string forceFinder(const std::string &filename) {
     using namespace std;
     string force_csv;
     regex pattern_force("Hartrees/Bohr");
@@ -36,6 +35,21 @@ inline std::string forceFinder(const std::string &filename)
 };
 
 /*----------------------------------------
+        Parse a Multi Gaussian Run
+Parse many output into individual outputs.
+------------------------------------------*/
+inline void parseg09OutputLinks(int nrpg,std::string &multioutput,std::vector<std::string> &indoutputs) {
+    size_t lpos = multioutput.find("Entering Link 1");
+    multioutput=multioutput.substr(lpos+1);
+
+    for (int i=0; i<nrpg; ++i) {
+        lpos = multioutput.find("Entering Link 1");
+        indoutputs[i] = multioutput.substr(0,lpos);
+        multioutput=multioutput.substr(lpos+1);
+    }
+};
+
+/*----------------------------------------
   Execute Gaussian Command on the System
 
   Function returns true if cerr returns
@@ -43,46 +57,47 @@ inline std::string forceFinder(const std::string &filename)
   most notably when the SCF fails to
   converge.
 ------------------------------------------*/
-inline bool execg09(const std::string &input,std::string &out)
-{
+inline void execg09(int nrpg,const std::string &input,std::vector<std::string> &out,std::vector<bool> &chkout) {
     // Build bash command for launching g09
     std::stringstream sscmd;
     sscmd << "#!/bin/sh\ng09 <<END 2>&1 " << input.c_str() << "END\n"; // Redirect cerr to cout
 
     // Open a pipe and run g09 command -- output saved in string 'out'.
-    out = systls::exec(sscmd.str().c_str(),1000);
+    std::string mout(systls::exec(sscmd.str().c_str(),10000));
 
-    // If normal termination is detected the the program returns false.
-    if (out.find("Normal termination of Gaussian 09")!=std::string::npos) {
-        return false;
+    parseg09OutputLinks(nrpg,mout,out);
+
+    for (int j=0; j<nrpg; ++j) {
+        // If normal termination is detected the the program returns false.
+        if (out[j].find("Normal termination of Gaussian 09")!=std::string::npos) {
+            chkout[j]=false;
+        }
+
+        // Check if gaussian failed to converge - return true if it fails.
+        else if (out[j].find("Convergence failure -- run terminated")!=std::string::npos) {
+            //std::cout << "CVF!" << std::endl;
+            chkout[j]=true;
+        }
+
+        // Check if interatomic distances were too close  - return true if it fails.
+        else if (out[j].find("Small interatomic distances encountered")!=std::string::npos) {
+            //std::cout << "SIADF!" << std::endl;
+            chkout[j]=true;
+        }
+
+        // Check if g09 was found, if not the
+        else if (out[j].find("g09: not found")!=std::string::npos) {
+            throwException("Gaussian 09 program not found; make sure it is exported to PATH.");
+        }
+
+        else {
+            // If the function has not returned yet then something is wrong
+            std::ofstream gaue("gauerror.log");
+            gaue << out[j] << std::endl;
+            gaue.close();
+            throwException("Unrecognized Gaussian 09 Failure; saving output as gauerror.log");
+        }
     }
-
-    // Check if gaussian failed to converge - return true if it fails.
-    if (out.find("Convergence failure -- run terminated")!=std::string::npos) {
-        //std::cout << "CVF!" << std::endl;
-        return true;
-    }
-
-    // Check if interatomic distances were too close  - return true if it fails.
-    if (out.find("Small interatomic distances encountered")!=std::string::npos) {
-        //std::cout << "SIADF!" << std::endl;
-        return true;
-    }
-
-    // Check if g09 was found, if not the
-    if (out.find("g09: not found")!=std::string::npos) {
-        throwException("Gaussian 09 program not found; make sure it is exported to PATH.");
-    }
-
-    // If the function has not returned yet then something is wrong
-    std::ofstream gaue;
-    gaue.open("gauerror.log");
-    gaue << out << std::endl;
-    gaue.close();
-
-    throwException("Unrecognized Gaussian 09 Failure; saving output as gauerror.log");
-
-    return true; // Does nothing but make the compiler happy
 };
 
 /*----------------------------------------
@@ -98,27 +113,37 @@ inline bool execg09(const std::string &input,std::string &out)
 
     Note: type and xyz must be of same size
 ------------------------------------------*/
-inline void buildInputg09(std::string &input,std::string lot,std::string additional,const std::vector<std::string> &type,const std::vector<glm::vec3> &xyz,int mult,int charge,int nproc)
-{
+inline void buildInputg09(int nrpg,std::string &input,std::string lot,std::string additional,const std::vector<std::string> &type,const std::vector<glm::vec3> &xyz,int mult,int charge,int nproc) {
+    // Number of coords per molecule
+    int N = xyz.size()/nrpg;
+
     // Error check
-    if (type.size()!=xyz.size())
+    if (type.size()!=static_cast<unsigned int>(N))
         throwException("type and xyz are not the same size.");
 
-    // Build gaussian 09 input
-    std::stringstream tmpipt;
-    tmpipt.setf( std::ios::fixed, std::ios::floatfield );
-    tmpipt << "\n%nproc=" << nproc << "\n";
-    tmpipt << "#p " << lot << " " << additional << "\n\n";
-    tmpipt << "Something\n\n";
-    tmpipt << mult << "  " << charge << "\n";
+    input="";
 
-    for (uint32_t i = 0; i<type.size(); ++i)
-        tmpipt << type[i] << std::setprecision(5) << " " << xyz[i].x << " " << xyz[i].y << " " << xyz[i].z << "\n";
+    for (int j=0; j<nrpg; ++j) {
+        // Build gaussian 09 input
+        std::stringstream tmpipt;
+        tmpipt.setf( std::ios::fixed, std::ios::floatfield );
+        tmpipt << "\n%nproc=" << nproc << "\n";
+        tmpipt << "#p " << lot << " " << additional << "\n\n";
+        tmpipt << "COMMENT LINE\n\n";
+        tmpipt << mult << "  " << charge << "\n";
 
-    tmpipt << "\n";
+        for (uint32_t i = 0; i<type.size(); ++i)
+            tmpipt << type[i] << std::setprecision(7) << " " << xyz[j*N+i].x << " " << xyz[j*N+i].y << " " << xyz[j*N+i].z << "\n";
 
-    // Return input string
-    input = tmpipt.str();
+        tmpipt << "\n";
+
+        if (j < nrpg-1) {
+            tmpipt << "--link1--\n";
+        };
+
+        // Return input string
+        input.append(tmpipt.str());
+    }
 };
 
 };
