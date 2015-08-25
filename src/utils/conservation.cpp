@@ -77,7 +77,7 @@ Eigen::Matrix3d conservation::inertia_tensor(const Eigen::MatrixXd &M) {
     }
     for (int i = 0; i != _N; ++i)
     {
-        _I_yy += (pow(M(i, 0), 2) + pow(M(i, 1), 2)) * _m[i];
+        _I_yy += (pow(M(i, 0), 2) + pow(M(i, 2), 2)) * _m[i];
     }
     for (int i = 0; i != _N; ++i)
     {
