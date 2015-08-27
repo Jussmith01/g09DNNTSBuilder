@@ -328,12 +328,12 @@ void Trainingsetbuilder::m_generateRandomStructure(int nrpg,const std::vector<gl
             rnGen.fillVector(rn,3*ixyz.size());
 
             for (uint32_t i=0; i<ixyz.size(); ++i) {
-                //wxyz[i].x = ixyz[i].x + rn[i*3];
+                wxyz[i].x = ixyz[i].x + rn[i*3];
                 //wxyz[i].x = ixyz[i].x;
-                //wxyz[i].y = ixyz[i].y + rn[i*3+1];
+                wxyz[i].y = ixyz[i].y + rn[i*3+1];
                 //wxyz[i].y = ixyz[i].y;
-                //wxyz[i].z = ixyz[i].z + rn[i*3+2];
-                wxyz[i] = ixyz[i] * rn[0];
+                wxyz[i].z = ixyz[i].z + rn[i*3+2];
+                //wxyz[i] = ixyz[i] * rn[0];
             }
 
             // Check structure distances for viability
