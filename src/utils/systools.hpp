@@ -18,8 +18,7 @@ namespace systls {
     in a buffer. This buffer is then
     returned.
 ------------------------------------------*/
-inline std::string exec(const std::string &cmd,size_t maxbuf)
-{
+inline std::string exec(const std::string &cmd,size_t maxbuf) {
 
     // Open a pipe and run command
     FILE* pipe = popen(cmd.c_str(), "r");

@@ -34,6 +34,7 @@ inline std::string forceFinder(const std::string &filename) {
             }
         }
     }
+
     return force_csv.str();
 };
 

@@ -200,10 +200,10 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 ---------------------------------*/
                 mgtimer.start_point();
                 // Build the g09 input file for the low level of theory
-                g09::buildInputg09(nrpg,input,params.llt,"force",types,wxyz,0,1,1);
+                //g09::buildInputg09(nrpg,input,params.llt,"force",types,wxyz,0,1,1);
 
                 // Execute the g09 run, if failure occures we restart the loop
-                g09::execg09(nrpg,input,outsll,chkoutsll);
+                //g09::execg09(nrpg,input,outsll,chkoutsll);
 
                 // Build the g09 input file for the high level of theory
                 g09::buildInputg09(nrpg,input,params.hlt,"force",types,wxyz,0,1,1);
@@ -218,11 +218,12 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 mstimer.start_point();
                 // Append the data to the datapoint string
                 for (int j=0; j<nrpg; ++j) {
-                    if (!chkoutshl[j] && !chkoutsll[j]) {
+                    //if (!chkoutshl[j] && !chkoutsll[j]) {
+                    if (!chkoutshl[j]) {
                         std::vector<glm::vec3> xyzind(ixyz.size());
                         std::memcpy(&xyzind[0],&wxyz[j*ixyz.size()],ixyz.size()*sizeof(glm::vec3));
                         datapoint.append(licrd->calculateCSVInternalCoordinates(xyzind));
-                        datapoint.append(g09::forceFinder(outsll[j]));
+                        //datapoint.append(g09::forceFinder(outsll[j]));
                         datapoint.append(g09::forceFinder(outshl[j]));
 
                         // Save the data point to the threads private output file output
@@ -328,11 +329,14 @@ void Trainingsetbuilder::m_generateRandomStructure(int nrpg,const std::vector<gl
             rnGen.fillVector(rn,3*ixyz.size());
 
             for (uint32_t i=0; i<ixyz.size(); ++i) {
-                wxyz[i].x = ixyz[i].x + rn[i*3];
+                //wxyz[i].x = ixyz[i].x + rn[i*3];
+                wxyz[i].x = rn[i*3];
                 //wxyz[i].x = ixyz[i].x;
-                wxyz[i].y = ixyz[i].y + rn[i*3+1];
+                //wxyz[i].y = ixyz[i].y + rn[i*3+1];
+                wxyz[i].y = rn[i*3+1];
                 //wxyz[i].y = ixyz[i].y;
-                wxyz[i].z = ixyz[i].z + rn[i*3+2];
+                //wxyz[i].z = ixyz[i].z + rn[i*3+2];
+                wxyz[i].z = rn[i*3+2];
                 //wxyz[i] = ixyz[i] * rn[0];
             }
 

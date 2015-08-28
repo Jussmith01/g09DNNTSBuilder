@@ -29,8 +29,7 @@
 // Core
 #include "core/tsbuilder.h"
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     //--------------------------------
     // Check input arguments via macro
     //--------------------------------
