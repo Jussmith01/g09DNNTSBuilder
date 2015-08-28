@@ -260,7 +260,7 @@ std::string itrnl::Internalcoordinates::calculateCSVInternalCoordinates(const st
 
     } catch (std::string error) dnntsErrorcatch(error);
 
-    return m_createCSVICstring(xyz);;
+    return m_createCSVICstring(xyz);
 };
 
 
