@@ -19,12 +19,9 @@ conservation::conservation(std::vector<glm::vec3> &xyz, const std::vector<double
 }
 
 void conservation::zero_round(Eigen::MatrixXd &M) {
-    for (auto i = 0; i < M.rows(); ++i)
-    {
-        for (auto j = 0; j != M.cols(); ++j)
-        {
-            if (M(i, j) < 1e-10 && M(i, j) > -1e-10)
-            {
+    for (auto i = 0; i < M.rows(); ++i) {
+        for (auto j = 0; j != M.cols(); ++j) {
+            if (M(i, j) < 1e-10 && M(i, j) > -1e-10) {
                 M(i, j) = 0.0;
             }
         }
@@ -39,22 +36,18 @@ void conservation::move_center(Eigen::MatrixXd &A) {
     using namespace Eigen;
     using namespace std;
     double total_mass = 0;
-    for (auto i : _m)
-    {
+    for (auto i : _m) {
         total_mass += i;
     }
     RowVector3d v_center_mass;
-    for (int i = 0; i != 3; ++i)
-    {
+    for (int i = 0; i != 3; ++i) {
         double coord_center = 0;
-        for (auto j = 0; j != _N; ++j)
-        {
+        for (auto j = 0; j != _N; ++j) {
             coord_center += (A(j, i) / total_mass) * _m[j];
         }
         v_center_mass(i) = coord_center;
     }
-    for (int i = 0; i != _N; ++i)
-    {
+    for (int i = 0; i != _N; ++i) {
         A.row(i) = A.row(i) - v_center_mass;
     }
     zero_round(A);
@@ -71,43 +64,36 @@ Eigen::Matrix3d conservation::inertia_tensor(const Eigen::MatrixXd &M) {
     double _I_xy = 0;
     double _I_xz = 0;
     double _I_yz = 0;
-    for (int i = 0; i != _N; ++i)
-    {
+    for (int i = 0; i != _N; ++i) {
         _I_xx += (pow(M(i, 1), 2) + pow(M(i, 2), 2)) * _m[i];
     }
-    for (int i = 0; i != _N; ++i)
-    {
-        _I_yy += (pow(M(i, 0), 2) + pow(M(i, 2), 2)) * _m[i];
+    for (int i = 0; i != _N; ++i) {
+        _I_yy += (pow(M(i, 0), 2) + pow(M(i, 1), 2)) * _m[i];
     }
-    for (int i = 0; i != _N; ++i)
-    {
+    for (int i = 0; i != _N; ++i) {
         _I_zz += (pow(M(i, 0), 2) + pow(M(i, 1), 2)) * _m[i];
     }
-    for (int i = 0; i != _N; ++i)
-    {
+    for (int i = 0; i != _N; ++i) {
         _I_xy -= M(i, 0) * M(i, 1);
     }
-    for (int i = 0; i != _N; ++i)
-    {
+    for (int i = 0; i != _N; ++i) {
         _I_xz -= M(i, 0) * M(i, 2);
     }
-    for (int i = 0; i != _N; ++i)
-    {
+    for (int i = 0; i != _N; ++i) {
         _I_yz -= M(i, 1) * M(i, 2);
     }
     // Create the matrix
     Matrix3d I;
     I << _I_xx , _I_xy , _I_xz,
-         _I_xy , _I_yy , _I_yz,
-         _I_xz , _I_yz , _I_zz;
+    _I_xy , _I_yy , _I_yz,
+    _I_xz , _I_yz , _I_zz;
     return I;
 }
 
 Eigen::MatrixXd conservation::coord_read(const std::vector<glm::vec3> &xyz) {
     using namespace Eigen;
     MatrixXd X(_N, 3);
-    for (int i = 0; i != _N; ++i)
-    {
+    for (int i = 0; i != _N; ++i) {
         X(i,0) = xyz[i].x;
         X(i,1) = xyz[i].y;
         X(i,2) = xyz[i].z;
@@ -142,8 +128,7 @@ std::vector<glm::vec3> conservation::matrix_read(const Eigen::MatrixXd &M) {
     using namespace Eigen;
     using namespace std;
     vector<glm::vec3> xyz_temp(3);
-    for (int i=0; i!=_N; ++i)
-    {
+    for (int i=0; i!=_N; ++i) {
         xyz_temp[i].x = static_cast<float>(M(i,0));
         xyz_temp[i].y = static_cast<float>(M(i,1));
         xyz_temp[i].z = static_cast<float>(M(i,2));
@@ -157,17 +142,14 @@ Eigen::Matrix3d conservation::rotation_matrix(const Eigen::Vector3d &v1, const E
     double s = sqrt(v.dot(v));
     double c = v1.dot(v2);
     Matrix3d R;
-    if (s > 1e-12 || s < -1e-12)
-    {
+    if (s > 1e-12 || s < -1e-12) {
         Matrix3d vx;
         vx << 0  , -v(2),  v(1),
-             v(2),   0  , -v(0),
-            -v(1),  v(0),   0  ;
+        v(2),   0  , -v(0),
+        -v(1),  v(0),   0  ;
         Matrix3d I = Matrix3d::Identity();
         R = I + vx + vx * vx * (1 - c) / (s * s);
-    }
-    else
-    {
+    } else {
         R = Matrix3d::Identity();
     }
     return  R;

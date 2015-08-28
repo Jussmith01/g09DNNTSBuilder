@@ -7,14 +7,12 @@
 
 #include "micro_timer.h"
 
-void MicroTimer::start_point ()
-{
+void MicroTimer::start_point () {
     start_wall_time = omp_get_wtime();
     start_clock_time = clock();
 };
 
-void MicroTimer::end_point ()
-{
+void MicroTimer::end_point () {
     accumtime+=omp_get_wtime()-start_wall_time;
     accumclock+=clock()-start_clock_time / (double)CLOCKS_PER_SEC;
 
@@ -26,22 +24,19 @@ void MicroTimer::end_point ()
 };
 
 //template<typename T>
-void MicroTimer::print_wall_time(std::string message,std::ostream &output)
-{
+void MicroTimer::print_wall_time(std::string message,std::ostream &output) {
     //file1 << message.c_str() << mk_time_string((double)accumtime/(double)wt_count).c_str() << "\n";
     output << message.c_str() << mk_time_string((double)accumtime).c_str() << "\n";
     reset();
 };
 
 //template<typename T>
-void MicroTimer::print_clock_time(std::string message,std::ostream &output)
-{
+void MicroTimer::print_clock_time(std::string message,std::ostream &output) {
     output << message.c_str() << mk_time_string((double)accumclock/(double)ct_count).c_str() << "\n";
     reset();
 };
 
-void MicroTimer::print_generic_to_file(std::string message,std::ostream &output)
-{
+void MicroTimer::print_generic_to_file(std::string message,std::ostream &output) {
     std::stringstream ss1;
     ss1 << message << " Wall Time: ";
 
@@ -52,8 +47,7 @@ void MicroTimer::print_generic_to_file(std::string message,std::ostream &output)
     //print_clock_time(ss2.str(),file1);
 };
 
-std::string MicroTimer::get_generic_print_string(std::string &message)
-{
+std::string MicroTimer::get_generic_print_string(std::string &message) {
     std::stringstream ss1;
     ss1 << message << " Wall Time: " << mk_time_string((double)accumtime).c_str();
 
@@ -61,13 +55,11 @@ std::string MicroTimer::get_generic_print_string(std::string &message)
     return ss1.str();
 };
 
-void MicroTimer::print_generic_to_cout(std::string message)
-{
+void MicroTimer::print_generic_to_cout(std::string message) {
     std::cout << get_generic_print_string(message) << std::endl;
 };
 
-void MicroTimer::reset ()
-{
+void MicroTimer::reset () {
     wt_count=0;
     ct_count=0;
 
@@ -75,8 +67,7 @@ void MicroTimer::reset ()
     accumclock=0;
 };
 
-std::string MicroTimer::mk_time_string(double time_val)
-{
+std::string MicroTimer::mk_time_string(double time_val) {
     int days, hours, minutes;
     double seconds;
 

@@ -22,8 +22,7 @@ class Trainingsetbuilder {
 public:
     // Constructor
     Trainingsetbuilder (ipt::input *iptData,FlagHandler *args) :
-        icrd(iptData->getbonds()),routecout(false)
-    {
+        icrd(iptData->getbonds()),routecout(false) {
         // Save a pointer to the input data class
         this->iptData = iptData;
         if (this->iptData == NULL)
@@ -35,8 +34,7 @@ public:
             dnntsErrorcatch(std::string("Arguments has not been declared!"));
 
         // Route cout to output file if output was supplied
-        if (!this->args->getflag("-o").empty())
-        {
+        if (!this->args->getflag("-o").empty()) {
             routecout = true;
             freopen(this->args->getflag("-o").c_str(),"w",stdout);
         }

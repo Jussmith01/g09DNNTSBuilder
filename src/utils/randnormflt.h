@@ -49,12 +49,10 @@ class ThreadSeedGenerator {
 public:
 
     ThreadSeedGenerator(std::vector<int> &threadseeds,std::vector<int> &seeds) :
-        seedgen(threadseeds.begin(),threadseeds.end())
-    {
+        seedgen(threadseeds.begin(),threadseeds.end()) {
         getThreadSafeSeeds(seeds);
 
-        for (int i=0;i<4;++i)
-        {
+        for (int i=0; i<4; ++i) {
             threadseeds[i]=seeds.back();
             seeds.pop_back();
         }
@@ -73,8 +71,7 @@ float someflt = GenRandReal(float mean,float std)
                    //mean is mean, duh
                    //std is standard deviation
 -------------------------------------------------*/
-class RandomReal
-{
+class RandomReal {
     std::default_random_engine generator;
     std::vector<int> threadseeds;
 
@@ -97,8 +94,7 @@ public:
         {
             //std::cout << "Random number generator: Using normal distribution w/ mean " << arg1 << " std. dev. " << arg2 << std::endl;
             randGen=&RandomReal::fillVectorNormalDist;
-        }
-        else
+        } else
             dnntsErrorcatch(std::string("Random Distribution not found!"));
     };
 
@@ -114,10 +110,10 @@ public:
         std::vector<int> seeds(N);
         ThreadSeedGenerator seedGen(threadseeds,seeds);
 
-        for (int i=0;i<N;++i) {
-                generator.seed(seeds[i]);//Seed the generator
-                std::normal_distribution<float> distribution(mean,stdev);//Setup the distribution
-                rnv[i] = distribution(generator);//Denerate the random number
+        for (int i=0; i<N; ++i) {
+            generator.seed(seeds[i]);//Seed the generator
+            std::normal_distribution<float> distribution(mean,stdev);//Setup the distribution
+            rnv[i] = distribution(generator);//Denerate the random number
         }
     };
 
@@ -128,10 +124,10 @@ public:
         std::vector<int> seeds(N);
         ThreadSeedGenerator seedGen(threadseeds,seeds);
 
-        for (int i=0;i<N;++i) {
-                generator.seed(seeds[i]);//Seed the generator
-                std::uniform_real_distribution<float> distribution(mini,maxi);//Setup the distribution
-                rnv[i] = distribution(generator);//Denerate the random number
+        for (int i=0; i<N; ++i) {
+            generator.seed(seeds[i]);//Seed the generator
+            std::uniform_real_distribution<float> distribution(mini,maxi);//Setup the distribution
+            rnv[i] = distribution(generator);//Denerate the random number
         }
     };
 };

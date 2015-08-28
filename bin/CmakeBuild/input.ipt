@@ -1,4 +1,4 @@
-TTS=50000 # Training Set Size
+TTS=15000 # Training Set Size
 LOT=AM1 # Low level of theory
 HOT=hf/6-31g* # High level of theory
 std=2.0  # Standard Deviation of random numbers
