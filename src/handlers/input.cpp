@@ -107,8 +107,7 @@ void ipt::input::readinput() {
                 int bond_idex = 0;
                 while (getline(ifile, line), !regex_search(line, pattern_end)) {
                     ++bond_idex;
-                    if (bond_idex >= params.Na)
-                    {
+                    if (bond_idex >= params.Na) {
                         throwException("Too many bonds for number of atoms");
                     }
                     vector<int> bonds_temp;
@@ -116,8 +115,7 @@ void ipt::input::readinput() {
                     sregex_iterator end;
                     for (; pos != end; ++pos) {
                         int idx(atoi(pos->str().c_str()));
-                        if (idx >= params.Na || idx < 0)
-                        {
+                        if (idx >= params.Na || idx < 0) {
                             std::stringstream ss;
                             ss << "Bond " << bond_idex << " has an index (" << idx << ") that is out of bounds!\nCheck your input";
                             throwException(ss.str());
