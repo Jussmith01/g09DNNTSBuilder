@@ -224,19 +224,19 @@ std::string itrnl::Internalcoordinates::m_createCSVICstring(const std::vector<gl
     std::stringstream csvint;
 
     csvint << bnds.size() << "," << angs.size() << "," << dhls.size() << ",";
-    csvint.setf( std::ios::fixed, std::ios::floatfield );
+    csvint.setf( std::ios::scientific, std::ios::floatfield );
 
     for (auto&& b : bnds)
-        csvint << std::setprecision(7) << b << ",";
+        csvint << std::setprecision(8) << b << ",";
 
     for (auto&& a : angs)
-        csvint << std::setprecision(7) << a << ",";
+        csvint << std::setprecision(8) << a << ",";
 
     for (auto&& d : dhls)
-        csvint << std::setprecision(7) << d << ",";
+        csvint << std::setprecision(8) << d << ",";
 
     for (auto&& c : xyz)
-        csvint << std::setprecision(7) << c.x << "," << c.y << "," << c.z << ",";
+        csvint << std::setprecision(8) << c.x << "," << c.y << "," << c.z << ",";
 
     std::string rtn(csvint.str());
     //rtn.pop_back();

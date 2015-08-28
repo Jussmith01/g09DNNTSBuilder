@@ -13,7 +13,10 @@ namespace g09 {
 ------------------------------------------*/
 inline std::string forceFinder(const std::string &filename) {
     using namespace std;
-    string force_csv;
+
+    stringstream force_csv;
+    //force_csv.setf( std::ios::scientific, std::ios::floatfield );
+
     regex pattern_force("Hartrees/Bohr");
     regex pattern_cart("Cartesian");
     regex pattern_value("\\-?[[:d:]]+\\.[[:d:]]+");
@@ -26,12 +29,12 @@ inline std::string forceFinder(const std::string &filename) {
                 sregex_iterator pos(line2.begin(), line2.end(), pattern_value);
                 sregex_iterator end;
                 for (; pos != end; ++pos) {
-                    force_csv += pos->str(0) + ",";
+                    force_csv << pos->str(0) << ",";
                 }
             }
         }
     }
-    return force_csv;
+    return force_csv.str();
 };
 
 /*----------------------------------------
@@ -126,14 +129,14 @@ inline void buildInputg09(int nrpg,std::string &input,std::string lot,std::strin
     for (int j=0; j<nrpg; ++j) {
         // Build gaussian 09 input
         std::stringstream tmpipt;
-        tmpipt.setf( std::ios::fixed, std::ios::floatfield );
+        tmpipt.setf( std::ios::scientific, std::ios::floatfield );
         tmpipt << "\n%nproc=" << nproc << "\n";
         tmpipt << "#p " << lot << " " << additional << "\n\n";
         tmpipt << "COMMENT LINE\n\n";
         tmpipt << mult << "  " << charge << "\n";
 
         for (uint32_t i = 0; i<type.size(); ++i)
-            tmpipt << type[i] << std::setprecision(7) << " " << xyz[j*N+i].x << " " << xyz[j*N+i].y << " " << xyz[j*N+i].z << "\n";
+            tmpipt << type[i] << std::setprecision(8) << " " << xyz[j*N+i].x << " " << xyz[j*N+i].y << " " << xyz[j*N+i].z << "\n";
 
         tmpipt << "\n";
 
