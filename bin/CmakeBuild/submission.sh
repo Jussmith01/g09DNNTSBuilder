@@ -4,9 +4,9 @@
 #PBS -e pbsjob.err
 #PBS -M jsmith48@ufl.edu
 #PBS -r n
-#PBS -l walltime=24:00:00
+#PBS -l walltime=48:00:00
 #PBS -l nodes=1:ppn=21
-#PBS -l pmem=8gb
+#PBS -l pmem=10gb
 
 cd $PBS_O_WORKDIR
 
@@ -18,5 +18,5 @@ export LD_RUN_PATH="/usr/gnu5.2/lib64:$LD_RUN_PATH"
 
 export OMP_NUM_THREADS=21
 
-./g09DNNTSBuilder -r uniform -i input.ipt -o outputH2UNI2.5.opt -d tdataH2UNI2.5.dat
+./g09DNNTSBuilder -r uniform -i input.ipt -o outputtrainH2O.opt -d tdatatrainH2O.dat
 
