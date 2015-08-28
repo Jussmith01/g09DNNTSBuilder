@@ -36,7 +36,6 @@ namespace ipt
             std::cout << std::endl;
         };
     };
-};
 
 class input {
     /*----------------------------------------
