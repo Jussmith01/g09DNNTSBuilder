@@ -210,6 +210,31 @@ void Trainingsetbuilder::calculateTrainingSet() {
 
                 // Execute the g09 run, if failure occures we restart the loop
                 g09::execg09(nrpg,input,outshl,chkoutshl);
+                std::stringstream sso;
+                std::stringstream ssi;
+                sso << "g09output." << tid << "." << i << ".dat";
+                ssi << "g09input." << tid << "." << i << ".dat";
+                std::ofstream instream(ssi.str().c_str());
+                if (instream)
+                {
+                    instream << input;
+                }
+                else
+                {
+                    std::cerr << "bad dustin" << std::endl;
+                }
+                std::ofstream ostream(sso.str().c_str());
+                if (ostream)
+                {
+                    ostream << outshl[0];
+                }
+                else
+                {
+                    std::cerr << "bad dustin" << std::endl;
+                }
+                instream.close();
+                ostream.close();
+
                 mgtimer.end_point();
 
                 /*----Creating CSV Datapoint------
@@ -333,10 +358,10 @@ void Trainingsetbuilder::m_generateRandomStructure(int nrpg,const std::vector<gl
                 wxyz[i].x = rn[i*3];
                 //wxyz[i].x = ixyz[i].x;
                 //wxyz[i].y = ixyz[i].y + rn[i*3+1];
-                wxyz[i].y = rn[i*3+1];
+                wxyz[i].y = 0.0f; //rn[i*3+1];
                 //wxyz[i].y = ixyz[i].y;
                 //wxyz[i].z = ixyz[i].z + rn[i*3+2];
-                wxyz[i].z = rn[i*3+2];
+                wxyz[i].z = 0.0f; //rn[i*3+2];
                 //wxyz[i] = ixyz[i] * rn[0];
             }
 
