@@ -358,10 +358,10 @@ void Trainingsetbuilder::m_generateRandomStructure(int nrpg,const std::vector<gl
                 wxyz[i].x = rn[i*3];
                 //wxyz[i].x = ixyz[i].x;
                 //wxyz[i].y = ixyz[i].y + rn[i*3+1];
-                wxyz[i].y = 0.0f; //rn[i*3+1];
+                wxyz[i].y = rn[i*3+1];
                 //wxyz[i].y = ixyz[i].y;
                 //wxyz[i].z = ixyz[i].z + rn[i*3+2];
-                wxyz[i].z = 0.0f; //rn[i*3+2];
+                wxyz[i].z = rn[i*3+2];
                 //wxyz[i] = ixyz[i] * rn[0];
             }
 
