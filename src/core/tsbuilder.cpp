@@ -85,8 +85,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
     std::vector<double> masses(iptData->getmasses());
 
     // Local pointer to icrd for passing a private class to threads
-    itrnl::Internalcoordinates* licrd = &icrd;
-    licrd->printdata();
+    icrd.printdata();
 
     // Get the maximum number of threads
     int MaxT = omp_get_max_threads();
@@ -124,10 +123,13 @@ void Trainingsetbuilder::calculateTrainingSet() {
     std::string termstr("");
 
     // Begin parallel region
-    #pragma omp parallel default(shared) firstprivate(types,ixyz,masses,params,MaxT,licrd)
+    #pragma omp parallel default(shared) firstprivate(types,ixyz,masses,params,MaxT)
     {
         std::vector<glm::vec3> ixyz_center;
         ixyz_center = ixyz;
+
+        // Thread safe copy of the internal coords calculator
+        itrnl::Internalcoordinates licrd = icrd;
 
         // Create the conservation object;
         //conservation water(ixyz_center,masses);
@@ -200,20 +202,22 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 ---------------------------------*/
                 mgtimer.start_point();
                 // Build the g09 input file for the low level of theory
-                //g09::buildInputg09(nrpg,input,params.llt,"force",types,wxyz,0,1,1);
+                g09::buildInputg09(nrpg,input,params.llt,"force",types,wxyz,0,1,1);
 
                 // Execute the g09 run, if failure occures we restart the loop
-                //g09::execg09(nrpg,input,outsll,chkoutsll);
+                g09::execg09(nrpg,input,outsll,chkoutsll);
 
                 // Build the g09 input file for the high level of theory
                 g09::buildInputg09(nrpg,input,params.hlt,"force",types,wxyz,0,1,1);
 
                 // Execute the g09 run, if failure occures we restart the loop
                 g09::execg09(nrpg,input,outshl,chkoutshl);
-                std::stringstream sso;
+
+                /*std::stringstream sso;
                 std::stringstream ssi;
                 sso << "g09output." << tid << "." << i << ".dat";
                 ssi << "g09input." << tid << "." << i << ".dat";
+
                 std::ofstream instream(ssi.str().c_str());
                 if (instream)
                 {
@@ -233,7 +237,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                     std::cerr << "bad dustin" << std::endl;
                 }
                 instream.close();
-                ostream.close();
+                ostream.close();*/
 
                 mgtimer.end_point();
 
@@ -243,12 +247,12 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 mstimer.start_point();
                 // Append the data to the datapoint string
                 for (int j=0; j<nrpg; ++j) {
-                    //if (!chkoutshl[j] && !chkoutsll[j]) {
-                    if (!chkoutshl[j]) {
+                    if (!chkoutshl[j] && !chkoutsll[j]) {
+                    //if (!chkoutshl[j]) {
                         std::vector<glm::vec3> xyzind(ixyz.size());
                         std::memcpy(&xyzind[0],&wxyz[j*ixyz.size()],ixyz.size()*sizeof(glm::vec3));
-                        datapoint.append(licrd->calculateCSVInternalCoordinates(xyzind));
-                        //datapoint.append(g09::forceFinder(outsll[j]));
+                        datapoint.append(licrd.calculateCSVInternalCoordinates(xyzind));
+                        datapoint.append(g09::forceFinder(outsll[j]));
                         datapoint.append(g09::forceFinder(outshl[j]));
 
                         // Save the data point to the threads private output file output
@@ -358,10 +362,10 @@ void Trainingsetbuilder::m_generateRandomStructure(int nrpg,const std::vector<gl
                 wxyz[i].x = rn[i*3];
                 //wxyz[i].x = ixyz[i].x;
                 //wxyz[i].y = ixyz[i].y + rn[i*3+1];
-                wxyz[i].y = rn[i*3+1];
+                wxyz[i].y = 0.0;//rn[i*3+1];
                 //wxyz[i].y = ixyz[i].y;
                 //wxyz[i].z = ixyz[i].z + rn[i*3+2];
-                wxyz[i].z = rn[i*3+2];
+                wxyz[i].z = 0.0;//rn[i*3+2];
                 //wxyz[i] = ixyz[i] * rn[0];
             }
 

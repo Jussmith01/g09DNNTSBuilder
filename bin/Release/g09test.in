@@ -1,0 +1,19 @@
+#p AM1 force
+
+comment
+
+0 1
+O
+H 1 1.0
+H 1 1.0 2 60.0
+
+--link1--
+#p UHF/6-31g* force
+
+comment
+
+0 1
+O
+H 1 1.0
+H 1 1.0 2 60.0
+
