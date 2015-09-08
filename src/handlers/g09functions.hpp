@@ -117,7 +117,53 @@ inline void execg09(int nrpg,const std::string &input,std::vector<std::string> &
 
     Note: type and xyz must be of same size
 ------------------------------------------*/
-inline void buildInputg09(int nrpg,std::string &input,std::string lot,std::string additional,const std::vector<std::string> &type,const std::vector<glm::vec3> &xyz,int mult,int charge,int nproc) {
+inline void buildCartesianInputg09(int nrpg,std::string &input,std::string lot,std::string additional,const std::vector<std::string> &type,const std::vector<glm::vec3> &xyz,int mult,int charge,int nproc) {
+    // Number of coords per molecule
+    int N = xyz.size()/nrpg;
+
+    // Error check
+    if (type.size()!=static_cast<unsigned int>(N))
+        throwException("type and xyz are not the same size.");
+
+    input="";
+
+    for (int j=0; j<nrpg; ++j) {
+        // Build gaussian 09 input
+        std::stringstream tmpipt;
+        tmpipt.setf( std::ios::scientific, std::ios::floatfield );
+        tmpipt << "\n%nproc=" << nproc << "\n";
+        tmpipt << "#p " << lot << " " << additional << "\n\n";
+        tmpipt << "COMMENT LINE\n\n";
+        tmpipt << mult << "  " << charge << "\n";
+
+        for (uint32_t i = 0; i<type.size(); ++i)
+            tmpipt << type[i] << std::setprecision(8) << " " << xyz[j*N+i].x << " " << xyz[j*N+i].y << " " << xyz[j*N+i].z << "\n";
+
+        tmpipt << "\n";
+
+        if (j < nrpg-1) {
+            tmpipt << "--link1--\n";
+        };
+
+        // Return input string
+        input.append(tmpipt.str());
+    }
+};
+
+/*----------------------------------------
+          Build G09 Input String
+    lot = level of theory
+    additional = more g09 parameters...
+       i.e. forces, opt
+    type = atom type .i.e. O or 8 for Oxygen
+    xyz = coordinates for the atom
+    mult = molecular multiplicity
+    charge = molecular charge
+    nproc = number of processors to use
+
+    Note: type and xyz must be of same size
+------------------------------------------*/
+inline void buildZmatInputg09(int nrpg,std::string &input,std::string lot,std::string additional,const std::string &zmat,int mult,int charge,int nproc) {
     // Number of coords per molecule
     int N = xyz.size()/nrpg;
 

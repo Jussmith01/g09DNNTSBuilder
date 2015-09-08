@@ -75,7 +75,8 @@ class RandomReal {
     std::default_random_engine generator;
     std::vector<int> threadseeds;
 
-    void (RandomReal::*randGen)(float a1,float a2,std::vector<float> &rnv,int N)=0;
+    void (RandomReal::*randGenVec)(float a1,float a2,std::vector<float> &rnv,int N)=0;
+    void (RandomReal::*randGenFlt)(float a1,float a2,float &rnv)      =0;
 
     float arg1;
     float arg2;
@@ -88,19 +89,30 @@ public:
         if (dist.compare("uniform")==0)
         {
             //std::cout << "Random number generator: Using uniform distribution from " << arg1 << " to " << arg2 << std::endl;
-            randGen=&RandomReal::fillVectorUniformDist;
+            randGenVec=&RandomReal::fillVectorUniformDist;
+            randGenFlt=&RandomReal::floatUniformDist;
         }
         else if (dist.compare("normal")==0)
         {
             //std::cout << "Random number generator: Using normal distribution w/ mean " << arg1 << " std. dev. " << arg2 << std::endl;
-            randGen=&RandomReal::fillVectorNormalDist;
+            randGenVec=&RandomReal::fillVectorNormalDist;
+            randGenFlt=&RandomReal::floatNormalDist;
         } else
             dnntsErrorcatch(std::string("Random Distribution not found!"));
     };
 
+    // Set the random value range
+    void setRandomRange(float arg1, float arg2) {
+        this->arg1 = arg1;
+        this->arg2 = arg2;
+    };
+
+    /*--------------------------
+       Vector Filling Functions
+     --------------------------*/
     // Fill a vector with random floats
     void fillVector(std::vector<float> &rnv,int N) {
-        (this->*RandomReal::randGen)(arg1,arg2,rnv,N);
+        (this->*RandomReal::randGenVec)(arg1,arg2,rnv,N);
     };
 
     // Fill a vector with random floats
@@ -128,6 +140,42 @@ public:
             generator.seed(seeds[i]);//Seed the generator
             std::uniform_real_distribution<float> distribution(mini,maxi);//Setup the distribution
             rnv[i] = distribution(generator);//Denerate the random number
+        }
+    };
+
+    /*--------------------------
+      Vector Filling Functions
+    ---------------------------*/
+    // Get a random float
+    void getRandom(float &rnv) {
+        (this->*RandomReal::randGenFlt)(arg1,arg2,rnv);
+    };
+
+    // Fill a vector with random floats
+    void floatNormalDist(float mean,float stdev,float &rnv) {
+        int N=1;
+
+        std::vector<int> seeds(N);
+        ThreadSeedGenerator seedGen(threadseeds,seeds);
+
+        for (int i=0; i<N; ++i) {
+            generator.seed(seeds[i]);//Seed the generator
+            std::normal_distribution<float> distribution(mean,stdev);//Setup the distribution
+            rnv = distribution(generator);//Denerate the random number
+        }
+    };
+
+    // Fill a vector with random floats
+    void floatUniformDist(float maxi,float mini,float &rnv) {
+        int N=1;
+
+        std::vector<int> seeds(N);
+        ThreadSeedGenerator seedGen(threadseeds,seeds);
+
+        for (int i=0; i<N; ++i) {
+            generator.seed(seeds[i]);//Seed the generator
+            std::uniform_real_distribution<float> distribution(mini,maxi);//Setup the distribution
+            rnv = distribution(generator);//Denerate the random number
         }
     };
 };

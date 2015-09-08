@@ -191,7 +191,10 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 ---------------------------------*/
                 // Generate the random structure
                 mrtimer.start_point();
-                m_generateRandomStructure(nrpg,ixyz,wxyz,rnGen);
+                licrd.generateRandomZMat(types,rnGen);
+                //m_generateRandomStructure(nrpg,ixyz,wxyz,rnGen);
+
+                wxyz=ixyz;
 
                 /*ASDUJASIDHIUADHASD*/
                 //water.conserve(wxyz);
@@ -268,7 +271,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 // Loop printer.
                 #pragma omp critical
                 {
-                    loopPrinter(tid,N,i,gcf,gdf);
+                    //loopPrinter(tid,N,i,gcf,gdf);
                 }
 
             } catch (std::string error) {
@@ -285,7 +288,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
         // Final print, shows 100%
         #pragma omp critical
         {
-            loopPrinter(tid,1,1,gcf,gdf);
+            //loopPrinter(tid,1,1,gcf,gdf);
         }
 
         // Close the threads output
@@ -362,10 +365,10 @@ void Trainingsetbuilder::m_generateRandomStructure(int nrpg,const std::vector<gl
                 wxyz[i].x = rn[i*3];
                 //wxyz[i].x = ixyz[i].x;
                 //wxyz[i].y = ixyz[i].y + rn[i*3+1];
-                wxyz[i].y = 0.0;//rn[i*3+1];
+                wxyz[i].y = rn[i*3+1];
                 //wxyz[i].y = ixyz[i].y;
                 //wxyz[i].z = ixyz[i].z + rn[i*3+2];
-                wxyz[i].z = 0.0;//rn[i*3+2];
+                wxyz[i].z = rn[i*3+2];
                 //wxyz[i] = ixyz[i] * rn[0];
             }
 
