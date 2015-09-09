@@ -248,19 +248,11 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 mstimer.start_point();
                 // Append the data to the datapoint string
                 for (int j=0; j<nrpg; ++j) {
-<<<<<<< HEAD
-                    //if (!chkoutshl[j] && !chkoutsll[j]) {
-                    if (!chkoutshl[j] && !chkoutsll[j]) {
-                        std::vector<glm::vec3> xyzind(ixyz.size());
-                        std::memcpy(&xyzind[0],&wxyz[j*ixyz.size()],ixyz.size()*sizeof(glm::vec3));
-                        datapoint.append(licrd->calculateCSVInternalCoordinates(xyzind));
-=======
                     if (!chkoutshl[j] && !chkoutsll[j]) {
                         //if (!chkoutshl[j]) {
                         std::vector<glm::vec3> xyzind(ixyz.size());
                         std::memcpy(&xyzind[0],&wxyz[j*ixyz.size()],ixyz.size()*sizeof(glm::vec3));
                         datapoint.append(licrd.calculateCSVInternalCoordinates(xyzind));
->>>>>>> e32a5b06d4b1b783642413faa0eb6dc835cf9a3d
                         datapoint.append(g09::forceFinder(outsll[j]));
                         datapoint.append(g09::forceFinder(outshl[j]));
 
