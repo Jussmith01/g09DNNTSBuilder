@@ -220,7 +220,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 // Execute the g09 run, if failure occures we restart the loop
                 g09::execg09(nrpg,input,outshl,chkoutshl);
 
-                std::stringstream sso;
+                /*std::stringstream sso;
                 std::stringstream ssi;
                 sso << "g09output." << tid << "." << i << ".dat";
                 ssi << "g09input." << tid << "." << i << ".dat";
@@ -238,7 +238,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                     std::cerr << "bad dustin" << std::endl;
                 }
                 instream.close();
-                ostream.close();
+                ostream.close();*/
 
                 mgtimer.end_point();
 
