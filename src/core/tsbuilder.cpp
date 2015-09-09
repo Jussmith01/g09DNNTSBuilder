@@ -200,10 +200,10 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 ---------------------------------*/
                 mgtimer.start_point();
                 // Build the g09 input file for the low level of theory
-                //g09::buildInputg09(nrpg,input,params.llt,"force",types,wxyz,0,1,1);
+                g09::buildInputg09(nrpg,input,params.llt,"force",types,wxyz,0,1,1);
 
                 // Execute the g09 run, if failure occures we restart the loop
-                //g09::execg09(nrpg,input,outsll,chkoutsll);
+                g09::execg09(nrpg,input,outsll,chkoutsll);
 
                 // Build the g09 input file for the high level of theory
                 g09::buildInputg09(nrpg,input,params.hlt,"force",types,wxyz,0,1,1);
@@ -219,11 +219,11 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 // Append the data to the datapoint string
                 for (int j=0; j<nrpg; ++j) {
                     //if (!chkoutshl[j] && !chkoutsll[j]) {
-                    if (!chkoutshl[j]) {
+                    if (!chkoutshl[j] && !chkoutsll[j]) {
                         std::vector<glm::vec3> xyzind(ixyz.size());
                         std::memcpy(&xyzind[0],&wxyz[j*ixyz.size()],ixyz.size()*sizeof(glm::vec3));
                         datapoint.append(licrd->calculateCSVInternalCoordinates(xyzind));
-                        //datapoint.append(g09::forceFinder(outsll[j]));
+                        datapoint.append(g09::forceFinder(outsll[j]));
                         datapoint.append(g09::forceFinder(outshl[j]));
 
                         // Save the data point to the threads private output file output
