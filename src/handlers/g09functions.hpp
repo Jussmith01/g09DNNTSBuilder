@@ -163,13 +163,7 @@ inline void buildCartesianInputg09(int nrpg,std::string &input,std::string lot,s
 
     Note: type and xyz must be of same size
 ------------------------------------------*/
-inline void buildZmatInputg09(int nrpg,std::string &input,std::string lot,std::string additional,const std::string &zmat,int mult,int charge,int nproc) {
-    // Number of coords per molecule
-    int N = xyz.size()/nrpg;
-
-    // Error check
-    if (type.size()!=static_cast<unsigned int>(N))
-        throwException("type and xyz are not the same size.");
+inline void buildZmatInputg09(int nrpg,std::string &input,std::string lot,std::string additional,const std::vector< std::string > &zmat,int mult,int charge,int nproc) {
 
     input="";
 
@@ -182,8 +176,7 @@ inline void buildZmatInputg09(int nrpg,std::string &input,std::string lot,std::s
         tmpipt << "COMMENT LINE\n\n";
         tmpipt << mult << "  " << charge << "\n";
 
-        for (uint32_t i = 0; i<type.size(); ++i)
-            tmpipt << type[i] << std::setprecision(8) << " " << xyz[j*N+i].x << " " << xyz[j*N+i].y << " " << xyz[j*N+i].z << "\n";
+        tmpipt << zmat[j] << "\n";
 
         tmpipt << "\n";
 

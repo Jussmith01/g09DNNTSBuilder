@@ -278,23 +278,26 @@ void itrnl::Internalcoordinates::m_generateRandomIntrlStruct(RandomReal &rnGen) 
     //std::cout << "GENERATING RANDOM INTERNALS\n";
 
     //std::cout << "|---BONDS---|\n";
-    for (unsigned i=0;i<ibnds.size();++i) {
+    for (unsigned i=0; i<ibnds.size(); ++i) {
         rnGen.setRandomRange(ibnds[i]-0.1f,ibnds[i]+0.1f);
         rnGen.getRandom(bnds[i]);
+        bnds[i]=ibnds[i];
         //std::cout << " ibond=" << ibnds[i] << " rbond=" << bnds[i] << std::endl;
     }
 
     //std::cout << "|---ANGLES---|\n";
-    for (unsigned i=0;i<iangs.size();++i) {
-        rnGen.setRandomRange(iangs[i]-0.5f,iangs[i]+0.5f);
+    for (unsigned i=0; i<iangs.size(); ++i) {
+        rnGen.setRandomRange(iangs[i]-0.1f,iangs[i]+0.1f);
         rnGen.getRandom(angs[i]);
+        angs[i]=iangs[i];
         //std::cout << " iangles=" << iangs[i] << " rangles=" << angs[i] << std::endl;
     }
 
     //std::cout << "|---DIHEDRALS---|\n";
-    for (unsigned i=0;i<idhls.size();++i) {
-        rnGen.setRandomRange(idhls[i]-0.5f,idhls[i]+0.5f);
+    for (unsigned i=0; i<idhls.size(); ++i) {
+        rnGen.setRandomRange(idhls[i]-0.1f,idhls[i]+0.1f);
         rnGen.getRandom(dhls[i]);
+        dhls[i]=idhls[i];
         //std::cout << " idihedrals=" << idhls[i] << " rdihedrals=" << dhls[i] << std::endl;
     }
 };
@@ -304,37 +307,39 @@ void itrnl::Internalcoordinates::m_generateRandomIntrlStruct(RandomReal &rnGen) 
 Generate a random zmatrix for a g09 input
 
 ------------------------------------------*/
-std::string itrnl::Internalcoordinates::generateRandomZMat(const std::vector<std::string> &type,RandomReal &rnGen) {
+void itrnl::Internalcoordinates::generateRandomZMat(std::vector<std::string> &zmats,const std::vector<std::string> &type,RandomReal &rnGen) {
 
-    m_generateRandomIntrlStruct(rnGen);
+    for (auto&& zms : zmats) {
+        m_generateRandomIntrlStruct(rnGen);
 
-    std::vector< std::stringstream > zmat_line(type.size());
-    for (auto&& z : zmat_line)
-        z.setf( std::ios::fixed, std::ios::floatfield );
+        std::vector< std::stringstream > zmat_line(type.size());
+        for (auto&& z : zmat_line)
+            z.setf( std::ios::fixed, std::ios::floatfield );
 
-    for (unsigned i=0;i<type.size();++i) {
-        zmat_line[i] << type[i] << " ";
+        for (unsigned i=0; i<type.size(); ++i) {
+            zmat_line[i] << type[i] << " ";
+        }
+
+        for (unsigned i=0; i<bidx.size(); ++i) {
+            zmat_line[bidx[i].v2] << bidx[i].v1+1 << " " << std::setprecision(7) << bnds[i] << " ";
+        }
+
+        for (unsigned i=0; i<aidx.size(); ++i) {
+            zmat_line[aidx[i].v3] << aidx[i].v2+1 << " " << std::setprecision(7) << angs[i] * 180.0f / M_PI << " ";
+        }
+
+        for (unsigned i=0; i<didx.size(); ++i) {
+            zmat_line[didx[i].v4] << didx[i].v1+1 << " " << std::setprecision(7) << dhls[i] * 180.0f / M_PI << " ";
+        }
+
+        std::cout << "|---ZMAT TEST---|\n";
+        std::stringstream zmat;
+        for (auto&& z : zmat_line)
+            zmat << z.str() << std::endl;
+
+        zms = zmat.str();
+
+        std::cout << zms;
     }
-
-    for (unsigned i=0;i<bidx.size();++i) {
-        zmat_line[bidx[i].v2] << bidx[i].v1+1 << " " << std::setprecision(7) << bnds[i] << " ";
-    }
-
-    for (unsigned i=0;i<aidx.size();++i) {
-        zmat_line[aidx[i].v3] << aidx[i].v2+1 << " " << std::setprecision(7) << angs[i] * 180.0f / M_PI << " ";
-    }
-
-    for (unsigned i=0;i<didx.size();++i) {
-        zmat_line[didx[i].v4] << didx[i].v1+1 << " " << std::setprecision(7) << dhls[i] * 180.0f / M_PI << " ";
-    }
-
-    std::cout << "|---ZMAT TEST---|\n";
-    std::stringstream zmat;
-    for (auto&& z : zmat_line)
-        zmat << z.str() << std::endl;
-
-    std::cout << zmat.str() << std::endl;
-
-    return zmat.str();
 };
 

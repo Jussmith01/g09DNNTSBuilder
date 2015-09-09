@@ -159,7 +159,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
         // Initialize counters
         int i(0); // Loop counter
         int gcf(0); // Gaussian Convergence Fail counter
-        int gdf(0); // Geometry distance failure
+        //int gdf(0); // Geometry distance failure
 
         // Initialize some containers
         std::string datapoint;
@@ -168,6 +168,9 @@ void Trainingsetbuilder::calculateTrainingSet() {
         std::vector<bool> chkoutsll(nrpg);
         std::vector<std::string> outshl(nrpg);
         std::vector<bool> chkoutshl(nrpg);
+
+        // Z-matrix Stuff
+        std::vector<std::string> zmat(nrpg);
 
         // Define and open thread output
         std::ofstream tsoutt;
@@ -191,10 +194,8 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 ---------------------------------*/
                 // Generate the random structure
                 mrtimer.start_point();
-                licrd.generateRandomZMat(types,rnGen);
+                licrd.generateRandomZMat(zmat,types,rnGen);
                 //m_generateRandomStructure(nrpg,ixyz,wxyz,rnGen);
-
-                wxyz=ixyz;
 
                 /*ASDUJASIDHIUADHASD*/
                 //water.conserve(wxyz);
@@ -205,42 +206,38 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 ---------------------------------*/
                 mgtimer.start_point();
                 // Build the g09 input file for the low level of theory
-                g09::buildInputg09(nrpg,input,params.llt,"force",types,wxyz,0,1,1);
+                //g09::buildZmatInputg09(nrpg,input,params.llt,"force",types,wxyz,0,1,1);
+                g09::buildZmatInputg09(nrpg,input,params.llt,"force",zmat,0,1,1);
 
                 // Execute the g09 run, if failure occures we restart the loop
                 g09::execg09(nrpg,input,outsll,chkoutsll);
 
                 // Build the g09 input file for the high level of theory
-                g09::buildInputg09(nrpg,input,params.hlt,"force",types,wxyz,0,1,1);
+                //g09::buildZmatInputg09(nrpg,input,params.hlt,"force",types,wxyz,0,1,1);
+                g09::buildZmatInputg09(nrpg,input,params.hlt,"force",zmat,0,1,1);
 
                 // Execute the g09 run, if failure occures we restart the loop
                 g09::execg09(nrpg,input,outshl,chkoutshl);
 
-                /*std::stringstream sso;
+                std::stringstream sso;
                 std::stringstream ssi;
                 sso << "g09output." << tid << "." << i << ".dat";
                 ssi << "g09input." << tid << "." << i << ".dat";
 
                 std::ofstream instream(ssi.str().c_str());
-                if (instream)
-                {
+                if (instream) {
                     instream << input;
-                }
-                else
-                {
+                } else {
                     std::cerr << "bad dustin" << std::endl;
                 }
                 std::ofstream ostream(sso.str().c_str());
-                if (ostream)
-                {
+                if (ostream) {
                     ostream << outshl[0];
-                }
-                else
-                {
+                } else {
                     std::cerr << "bad dustin" << std::endl;
                 }
                 instream.close();
-                ostream.close();*/
+                ostream.close();
 
                 mgtimer.end_point();
 
@@ -251,7 +248,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 // Append the data to the datapoint string
                 for (int j=0; j<nrpg; ++j) {
                     if (!chkoutshl[j] && !chkoutsll[j]) {
-                    //if (!chkoutshl[j]) {
+                        //if (!chkoutshl[j]) {
                         std::vector<glm::vec3> xyzind(ixyz.size());
                         std::memcpy(&xyzind[0],&wxyz[j*ixyz.size()],ixyz.size()*sizeof(glm::vec3));
                         datapoint.append(licrd.calculateCSVInternalCoordinates(xyzind));
