@@ -1,6 +1,9 @@
 #ifndef INTERNALS_H
 #define INTERNALS_H
 
+// Random
+#include "../utils/randnormflt.h"
+
 namespace itrnl {
 
 /*----------Bond Index-------------
@@ -115,6 +118,10 @@ class Internalcoordinates {
     std::vector<float> angs; // Working storage for angles
     std::vector<float> dhls; // Working storage for dihedrals
 
+    std::vector<float> ibnds; // Storage Initial Struct for bonds
+    std::vector<float> iangs; // Storage Initial Struct for angles
+    std::vector<float> idhls; // Storage Initial Struct for dihedrals
+
     //Internalcoordinates () {}; // Private default constructor
 
     // Calculate the bonding index
@@ -138,16 +145,23 @@ class Internalcoordinates {
     // Create and return Comma Separated Values Internal Coordinates string
     std::string m_createCSVICstring(const std::vector<glm::vec3> &xyz);
 
+    // Calculate the values for the internal coords based on xyz input
+    void m_calculateInternalCoordinates(const std::vector<glm::vec3> &xyz);
+
+    // Calculate the CSV (Comma Separated Values) string of internal coords based on xyz input
+    void m_generateRandomIntrlStruct(RandomReal &rnGen);
+
 public:
 
-    // Only public constructor
+    // Class index constructor
     Internalcoordinates (const std::vector< glm::ivec2 > &mbond) {
         try {
-
+            /* Determing Internal Coords */
             m_calculateBondIndex(mbond);
             m_calculateAngleIndex();
             m_calculateDihedralIndex();
 
+            /* Allocate working memory */
             bnds.resize(bidx.size());
             angs.resize(aidx.size());
             dhls.resize(didx.size());
@@ -155,8 +169,35 @@ public:
         } catch (std::string error) dnntsErrorcatch(error);
     };
 
+    // Class index and initial iternals constructor
+    Internalcoordinates (const std::vector< glm::ivec2 > &mbond,const std::vector<glm::vec3> &ixyz) {
+        try {
+            /* Determing (IC) Internal Coords Index */
+            m_calculateBondIndex(mbond);
+            m_calculateAngleIndex();
+            m_calculateDihedralIndex();
+
+            /* Allocate working IC memory */
+            bnds.resize(bidx.size());
+            angs.resize(aidx.size());
+            dhls.resize(didx.size());
+
+            /* Allocate Initial  IC memory */
+            ibnds.resize(bidx.size());
+            iangs.resize(aidx.size());
+            idhls.resize(didx.size());
+
+            /* Calculate and store the initial IC */
+            m_calculateInternalCoordinates(ixyz);
+
+        } catch (std::string error) dnntsErrorcatch(error);
+    };
+
     // Calculate the CSV (Comma Separated Values) string of internal coords based on xyz input
     std::string calculateCSVInternalCoordinates(const std::vector<glm::vec3> &xyz);
+
+    // Calculate the CSV (Comma Separated Values) string of internal coords based on xyz input
+    void generateRandomZMat(std::vector<std::string> &zmats,const std::vector<std::string> &type,RandomReal &rnGen);
 
     // Data Printer
     void printdata() {
@@ -176,6 +217,10 @@ public:
         bnds.clear();
         angs.clear();
         dhls.clear();
+
+        ibnds.clear();
+        iangs.clear();
+        idhls.clear();
     }
 };
 

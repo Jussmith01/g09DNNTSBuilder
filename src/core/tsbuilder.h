@@ -22,7 +22,7 @@ class Trainingsetbuilder {
 public:
     // Constructor
     Trainingsetbuilder (ipt::input *iptData,FlagHandler *args) :
-        icrd(iptData->getbonds()),routecout(false) {
+        icrd(iptData->getbonds(),iptData->getxyz()),routecout(false) {
         // Save a pointer to the input data class
         this->iptData = iptData;
         if (this->iptData == NULL)

@@ -85,8 +85,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
     std::vector<double> masses(iptData->getmasses());
 
     // Local pointer to icrd for passing a private class to threads
-    itrnl::Internalcoordinates* licrd = &icrd;
-    licrd->printdata();
+    icrd.printdata();
 
     // Get the maximum number of threads
     int MaxT = omp_get_max_threads();
@@ -124,10 +123,13 @@ void Trainingsetbuilder::calculateTrainingSet() {
     std::string termstr("");
 
     // Begin parallel region
-    #pragma omp parallel default(shared) firstprivate(types,ixyz,masses,params,MaxT,licrd)
+    #pragma omp parallel default(shared) firstprivate(types,ixyz,masses,params,MaxT)
     {
         std::vector<glm::vec3> ixyz_center;
         ixyz_center = ixyz;
+
+        // Thread safe copy of the internal coords calculator
+        itrnl::Internalcoordinates licrd = icrd;
 
         // Create the conservation object;
         //conservation water(ixyz_center,masses);
@@ -157,7 +159,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
         // Initialize counters
         int i(0); // Loop counter
         int gcf(0); // Gaussian Convergence Fail counter
-        int gdf(0); // Geometry distance failure
+        //int gdf(0); // Geometry distance failure
 
         // Initialize some containers
         std::string datapoint;
@@ -166,6 +168,9 @@ void Trainingsetbuilder::calculateTrainingSet() {
         std::vector<bool> chkoutsll(nrpg);
         std::vector<std::string> outshl(nrpg);
         std::vector<bool> chkoutshl(nrpg);
+
+        // Z-matrix Stuff
+        std::vector<std::string> zmat(nrpg);
 
         // Define and open thread output
         std::ofstream tsoutt;
@@ -189,7 +194,8 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 ---------------------------------*/
                 // Generate the random structure
                 mrtimer.start_point();
-                m_generateRandomStructure(nrpg,ixyz,wxyz,rnGen);
+                licrd.generateRandomZMat(zmat,types,rnGen);
+                //m_generateRandomStructure(nrpg,ixyz,wxyz,rnGen);
 
                 /*ASDUJASIDHIUADHASD*/
                 //water.conserve(wxyz);
@@ -199,17 +205,41 @@ void Trainingsetbuilder::calculateTrainingSet() {
 
                 ---------------------------------*/
                 mgtimer.start_point();
+
                 // Build the g09 input file for the low level of theory
-                g09::buildInputg09(nrpg,input,params.llt,"force",types,wxyz,0,1,1);
+                //g09::buildZmatInputg09(nrpg,input,params.llt,"force",types,wxyz,0,1,1);
+                g09::buildZmatInputg09(nrpg,input,params.llt,"force",zmat,0,1,1);
 
                 // Execute the g09 run, if failure occures we restart the loop
                 g09::execg09(nrpg,input,outsll,chkoutsll);
 
                 // Build the g09 input file for the high level of theory
-                g09::buildInputg09(nrpg,input,params.hlt,"force",types,wxyz,0,1,1);
+                //g09::buildZmatInputg09(nrpg,input,params.hlt,"force",types,wxyz,0,1,1);
+                g09::buildZmatInputg09(nrpg,input,params.hlt,"force",zmat,0,1,1);
 
                 // Execute the g09 run, if failure occures we restart the loop
                 g09::execg09(nrpg,input,outshl,chkoutshl);
+
+                std::stringstream sso;
+                std::stringstream ssi;
+                sso << "g09output." << tid << "." << i << ".dat";
+                ssi << "g09input." << tid << "." << i << ".dat";
+
+                std::ofstream instream(ssi.str().c_str());
+                if (instream) {
+                    instream << input;
+                } else {
+                    std::cerr << "bad dustin" << std::endl;
+                }
+                std::ofstream ostream(sso.str().c_str());
+                if (ostream) {
+                    ostream << outshl[0];
+                } else {
+                    std::cerr << "bad dustin" << std::endl;
+                }
+                instream.close();
+                ostream.close();
+
                 mgtimer.end_point();
 
                 /*----Creating CSV Datapoint------
@@ -218,11 +248,19 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 mstimer.start_point();
                 // Append the data to the datapoint string
                 for (int j=0; j<nrpg; ++j) {
+<<<<<<< HEAD
                     //if (!chkoutshl[j] && !chkoutsll[j]) {
                     if (!chkoutshl[j] && !chkoutsll[j]) {
                         std::vector<glm::vec3> xyzind(ixyz.size());
                         std::memcpy(&xyzind[0],&wxyz[j*ixyz.size()],ixyz.size()*sizeof(glm::vec3));
                         datapoint.append(licrd->calculateCSVInternalCoordinates(xyzind));
+=======
+                    if (!chkoutshl[j] && !chkoutsll[j]) {
+                        //if (!chkoutshl[j]) {
+                        std::vector<glm::vec3> xyzind(ixyz.size());
+                        std::memcpy(&xyzind[0],&wxyz[j*ixyz.size()],ixyz.size()*sizeof(glm::vec3));
+                        datapoint.append(licrd.calculateCSVInternalCoordinates(xyzind));
+>>>>>>> e32a5b06d4b1b783642413faa0eb6dc835cf9a3d
                         datapoint.append(g09::forceFinder(outsll[j]));
                         datapoint.append(g09::forceFinder(outshl[j]));
 
@@ -239,7 +277,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 // Loop printer.
                 #pragma omp critical
                 {
-                    loopPrinter(tid,N,i,gcf,gdf);
+                    //loopPrinter(tid,N,i,gcf,gdf);
                 }
 
             } catch (std::string error) {
@@ -256,7 +294,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
         // Final print, shows 100%
         #pragma omp critical
         {
-            loopPrinter(tid,1,1,gcf,gdf);
+            //loopPrinter(tid,1,1,gcf,gdf);
         }
 
         // Close the threads output
