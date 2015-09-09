@@ -24,8 +24,10 @@ void ipt::input::readinput() {
     using namespace std;
     //  Initiate search parameters
     regex pattern_tts("TTS", regex_constants::icase);
-    regex pattern_lot("LOT[[:s:]]*=[[:s:]]*([[:w:]]+)", regex_constants::icase);
-    regex pattern_hot("HOT[[:s:]]*=[[:s:]]*([[:w:]]+)", regex_constants::icase);
+    //regex pattern_lot("LOT[[:s:]]*=[[:s:]]*([[:w:]]+)", regex_constants::icase);
+    //regex pattern_hot("HOT[[:s:]]*=[[:s:]]*([[:w:]]+)", regex_constants::icase);
+    regex pattern_lot("LOT\\s*=\\s*(\\S*)\\s*#*", regex_constants::icase);
+    regex pattern_hot("HOT\\s*=\\s*(\\S*)\\s*#*", regex_constants::icase);
     regex pattern_std("STD", regex_constants::icase);
     regex pattern_mean("MEAN", regex_constants::icase);
     regex pattern_nrpg("NRPG", regex_constants::icase);
@@ -101,6 +103,7 @@ void ipt::input::readinput() {
             // Find high level of theory
             if (regex_search(line, m, pattern_hot)) {
                 params.hlt = m.str(1);
+                cout << "HL: " << params.hlt << std::endl;
             }
             //  Find the bond links
             if (regex_search(line, pattern_bonds)) {

@@ -248,6 +248,26 @@ std::string itrnl::Internalcoordinates::calculateCSVInternalCoordinates(const st
     return m_createCSVICstring(xyz);
 };
 
+/*--------Get CSV String From IC-----------
+
+Returns a string of the Internal Coordinates
+(IC) with a bond,angle,dihedral count pre-
+pended.
+
+------------------------------------------*/
+std::string itrnl::Internalcoordinates::getCSVStringWithIC(const std::vector<float> &ic) {
+    std::stringstream icstr;
+    icstr << bnds.size() << "," << angs.size() << "," << dhls.size() << ",";
+    icstr.setf( std::ios::scientific, std::ios::floatfield );
+
+    for (auto&& i : ic)
+        icstr << std::setprecision(7) << i << ",";
+
+    std::string rtn(icstr.str());
+
+    return rtn;
+};
+
 /*---------Calculate Numeric IC-----------
 
 Calculates internal coordinates of an xyz input
@@ -279,25 +299,22 @@ void itrnl::Internalcoordinates::m_generateRandomIntrlStruct(RandomReal &rnGen) 
 
     //std::cout << "|---BONDS---|\n";
     for (unsigned i=0; i<ibnds.size(); ++i) {
-        rnGen.setRandomRange(ibnds[i]-0.1f,ibnds[i]+0.1f);
+        rnGen.setRandomRange(ibnds[i]-0.2f,ibnds[i]+0.2f);
         rnGen.getRandom(bnds[i]);
-        bnds[i]=ibnds[i];
         //std::cout << " ibond=" << ibnds[i] << " rbond=" << bnds[i] << std::endl;
     }
 
     //std::cout << "|---ANGLES---|\n";
     for (unsigned i=0; i<iangs.size(); ++i) {
-        rnGen.setRandomRange(iangs[i]-0.1f,iangs[i]+0.1f);
+        rnGen.setRandomRange(iangs[i]-0.2f,iangs[i]+0.2f);
         rnGen.getRandom(angs[i]);
-        angs[i]=iangs[i];
         //std::cout << " iangles=" << iangs[i] << " rangles=" << angs[i] << std::endl;
     }
 
     //std::cout << "|---DIHEDRALS---|\n";
     for (unsigned i=0; i<idhls.size(); ++i) {
-        rnGen.setRandomRange(idhls[i]-0.1f,idhls[i]+0.1f);
+        rnGen.setRandomRange(idhls[i]-0.2f,idhls[i]+0.2f);
         rnGen.getRandom(dhls[i]);
-        dhls[i]=idhls[i];
         //std::cout << " idihedrals=" << idhls[i] << " rdihedrals=" << dhls[i] << std::endl;
     }
 };
@@ -307,9 +324,12 @@ void itrnl::Internalcoordinates::m_generateRandomIntrlStruct(RandomReal &rnGen) 
 Generate a random zmatrix for a g09 input
 
 ------------------------------------------*/
-void itrnl::Internalcoordinates::generateRandomZMat(std::vector<std::string> &zmats,const std::vector<std::string> &type,RandomReal &rnGen) {
+void itrnl::Internalcoordinates::generateRandomZMat(std::vector<std::vector<float>> &ic,std::vector<std::string> &zmats,const std::vector<std::string> &type,RandomReal &rnGen) {
 
+    unsigned k=0;
     for (auto&& zms : zmats) {
+
+        ic[k].clear();
         m_generateRandomIntrlStruct(rnGen);
 
         std::vector< std::stringstream > zmat_line(type.size());
@@ -321,25 +341,29 @@ void itrnl::Internalcoordinates::generateRandomZMat(std::vector<std::string> &zm
         }
 
         for (unsigned i=0; i<bidx.size(); ++i) {
+            ic[k].push_back(bnds[i]);
             zmat_line[bidx[i].v2] << bidx[i].v1+1 << " " << std::setprecision(7) << bnds[i] << " ";
         }
 
         for (unsigned i=0; i<aidx.size(); ++i) {
+            ic[k].push_back(angs[i]);
             zmat_line[aidx[i].v3] << aidx[i].v2+1 << " " << std::setprecision(7) << angs[i] * 180.0f / M_PI << " ";
         }
 
         for (unsigned i=0; i<didx.size(); ++i) {
+            ic[k].push_back(dhls[i]);
             zmat_line[didx[i].v4] << didx[i].v1+1 << " " << std::setprecision(7) << dhls[i] * 180.0f / M_PI << " ";
         }
 
-        std::cout << "|---ZMAT TEST---|\n";
+        //std::cout << "|---ZMAT TEST---|\n";
         std::stringstream zmat;
         for (auto&& z : zmat_line)
             zmat << z.str() << std::endl;
 
         zms = zmat.str();
+        ++k;
+        //std::cout << zms;
 
-        std::cout << zms;
     }
 };
 

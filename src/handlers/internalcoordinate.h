@@ -197,7 +197,10 @@ public:
     std::string calculateCSVInternalCoordinates(const std::vector<glm::vec3> &xyz);
 
     // Calculate the CSV (Comma Separated Values) string of internal coords based on xyz input
-    void generateRandomZMat(std::vector<std::string> &zmats,const std::vector<std::string> &type,RandomReal &rnGen);
+    std::string getCSVStringWithIC(const std::vector<float> &ic);
+
+    // Calculate the CSV (Comma Separated Values) string of internal coords based on xyz input
+    void generateRandomZMat(std::vector< std::vector<float> > &ic,std::vector<std::string> &zmats,const std::vector<std::string> &type,RandomReal &rnGen);
 
     // Data Printer
     void printdata() {
@@ -221,7 +224,7 @@ public:
         ibnds.clear();
         iangs.clear();
         idhls.clear();
-    }
+    };
 };
 
 };
