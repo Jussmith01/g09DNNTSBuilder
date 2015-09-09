@@ -206,6 +206,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
 
                 ---------------------------------*/
                 mgtimer.start_point();
+
                 // Build the g09 input file for the low level of theory
                 //g09::buildZmatInputg09(nrpg,input,params.llt,"force",types,wxyz,0,1,1);
                 g09::buildZmatInputg09(nrpg,input,params.llt,"force",zmat,0,1,1);

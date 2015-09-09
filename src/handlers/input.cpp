@@ -103,7 +103,6 @@ void ipt::input::readinput() {
             // Find high level of theory
             if (regex_search(line, m, pattern_hot)) {
                 params.hlt = m.str(1);
-                cout << "HL: " << params.hlt << std::endl;
             }
             //  Find the bond links
             if (regex_search(line, pattern_bonds)) {
