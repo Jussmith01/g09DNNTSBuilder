@@ -206,6 +206,7 @@ inline void buildZmatInputg09(int nrpg,std::string &input,std::string lot,std::s
         std::stringstream tmpipt;
         tmpipt.setf( std::ios::scientific, std::ios::floatfield );
         tmpipt << "\n%nproc=" << nproc << "\n";
+        tmpipt << "\n%mem=" << 200 << "MB\n";
         tmpipt << "#p " << lot << " " << additional << "\n\n";
         tmpipt << "COMMENT LINE\n\n";
         tmpipt << mult << "  " << charge << "\n";
