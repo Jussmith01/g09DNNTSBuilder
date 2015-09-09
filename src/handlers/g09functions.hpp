@@ -39,6 +39,40 @@ inline std::string forceFinder(const std::string &filename) {
 };
 
 /*----------------------------------------
+  Get G09 Internal Coordinate Forces
+
+------------------------------------------*/
+inline std::string icforceFinder(const std::string &filename) {
+    using namespace std;
+
+    stringstream force_csv;
+    force_csv.setf( std::ios::scientific, std::ios::floatfield );
+
+    regex pattern_force("Internal");
+    regex pattern_cart("Internal");
+    regex pattern_value("\\-?[[:d:]]+\\.[[:d:]]+");
+    string line;
+    istringstream stream(filename);
+    while (getline(stream, line)) {
+        if (regex_search(line, pattern_force)) {
+            string line2;
+            while (getline(stream, line2) && !regex_search(line2, pattern_cart)) {
+                //std::cout << line2 << std::endl;
+                sregex_iterator pos(line2.begin(), line2.end(), pattern_value);
+                sregex_iterator end;
+                for (; pos != end; ++pos) {
+                    force_csv << std::setprecision(7) << atof(pos->str(0).c_str()) << ",";
+                }
+            }
+        }
+    }
+
+    //std::cout << " FORCE: " << force_csv.str() << std::endl;
+
+    return force_csv.str();
+};
+
+/*----------------------------------------
         Parse a Multi Gaussian Run
 Parse many output into individual outputs.
 ------------------------------------------*/
@@ -137,7 +171,7 @@ inline void buildCartesianInputg09(int nrpg,std::string &input,std::string lot,s
         tmpipt << mult << "  " << charge << "\n";
 
         for (uint32_t i = 0; i<type.size(); ++i)
-            tmpipt << type[i] << std::setprecision(8) << " " << xyz[j*N+i].x << " " << xyz[j*N+i].y << " " << xyz[j*N+i].z << "\n";
+            tmpipt << type[i] << std::setprecision(7) << " " << xyz[j*N+i].x << " " << xyz[j*N+i].y << " " << xyz[j*N+i].z << "\n";
 
         tmpipt << "\n";
 

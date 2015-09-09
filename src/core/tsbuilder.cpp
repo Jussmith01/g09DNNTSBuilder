@@ -159,7 +159,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
         // Initialize counters
         int i(0); // Loop counter
         int gcf(0); // Gaussian Convergence Fail counter
-        //int gdf(0); // Geometry distance failure
+        int gdf(0); // Geometry distance failure
 
         // Initialize some containers
         std::string datapoint;
@@ -171,6 +171,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
 
         // Z-matrix Stuff
         std::vector<std::string> zmat(nrpg);
+        std::vector< std::vector<float> > icord(nrpg);
 
         // Define and open thread output
         std::ofstream tsoutt;
@@ -194,7 +195,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 ---------------------------------*/
                 // Generate the random structure
                 mrtimer.start_point();
-                licrd.generateRandomZMat(zmat,types,rnGen);
+                licrd.generateRandomZMat(icord,zmat,types,rnGen);
                 //m_generateRandomStructure(nrpg,ixyz,wxyz,rnGen);
 
                 /*ASDUJASIDHIUADHASD*/
@@ -250,11 +251,14 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 for (int j=0; j<nrpg; ++j) {
                     if (!chkoutshl[j] && !chkoutsll[j]) {
                         //if (!chkoutshl[j]) {
-                        std::vector<glm::vec3> xyzind(ixyz.size());
-                        std::memcpy(&xyzind[0],&wxyz[j*ixyz.size()],ixyz.size()*sizeof(glm::vec3));
-                        datapoint.append(licrd.calculateCSVInternalCoordinates(xyzind));
-                        datapoint.append(g09::forceFinder(outsll[j]));
-                        datapoint.append(g09::forceFinder(outshl[j]));
+                        //std::vector<glm::vec3> xyzind(ixyz.size());
+                        //std::memcpy(&xyzind[0],&wxyz[j*ixyz.size()],ixyz.size()*sizeof(glm::vec3));
+
+                        datapoint.append(licrd.getCSVStringWithIC(icord[j]));
+
+                        //datapoint.append(licrd.calculateCSVInternalCoordinates(xyzind));
+                        datapoint.append(g09::icforceFinder(outsll[j]));
+                        datapoint.append(g09::icforceFinder(outshl[j]));
 
                         // Save the data point to the threads private output file output
                         tsoutt << datapoint << std::endl;
@@ -269,7 +273,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 // Loop printer.
                 #pragma omp critical
                 {
-                    //loopPrinter(tid,N,i,gcf,gdf);
+                    loopPrinter(tid,N,i,gcf,gdf);
                 }
 
             } catch (std::string error) {
@@ -286,7 +290,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
         // Final print, shows 100%
         #pragma omp critical
         {
-            //loopPrinter(tid,1,1,gcf,gdf);
+            loopPrinter(tid,1,1,gcf,gdf);
         }
 
         // Close the threads output
