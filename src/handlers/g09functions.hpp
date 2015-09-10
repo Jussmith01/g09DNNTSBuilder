@@ -133,7 +133,8 @@ inline void execg09(int nrpg,const std::string &input,std::vector<std::string> &
             std::ofstream gaue("gauerror.log");
             gaue << out[j] << std::endl;
             gaue.close();
-            throwException("Unrecognized Gaussian 09 Failure; saving output as gauerror.log");
+            chkout[j]=true;
+            //throwException("Unrecognized Gaussian 09 Failure; saving output as gauerror.log");
         }
     }
 };
@@ -206,7 +207,7 @@ inline void buildZmatInputg09(int nrpg,std::string &input,std::string lot,std::s
         std::stringstream tmpipt;
         tmpipt.setf( std::ios::scientific, std::ios::floatfield );
         tmpipt << "\n%nproc=" << nproc << "\n";
-        tmpipt << "\n%mem=" << 200 << "MB\n";
+        tmpipt << "\n%mem=" << 500 << "MB\n";
         tmpipt << "#p " << lot << " " << additional << "\n\n";
         tmpipt << "COMMENT LINE\n\n";
         tmpipt << mult << "  " << charge << "\n";
