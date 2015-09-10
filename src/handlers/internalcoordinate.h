@@ -3,6 +3,7 @@
 
 // Random
 #include "../utils/randnormflt.h"
+#include <fstream>
 
 namespace itrnl {
 
@@ -122,6 +123,8 @@ class Internalcoordinates {
     std::vector<float> iangs; // Storage Initial Struct for angles
     std::vector<float> idhls; // Storage Initial Struct for dihedrals
 
+    unsigned cnt;
+
     //Internalcoordinates () {}; // Private default constructor
 
     // Calculate the bonding index
@@ -154,7 +157,9 @@ class Internalcoordinates {
 public:
 
     // Class index constructor
-    Internalcoordinates (const std::vector< glm::ivec2 > &mbond) {
+    Internalcoordinates (const std::vector< glm::ivec2 > &mbond) :
+        cnt(0)
+    {
         try {
             /* Determing Internal Coords */
             m_calculateBondIndex(mbond);
