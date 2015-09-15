@@ -262,6 +262,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
 
                         // Save the data point to the threads private output file output
                         tsoutt << datapoint << std::endl;
+                        std::cout << "DATAPOINT(" << i << "," << j << ")" << std::endl;
                         datapoint.clear();
                         ++i;
                     } else {
