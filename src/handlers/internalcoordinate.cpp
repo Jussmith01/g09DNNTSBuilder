@@ -302,14 +302,7 @@ void itrnl::Internalcoordinates::m_generateRandomIntrlStruct(RandomReal &rnGen) 
         rnGen.setRandomRange(ibnds[i]-0.2f,ibnds[i]+0.2f);
         rnGen.getRandom(bnds[i]);
 
-        if (i!=0)
-            bnds[i]=ibnds[i];
-
-        if (i==0) {
-            bnds[i]=ibnds[i]-0.20+0.002*cnt;
-            ++cnt;
-        }
-
+        bnds[i]=ibnds[i];
         //std::cout << " ibond=" << ibnds[i] << " rbond=" << bnds[i] << std::endl;
     }
 
@@ -325,7 +318,9 @@ void itrnl::Internalcoordinates::m_generateRandomIntrlStruct(RandomReal &rnGen) 
     for (unsigned i=0; i<idhls.size(); ++i) {
         rnGen.setRandomRange(idhls[i]-0.2f,idhls[i]+0.2f);
         rnGen.getRandom(dhls[i]);
-        dhls[i] = idhls[i];
+        //dhls[i] = idhls[i];
+        dhls[i] = idhls[i]-3.14+0.02*cnt;
+        ++cnt;
         //std::cout << " idihedrals=" << idhls[i] << " rdihedrals=" << dhls[i] << std::endl;
     }
 };
@@ -382,8 +377,5 @@ void itrnl::Internalcoordinates::generateRandomZMat(std::vector<std::vector<floa
         ++k;
         //std::cout << zms;
     }
-
-
-
 };
 
