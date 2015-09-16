@@ -75,6 +75,8 @@ void Trainingsetbuilder::calculateTrainingSet() {
     std::cout << "  Begin building training set " << std::endl;
     std::cout << "------------------------------\n" << std::endl;
 
+    std::cout << "CHECK: " << simtls::countUnique(10,4) << std::endl;
+
     // Store working parameters
     ipt::Params params(iptData->getparams());
     params.printdata();
@@ -173,6 +175,10 @@ void Trainingsetbuilder::calculateTrainingSet() {
         std::vector<std::string> zmat(nrpg);
         std::vector< std::vector<float> > icord(nrpg);
 
+        // Cartesian and force temp storage
+        std::vector< glm::vec3 > tcart(ixyz.size());
+        std::vector< glm::vec3 > tfrce(ixyz.size());
+
         // Define and open thread output
         std::ofstream tsoutt;
         tsoutt.open(outname[tid].str());
@@ -221,7 +227,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 // Execute the g09 run, if failure occures we restart the loop
                 g09::execg09(nrpg,input,outshl,chkoutshl);
 
-                /*std::stringstream sso;
+                std::stringstream sso;
                 std::stringstream ssi;
                 sso << "g09output." << tid << "." << i << ".dat";
                 ssi << "g09input." << tid << "." << i << ".dat";
@@ -239,7 +245,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                     std::cerr << "bad dustin" << std::endl;
                 }
                 instream.close();
-                ostream.close();*/
+                ostream.close();
 
                 mgtimer.end_point();
 
@@ -254,11 +260,21 @@ void Trainingsetbuilder::calculateTrainingSet() {
                         //std::vector<glm::vec3> xyzind(ixyz.size());
                         //std::memcpy(&xyzind[0],&wxyz[j*ixyz.size()],ixyz.size()*sizeof(glm::vec3));
 
-                        datapoint.append(licrd.getCSVStringWithIC(icord[j]));
+                        //datapoint.append(licrd.getCSVStringWithIC(icord[j]));
 
                         //datapoint.append(licrd.calculateCSVInternalCoordinates(xyzind));
-                        datapoint.append(g09::icforceFinder(outsll[j]));
-                        datapoint.append(g09::icforceFinder(outshl[j]));
+                        //datapoint.append(g09::ipcoordinateFinder(outsll[j],tcart));
+                        //datapoint.append(g09::ipcoordinateFinder(outsll[j],tcart));
+
+                        g09::ipcoordinateFinder(outsll[j],tcart);
+                        g09::forceFinder(outsll[j],tfrce);
+                        datapoint.append(simtls::cartesianToCenteredSpherical(0,tfrce,tcart));
+
+                        g09::ipcoordinateFinder(outshl[j],tcart);
+                        g09::forceFinder(outshl[j],tfrce);
+
+                        //datapoint.append(g09::forceFinder(outsll[j]));
+                        //datapoint.append(g09::forceFinder(outshl[j]));
 
                         // Save the data point to the threads private output file output
                         tsoutt << datapoint << std::endl;

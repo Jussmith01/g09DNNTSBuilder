@@ -19,7 +19,7 @@
 // Namespace header
 #include "internalcoordinate.h"
 
-#define rad 180.0/M_PI; /*radians to degrees*/
+#define Rad 180.0/M_PI; /*radians to degrees*/
 
 /*---------Store the bond index------------
 
@@ -294,9 +294,9 @@ Calculates cartesian coordinates based on
 internal coordinates
 
 ------------------------------------------*/
-void itrnl::Internalcoordinates::m_calculateCartesianCoordinates(std::vector<glm::vec3> &xyz) {
+//void itrnl::Internalcoordinates::m_calculateCartesianCoordinates(std::vector<glm::vec3> &xyz) {
 
-};
+//};
 
 /*------Generate a random IC Struct--------
 
@@ -312,7 +312,7 @@ void itrnl::Internalcoordinates::m_generateRandomIntrlStruct(RandomReal &rnGen) 
         rnGen.setRandomRange(ibnds[i]-0.2f,ibnds[i]+0.2f);
         rnGen.getRandom(bnds[i]);
 
-        //bnds[i]=ibnds[i];
+        bnds[i]=ibnds[i];
         //std::cout << " ibond=" << ibnds[i] << " rbond=" << bnds[i] << std::endl;
     }
 
@@ -320,7 +320,7 @@ void itrnl::Internalcoordinates::m_generateRandomIntrlStruct(RandomReal &rnGen) 
     for (unsigned i=0; i<iangs.size(); ++i) {
         rnGen.setRandomRange(iangs[i]-0.2f,iangs[i]+0.2f);
         rnGen.getRandom(angs[i]);
-        //angs[i] = iangs[i];
+        angs[i] = iangs[i];
         //std::cout << " iangles=" << iangs[i] << " rangles=" << angs[i] << std::endl;
     }
 
@@ -328,7 +328,7 @@ void itrnl::Internalcoordinates::m_generateRandomIntrlStruct(RandomReal &rnGen) 
     for (unsigned i=0; i<idhls.size(); ++i) {
         rnGen.setRandomRange(idhls[i]-0.2f,idhls[i]+0.2f);
         rnGen.getRandom(dhls[i]);
-        //dhls[i] = idhls[i];
+        dhls[i] = idhls[i];
         //dhls[i] = idhls[i]-3.14+0.02*cnt;
         //++cnt;
         //std::cout << " idihedrals=" << idhls[i] << " rdihedrals=" << dhls[i] << std::endl;
@@ -345,7 +345,7 @@ void itrnl::Internalcoordinates::generateRandomZMat(std::vector<std::vector<floa
     unsigned k=0;
     for (auto&& zms : zmats) {
 
-        ic[k].clear();
+        ///ic[k].clear();
         m_generateRandomIntrlStruct(rnGen);
 
         std::vector< std::stringstream > zmat_line(type.size());
@@ -371,12 +371,12 @@ void itrnl::Internalcoordinates::generateRandomZMat(std::vector<std::vector<floa
             zmat_line[didx[i].v4] << didx[i].v1+1 << " " << std::setprecision(7) << dhls[i] * 180.0f / M_PI << " ";
         }
 
-        std::ofstream out("rdata.dat",std::ios::app);
+        /**std::ofstream out("rdata.dat",std::ios::app);
         for (auto&& c : ic[k])
             out << c << ",";
 
         out << "\n";
-        out.close();
+        out.close();**/
 
         //std::cout << "|---ZMAT TEST---|\n";
         std::stringstream zmat;

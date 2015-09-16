@@ -8,14 +8,15 @@
 namespace g09 {
 
 /*----------------------------------------
+
  Get Forces from a Gaussian Output String
 
 ------------------------------------------*/
-inline std::string forceFinder(const std::string &filename) {
+inline void forceFinder(const std::string &filename,std::vector<glm::vec3> &tfrce) {
     using namespace std;
 
-    stringstream force_csv;
-    //force_csv.setf( std::ios::scientific, std::ios::floatfield );
+    ///stringstream force_csv;
+    ///force_csv.setf( std::ios::scientific, std::ios::floatfield );
 
     regex pattern_force("Hartrees/Bohr");
     regex pattern_cart("Cartesian");
@@ -25,17 +26,61 @@ inline std::string forceFinder(const std::string &filename) {
     while (getline(stream, line)) {
         if (regex_search(line, pattern_force)) {
             string line2;
+            int ln(-2);
             while (getline(stream, line2) && !regex_search(line2, pattern_cart)) {
                 sregex_iterator pos(line2.begin(), line2.end(), pattern_value);
                 sregex_iterator end;
+                int ax(0);
                 for (; pos != end; ++pos) {
-                    force_csv << pos->str(0) << ",";
+                    tfrce[ln][ax] = atof(pos->str(0).c_str());
+                    //std::cout << tfrce[ln][ax] << ",";
+                    ++ax;
                 }
+                //std::cout << ln << std::endl;
+                ++ln;
             }
         }
     }
 
-    return force_csv.str();
+    ///return force_csv.str();
+};
+
+/*----------------------------------------
+
+ Get input coordinates from a Gaussian
+ Output String
+
+------------------------------------------*/
+inline void ipcoordinateFinder(const std::string &filename,std::vector<glm::vec3> &tcart) {
+    using namespace std;
+
+    stringstream cart_csv;
+    //force_csv.setf( std::ios::scientific, std::ios::floatfield );
+
+    regex pattern_force("Input orientation:");
+    regex pattern_cart("Distance matrix");
+    regex pattern_value("\\-?[[:d:]]+\\.[[:d:]]+");
+    string line;
+    istringstream stream(filename);
+    while (getline(stream, line)) {
+        if (regex_search(line, pattern_force)) {
+            string line2;
+            int ln(-4);
+            while (getline(stream, line2) && !regex_search(line2, pattern_cart)) {
+                sregex_iterator pos(line2.begin(), line2.end(), pattern_value);
+                sregex_iterator end;
+                int ax(0);
+                for (; pos != end; ++pos) {
+                    tcart[ln][ax] = atof(pos->str(0).c_str());
+                    //std::cout << tcart[ln][ax] << ",";
+                    ++ax;
+                }
+                //std::cout << ln << std::endl;
+                ++ln;
+                //std::cout << std::endl;
+            }
+        }
+    }
 };
 
 /*----------------------------------------
@@ -78,7 +123,7 @@ Parse many output into individual outputs.
 ------------------------------------------*/
 inline void parseg09OutputLinks(int nrpg,std::string &multioutput,std::vector<std::string> &indoutputs) {
     size_t lpos = multioutput.find("Entering Link 1");
-    multioutput=multioutput.substr(lpos+1);
+    multioutput = multioutput.substr(lpos+1);
 
     for (int i=0; i<nrpg; ++i) {
         lpos = multioutput.find("Entering Link 1");
