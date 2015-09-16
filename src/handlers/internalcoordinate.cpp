@@ -288,6 +288,16 @@ void itrnl::Internalcoordinates::m_calculateInternalCoordinates(const std::vecto
     idhls = dhls;
 };
 
+/*------------IC to Cartesian-------------
+
+Calculates cartesian coordinates based on
+internal coordinates
+
+------------------------------------------*/
+void itrnl::Internalcoordinates::m_calculateCartesianCoordinates(std::vector<glm::vec3> &xyz) {
+
+};
+
 /*------Generate a random IC Struct--------
 
 Generate a random IC structure based upon
@@ -302,7 +312,7 @@ void itrnl::Internalcoordinates::m_generateRandomIntrlStruct(RandomReal &rnGen) 
         rnGen.setRandomRange(ibnds[i]-0.2f,ibnds[i]+0.2f);
         rnGen.getRandom(bnds[i]);
 
-        bnds[i]=ibnds[i];
+        //bnds[i]=ibnds[i];
         //std::cout << " ibond=" << ibnds[i] << " rbond=" << bnds[i] << std::endl;
     }
 
@@ -310,7 +320,7 @@ void itrnl::Internalcoordinates::m_generateRandomIntrlStruct(RandomReal &rnGen) 
     for (unsigned i=0; i<iangs.size(); ++i) {
         rnGen.setRandomRange(iangs[i]-0.2f,iangs[i]+0.2f);
         rnGen.getRandom(angs[i]);
-        angs[i] = iangs[i];
+        //angs[i] = iangs[i];
         //std::cout << " iangles=" << iangs[i] << " rangles=" << angs[i] << std::endl;
     }
 
@@ -319,8 +329,8 @@ void itrnl::Internalcoordinates::m_generateRandomIntrlStruct(RandomReal &rnGen) 
         rnGen.setRandomRange(idhls[i]-0.2f,idhls[i]+0.2f);
         rnGen.getRandom(dhls[i]);
         //dhls[i] = idhls[i];
-        dhls[i] = idhls[i]-3.14+0.02*cnt;
-        ++cnt;
+        //dhls[i] = idhls[i]-3.14+0.02*cnt;
+        //++cnt;
         //std::cout << " idihedrals=" << idhls[i] << " rdihedrals=" << dhls[i] << std::endl;
     }
 };
