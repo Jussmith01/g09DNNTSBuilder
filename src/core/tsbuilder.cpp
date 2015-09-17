@@ -267,9 +267,9 @@ void Trainingsetbuilder::calculateTrainingSet() {
                         //datapoint.append(g09::ipcoordinateFinder(outsll[j],tcart));
                         //datapoint.append(g09::ipcoordinateFinder(outsll[j],tcart));
 
-                        //g09::ipcoordinateFinder(outsll[j],tcart);
-                        //g09::forceFinder(outsll[j],tfrce);
-                        //datapoint.append(simtls::cartesianToCenteredSpherical(0,1,2,tfrce,tcart));
+                        g09::ipcoordinateFinder(outsll[j],tcart);
+                        g09::forceFinder(outsll[j],tfrce);
+                        datapoint.append(simtls::cartesianToStandardSpherical(0,1,2,tfrce,tcart));
 
                         g09::ipcoordinateFinder(outshl[j],tcart);
                         g09::forceFinder(outshl[j],tfrce);
