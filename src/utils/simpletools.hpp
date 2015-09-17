@@ -5,10 +5,13 @@
 #ifndef SIMPLE_TOOLS_HPP
 #define SIMPLE_TOOLS_HPP
 
-// GLM Mathematics
-#include <glm/glm.hpp>
 #include <cmath>
 #include <iomanip>
+
+// GLM Mathematics
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 /*   The Simple Tools Namespace   */
 namespace simtls {
@@ -71,45 +74,126 @@ inline int countUnique(unsigned na,unsigned nt) {
 
 inline void sphereConvert(glm::vec3 &sphr,const glm::vec3 &cart) {
     float r = glm::length(cart);
-    float phi = acos(cart.x/r);
-    float theta = asin(cart.y/(r*sin(phi)));
-    std::cout << "x: " << cart.x << " y: " << cart.y << " z: " << cart.z << std::endl;
+    float theta = atan2(cart.y,cart.x);
+    float phi = acos(cart.z/r);
+    /*std::cout << "x: " << cart.x << " y: " << cart.y << " z: " << cart.z << std::endl;
     std::cout << "r: " << r << " theta: " << theta << " phi: " << phi << std::endl;
-    std::cout << std::endl;
+    std::cout << std::endl;*/
     sphr.x = r;
     sphr.y = theta;
     sphr.z = phi;
 };
 
-inline void centerPositions(const glm::vec3 &cart,std::vector<glm::vec3> &tcart) {
-    for (auto&& i : tcart)
-        i = i-cart;
+inline void vec3nanchk(glm::vec3 &vec) {
+    if (isnan(vec.x) || isnan(vec.y) || isnan(vec.z)) {
+        vec.x=1.0f;
+        vec.y=0.0f;
+        vec.z=0.0f;
+    }
 };
 
-inline std::string cartesianToCenteredSpherical(unsigned center,const std::vector<glm::vec3> &tfrce,std::vector<glm::vec3> &tcart) {
-    glm::vec3 translation(tcart[center]);
-    centerPositions(translation,tcart);
+inline void setZero(glm::vec3 &vec) {
+    if (fabs(vec.x)<1.0E-6) {
+        vec.x=0.0f;
+    }
+    if (fabs(vec.y)<1.0E-6) {
+        vec.y=0.0f;
+    }
+    if (fabs(vec.z)<1.0E-6) {
+        vec.z=0.0f;
+    }
+};
+
+inline void standardOrient(unsigned center,unsigned atom1,unsigned atom2,std::vector<glm::vec3> &tfrce,std::vector<glm::vec3> &tcart) {
+    glm::mat4 trans;
+    trans = glm::translate(trans,tcart[center]); // Add translation
+
+    for (auto&& c : tcart)
+        c = glm::vec3(trans*glm::vec4(c.x,c.y,c.z,1.0f));
+
+    glm::vec3 za(0.0f,0.0f,1.0f);
+    /*std::cout <<  "|----ORIENT----|" << std::endl;
+    std::cout.setf( std::ios::fixed, std::ios::floatfield );
+    std::cout << std::setprecision(7) <<  "fvector1: " << tfrce[center].x << "," << tfrce[center].y << "," << tfrce[center].z << std::endl;
+    std::cout << std::setprecision(7) <<  "vector1: " << tcart[atom1].x << "," << tcart[atom1].y << "," << tcart[atom1].z << std::endl;
+    std::cout << std::setprecision(7) <<  "vector2: " << tcart[atom2].x << "," << tcart[atom2].y << "," << tcart[atom2].z << "\n" << std::endl;
+    */
+
+    float anglea = (-glm::dot(za,glm::normalize(tcart[atom1]))+1.0f)*(M_PI/2.0f);
+    glm::vec3 ax1 = glm::normalize(glm::cross(glm::normalize(za),glm::normalize(tcart[atom1])));
+    vec3nanchk(ax1);
+    glm::mat4 rota;
+    rota = glm::rotate(rota,anglea,ax1);
+
+    /*std::cout << std::setprecision(7) <<  "dot xza: " << anglea << std::endl;
+    std::cout << std::setprecision(7) <<  "rot axi: " << ax1.x << "," << ax1.y << "," << ax1.z << "\n" << std::endl;
+    */
+
+    for (auto&& c : tcart) {
+        c = glm::vec3(rota*glm::vec4(c.x,c.y,c.z,1.0f));
+        setZero(c);
+    }
+
+    for (auto&& c : tfrce) {
+        c = glm::vec3(rota*glm::vec4(c.x,c.y,c.z,1.0f));
+        setZero(c);
+    }
+
+    glm::vec2 zb(1.0f,0.0f);
+    float angleb = (-glm::dot(zb,glm::normalize(glm::vec2(tcart[atom2].x,tcart[atom2].y)))+1.0f)*(M_PI/2.0f);
+    glm::vec3 ax2 = glm::vec3(0.0f,0.0f,1.0f);
+    glm::mat4 rotb;
+    rotb = glm::rotate(rotb,angleb,ax2);
+
+    for (auto&& c : tcart) {
+        c = glm::vec3(rotb*glm::vec4(c.x,c.y,c.z,1.0f));
+        setZero(c);
+    }
+
+    for (auto&& c : tfrce) {
+        c = glm::vec3(rotb*glm::vec4(c.x,c.y,c.z,1.0f));
+        setZero(c);
+    }
+
+
+    /*std::cout << std::setprecision(7) <<  "dot xza: " << angleb << std::endl;
+    std::cout << std::setprecision(7) <<  "rot axi: " << ax2.x << "," << ax2.y << "," << ax2.z << "\n" << std::endl;
+
+    std::cout << std::setprecision(7) <<  "fvector1: " << tfrce[center].x << "," << tfrce[center].y << "," << tfrce[center].z << std::endl;
+    std::cout << std::setprecision(7) <<  "pvector1: " << tcart[atom1].x << "," << tcart[atom1].y << "," << tcart[atom1].z << std::endl;
+    std::cout << std::setprecision(7) <<  "pvector2: " << tcart[atom2].x << "," << tcart[atom2].y << "," << tcart[atom2].z << std::endl;
+
+    std::cout <<  "|--------------|" << std::endl;
+    */
+};
+
+inline std::string cartesianToStandardSpherical(unsigned center,unsigned atom1,unsigned atom2,std::vector<glm::vec3> &tfrce,std::vector<glm::vec3> &tcart) {
+
+    standardOrient(center,atom1,atom2,tfrce,tcart);
 
     std::vector<glm::vec3> spherepos(tcart.size()-1);
 
     glm::vec3 cforcesphere;
+    //std::cout <<  "\nForce Spherical" << std::endl;
     sphereConvert(cforcesphere,tfrce[center]);
 
-    std::cout << "CENTER: \n";
+    /*std::cout << "CENTER: \n";
     for (auto&& i : tcart)
         std::cout << i.x << "," << i.y << "," << i.z << "," << std::endl;
+    */
 
     unsigned k(0);
+    //std::cout <<  "Coord Spherical" << std::endl;
     for (unsigned i=0;i<tcart.size();++i) {
         if (i != center) {
-            std::cout << "i: " << i << " k: " << k << std::endl;
             sphereConvert(spherepos[k],tcart[i]);
             ++k;
         }
     }
 
-    for (auto&& i : spherepos)
+    /*for (auto&& i : spherepos)
         std::cout << i.x << "," << i.y << "," << i.z << "," << std::endl;
+    */
 
     k=0;
     std::stringstream sphrcsv;
@@ -119,7 +203,8 @@ inline std::string cartesianToCenteredSpherical(unsigned center,const std::vecto
             sphrcsv << std::setprecision(7) << i.x << "," << i.y << "," << i.z << ",";
     }
 
-    sphrcsv << std::setprecision(7) << "FRC," << cforcesphere.x << "," << cforcesphere.y << "," << cforcesphere.z << ",";
+    sphrcsv << std::setprecision(7) << "FRCS," << cforcesphere.x << "," << cforcesphere.y << "," << cforcesphere.z << ",";
+    sphrcsv << std::setprecision(7) << "FRCX," << tfrce[center].x << "," << tfrce[center].y << "," << tfrce[center].z << ",";
     return sphrcsv.str();
 };
 

@@ -75,7 +75,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
     std::cout << "  Begin building training set " << std::endl;
     std::cout << "------------------------------\n" << std::endl;
 
-    std::cout << "CHECK: " << simtls::countUnique(10,4) << std::endl;
+    ///std::cout << "CHECK: " << simtls::countUnique(10,4) << std::endl;
 
     // Store working parameters
     ipt::Params params(iptData->getparams());
@@ -227,7 +227,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 // Execute the g09 run, if failure occures we restart the loop
                 g09::execg09(nrpg,input,outshl,chkoutshl);
 
-                std::stringstream sso;
+                /*std::stringstream sso;
                 std::stringstream ssi;
                 sso << "g09output." << tid << "." << i << ".dat";
                 ssi << "g09input." << tid << "." << i << ".dat";
@@ -245,7 +245,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                     std::cerr << "bad dustin" << std::endl;
                 }
                 instream.close();
-                ostream.close();
+                ostream.close();*/
 
                 mgtimer.end_point();
 
@@ -256,6 +256,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 // Append the data to the datapoint string
                 for (int j=0; j<nrpg; ++j) {
                     if (!chkoutshl[j] && !chkoutsll[j]) {
+                        //std::cout << "|***************************************|" << std::endl;
                         //if (!chkoutshl[j]) {
                         //std::vector<glm::vec3> xyzind(ixyz.size());
                         //std::memcpy(&xyzind[0],&wxyz[j*ixyz.size()],ixyz.size()*sizeof(glm::vec3));
@@ -266,19 +267,19 @@ void Trainingsetbuilder::calculateTrainingSet() {
                         //datapoint.append(g09::ipcoordinateFinder(outsll[j],tcart));
                         //datapoint.append(g09::ipcoordinateFinder(outsll[j],tcart));
 
-                        g09::ipcoordinateFinder(outsll[j],tcart);
-                        g09::forceFinder(outsll[j],tfrce);
-                        datapoint.append(simtls::cartesianToCenteredSpherical(0,tfrce,tcart));
+                        //g09::ipcoordinateFinder(outsll[j],tcart);
+                        //g09::forceFinder(outsll[j],tfrce);
+                        //datapoint.append(simtls::cartesianToCenteredSpherical(0,1,2,tfrce,tcart));
 
                         g09::ipcoordinateFinder(outshl[j],tcart);
                         g09::forceFinder(outshl[j],tfrce);
-                        datapoint.append(simtls::cartesianToCenteredSpherical(0,tfrce,tcart));
+                        datapoint.append(simtls::cartesianToStandardSpherical(0,1,2,tfrce,tcart));
                         //datapoint.append(g09::forceFinder(outsll[j]));
                         //datapoint.append(g09::forceFinder(outshl[j]));
 
                         // Save the data point to the threads private output file output
                         tsoutt << datapoint << std::endl;
-                        std::cout << "DATAPOINT(" << i << "," << j << ")" << std::endl;
+                        //std::cout << "DATAPOINT(" << i << "," << j << ")" << std::endl;
                         datapoint.clear();
                         ++i;
                     } else {

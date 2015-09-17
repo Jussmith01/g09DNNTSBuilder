@@ -1,9 +1,9 @@
-#p AM1 force
+#p HF/6-31g* opt
 
 comment
 
 0 1
 O
-H 1 1.00
-H 1 1.00 2 90.0
+H 1 0.90
+H 1 0.90 2 100.0
 
