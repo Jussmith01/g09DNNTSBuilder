@@ -272,7 +272,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
 
                         g09::ipcoordinateFinder(outshl[j],tcart);
                         g09::forceFinder(outshl[j],tfrce);
-
+                        datapoint.append(simtls::cartesianToCenteredSpherical(0,tfrce,tcart));
                         //datapoint.append(g09::forceFinder(outsll[j]));
                         //datapoint.append(g09::forceFinder(outshl[j]));
 
