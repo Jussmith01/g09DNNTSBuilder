@@ -76,9 +76,32 @@ inline void sphereConvert(glm::vec3 &sphr,const glm::vec3 &cart) {
     float r = glm::length(cart);
     float theta = atan2(cart.y,cart.x);
     float phi = acos(cart.z/r);
-    /*std::cout << "x: " << cart.x << " y: " << cart.y << " z: " << cart.z << std::endl;
-    std::cout << "r: " << r << " theta: " << theta << " phi: " << phi << std::endl;
-    std::cout << std::endl;*/
+    //std::cout << "x: " << cart.x << " y: " << cart.y << " z: " << cart.z << std::endl;
+    //std::cout << "r: " << r << " theta: " << theta << " phi: " << phi << std::endl;
+    //std::cout << std::endl;
+    sphr.x = r;
+    sphr.y = theta;
+    sphr.z = phi;
+};
+
+inline void frcsphereConvert(glm::vec3 &sphr,const glm::vec3 &cart) {
+    float r;
+    float theta;
+    float phi;
+
+    if (cart.z>=0) {
+        r = glm::length(cart);
+        theta = atan2(cart.x,cart.z);
+        phi = atan2(cart.y,cart.z);
+    } else {
+        r = -glm::length(cart);
+        theta = M_PI-atan2(cart.x,cart.z);
+        phi = M_PI-atan2(cart.y,cart.z);
+    }
+
+    //std::cout << "x: " << cart.x << " y: " << cart.y << " z: " << cart.z << std::endl;
+    //std::cout << "r: " << r << " theta: " << theta << " phi: " << phi << std::endl;
+    //std::cout << std::endl;
     sphr.x = r;
     sphr.y = theta;
     sphr.z = phi;
@@ -93,13 +116,13 @@ inline void vec3nanchk(glm::vec3 &vec) {
 };
 
 inline void setZero(glm::vec3 &vec) {
-    if (fabs(vec.x)<1.0E-6) {
+    if (fabs(vec.x)<5.0E-7) {
         vec.x=0.0f;
     }
-    if (fabs(vec.y)<1.0E-6) {
+    if (fabs(vec.y)<5.0E-7) {
         vec.y=0.0f;
     }
-    if (fabs(vec.z)<1.0E-6) {
+    if (fabs(vec.z)<5.0E-7) {
         vec.z=0.0f;
     }
 };
@@ -111,7 +134,6 @@ inline void standardOrient(unsigned center,unsigned atom1,unsigned atom2,std::ve
     for (auto&& c : tcart)
         c = glm::vec3(trans*glm::vec4(c.x,c.y,c.z,1.0f));
 
-    glm::vec3 za(0.0f,0.0f,1.0f);
     /*std::cout <<  "|----ORIENT----|" << std::endl;
     std::cout.setf( std::ios::fixed, std::ios::floatfield );
     std::cout << std::setprecision(7) <<  "fvector1: " << tfrce[center].x << "," << tfrce[center].y << "," << tfrce[center].z << std::endl;
@@ -119,6 +141,7 @@ inline void standardOrient(unsigned center,unsigned atom1,unsigned atom2,std::ve
     std::cout << std::setprecision(7) <<  "vector2: " << tcart[atom2].x << "," << tcart[atom2].y << "," << tcart[atom2].z << "\n" << std::endl;
     */
 
+    glm::vec3 za(0.0f,0.0f,1.0f);
     float anglea = (-glm::dot(za,glm::normalize(tcart[atom1]))+1.0f)*(M_PI/2.0f);
     glm::vec3 ax1 = glm::normalize(glm::cross(glm::normalize(za),glm::normalize(tcart[atom1])));
     vec3nanchk(ax1);
@@ -155,7 +178,6 @@ inline void standardOrient(unsigned center,unsigned atom1,unsigned atom2,std::ve
         setZero(c);
     }
 
-
     /*std::cout << std::setprecision(7) <<  "dot xza: " << angleb << std::endl;
     std::cout << std::setprecision(7) <<  "rot axi: " << ax2.x << "," << ax2.y << "," << ax2.z << "\n" << std::endl;
 
@@ -175,7 +197,7 @@ inline std::string cartesianToStandardSpherical(unsigned center,unsigned atom1,u
 
     glm::vec3 cforcesphere;
     //std::cout <<  "\nForce Spherical" << std::endl;
-    sphereConvert(cforcesphere,tfrce[center]);
+    frcsphereConvert(cforcesphere,tfrce[center]);
 
     /*std::cout << "CENTER: \n";
     for (auto&& i : tcart)
@@ -198,13 +220,22 @@ inline std::string cartesianToStandardSpherical(unsigned center,unsigned atom1,u
     k=0;
     std::stringstream sphrcsv;
     sphrcsv.setf( std::ios::fixed, std::ios::floatfield );
-    sphrcsv << "ATM," << spherepos.size() << ",";
+    //sphrcsv << "ATMS," << spherepos.size() << ",";
     for (auto&& i : spherepos) {
             sphrcsv << std::setprecision(7) << i.x << "," << i.y << "," << i.z << ",";
     }
 
-    sphrcsv << std::setprecision(7) << "FRCS," << cforcesphere.x << "," << cforcesphere.y << "," << cforcesphere.z << ",";
-    sphrcsv << std::setprecision(7) << "FRCX," << tfrce[center].x << "," << tfrce[center].y << "," << tfrce[center].z << ",";
+    //sphrcsv << "ATMX," << tcart.size() << ",";
+    /*for (auto&& i : tcart) {
+            sphrcsv << std::setprecision(7) << i.x << "," << i.y << "," << i.z << ",";
+    }*/
+
+    //if (cforcesphere.y>1.57079633)
+    //    cforcesphere = glm::vec3(cforcesphere.x,0.0f,cforcesphere.z));
+
+    sphrcsv << std::setprecision(7) << cforcesphere.x << "," << cforcesphere.y << "," << cforcesphere.z << ",";
+    //sphrcsv << std::setprecision(7) << cforcesphere.x << "," << cforcesphere.y << "," << cforcesphere.z << ",";
+    sphrcsv << std::setprecision(7) << tfrce[center].x << "," << tfrce[center].y << "," << tfrce[center].z << ",";
     return sphrcsv.str();
 };
 

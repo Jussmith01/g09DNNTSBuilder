@@ -215,10 +215,10 @@ void Trainingsetbuilder::calculateTrainingSet() {
 
                 // Build the g09 input file for the low level of theory
                 //g09::buildZmatInputg09(nrpg,input,params.llt,"force",types,wxyz,0,1,1);
-                g09::buildZmatInputg09(nrpg,input,params.llt,"force",zmat,0,1,1);
+                //g09::buildZmatInputg09(nrpg,input,params.llt,"force",zmat,0,1,1);
 
                 // Execute the g09 run, if failure occures we restart the loop
-                g09::execg09(nrpg,input,outsll,chkoutsll);
+                //g09::execg09(nrpg,input,outsll,chkoutsll);
 
                 // Build the g09 input file for the high level of theory
                 //g09::buildZmatInputg09(nrpg,input,params.hlt,"force",types,wxyz,0,1,1);
@@ -255,9 +255,9 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 mstimer.start_point();
                 // Append the data to the datapoint string
                 for (int j=0; j<nrpg; ++j) {
-                    if (!chkoutshl[j] && !chkoutsll[j]) {
+                    //if (!chkoutshl[j] && !chkoutsll[j]) {
                         //std::cout << "|***************************************|" << std::endl;
-                        //if (!chkoutshl[j]) {
+                    if (!chkoutshl[j]) {
                         //std::vector<glm::vec3> xyzind(ixyz.size());
                         //std::memcpy(&xyzind[0],&wxyz[j*ixyz.size()],ixyz.size()*sizeof(glm::vec3));
 
@@ -267,9 +267,9 @@ void Trainingsetbuilder::calculateTrainingSet() {
                         //datapoint.append(g09::ipcoordinateFinder(outsll[j],tcart));
                         //datapoint.append(g09::ipcoordinateFinder(outsll[j],tcart));
 
-                        g09::ipcoordinateFinder(outsll[j],tcart);
-                        g09::forceFinder(outsll[j],tfrce);
-                        datapoint.append(simtls::cartesianToStandardSpherical(0,1,2,tfrce,tcart));
+                        //g09::ipcoordinateFinder(outsll[j],tcart);
+                        //g09::forceFinder(outsll[j],tfrce);
+                        //datapoint.append(simtls::cartesianToStandardSpherical(0,1,2,tfrce,tcart));
 
                         g09::ipcoordinateFinder(outshl[j],tcart);
                         g09::forceFinder(outshl[j],tfrce);
