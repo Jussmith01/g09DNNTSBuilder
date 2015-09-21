@@ -1,9 +1,9 @@
-#p HF/6-31g* opt
+#P HF/6-31g* opt=ModRedundant
 
 comment
 
 0 1
 O
 H 1 0.90
-H 1 0.90 2 100.0
+H 1 0.90 2 110.0
 

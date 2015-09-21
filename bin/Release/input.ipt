@@ -1,0 +1,13 @@
+TSS=30 # Training Set Size
+LOT=AM1 # Low level of theory
+HOT=UHF/6-31g* # High level of theory
+rdm=uniform #Random type
+std=1.5  # Standard Deviation of random numbers
+mean=-1.5 #
+ngpr=5 #
+$coordinates # Minimized initial coordinates - Must go last!
+H
+O 1 0.9473
+H 2 0.9473 1 105.4985
+$endcoordinates
+

@@ -118,6 +118,31 @@ inline std::string icforceFinder(const std::string &filename) {
 };
 
 /*----------------------------------------
+  Get G09 Internal Coordinate Forces
+
+------------------------------------------*/
+inline std::string energyFinder(const std::string &filename) {
+    using namespace std;
+
+    stringstream energy;
+    //energy.setf( std::ios::scientific, std::ios::floatfield );
+
+    regex patt_energy("\\sSCF Done:.*=\\s+(-*\\d+\\.\\d+)\\s");
+    string line;
+    istringstream stream(filename);
+    while (getline(stream, line)) {
+        std::smatch m;
+        if (regex_search(line, m, patt_energy)) {
+            energy << m.str(1);
+        }
+    }
+
+    //std::cout << " FORCE: " << force_csv.str() << std::endl;
+
+    return energy.str();
+};
+
+/*----------------------------------------
         Parse a Multi Gaussian Run
 Parse many output into individual outputs.
 ------------------------------------------*/
