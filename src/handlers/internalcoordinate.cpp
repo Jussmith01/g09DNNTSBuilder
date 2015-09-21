@@ -309,11 +309,11 @@ void itrnl::Internalcoordinates::m_generateRandomIntrlStruct(RandomReal &rnGen) 
 
     //std::cout << "|---BONDS---|\n";
     for (unsigned i=0; i<ibnds.size(); ++i) {
-        rnGen.setRandomRange(ibnds[i]-0.2f,ibnds[i]+1.0f);
+        rnGen.setRandomRange(ibnds[i]-0.2f,ibnds[i]+1.5f);
         rnGen.getRandom(bnds[i]);
 
-        if (i!=0)
-            bnds[i]=ibnds[i];
+        //if (i!=0)
+        //    bnds[i]=ibnds[i];
         //std::cout << " ibond=" << ibnds[i] << " rbond=" << bnds[i] << std::endl;
     }
 
