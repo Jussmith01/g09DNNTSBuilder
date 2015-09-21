@@ -41,14 +41,14 @@ int main(int argc, char *argv[]) {
     //--------------------------------
     //          Read input
     //--------------------------------
-    ipt::input iptdata(args.getflag("-i"),args.getflag("-d"));
+    ipt::inputParameters iptdata(args.getflag("-i"));
 
     //--------------------------------
     //        Main Loop Class
     //--------------------------------
     // Construct/prepare the class
     mtimer.start_point();
-    Trainingsetbuilder tsb(&iptdata,&args);
+    Trainingsetbuilder tsb(&args);
     mtimer.end_point();
     mtimer.print_generic_to_cout(std::string("Training set builder class preparation time --\n"));
 

@@ -239,6 +239,46 @@ inline std::string cartesianToStandardSpherical(unsigned center,unsigned atom1,u
     return sphrcsv.str();
 };
 
+/*---------String Is Type-------------
+
+Checks if a string is of the type given.
+Currently supports float,unsigned and
+ints.
+
+--------------------------------------*/
+inline bool stristype(std::string value,std::string type) {
+
+    std::vector<char> cs;
+    if (type.compare("float")==0) {
+        cs = {'0','1','2','3','4','5','6','7','8','9','-','+','.'};
+        if (value.find(".")==std::string::npos) {
+            return false;
+        }
+    } else if (type.compare("unsigned")==0) {
+        cs = {'0','1','2','3','4','5','6','7','8','9','+'};
+    } else if (type.compare("int")==0) {
+        cs = {'0','1','2','3','4','5','6','7','8','9','-','+'};
+    } else if (type.compare("bool")==0) {
+        cs = {'0','1'};
+    }
+
+    unsigned match(0);
+    for (auto& c : value) {
+        for (auto& cc : cs) {
+            if (c == cc)
+                ++match;
+        }
+
+        if (match == 0) {
+            return false;
+        }
+
+        match = 0;
+    }
+
+    return true;
+};
+
 };
 
 #endif

@@ -24,7 +24,6 @@
 #include "../utils/randnormflt.h"
 #include "../utils/micro_timer.h"
 #include "../utils/flaghandler.h"
-#include "../utils/conservation.h"
 
 // Handlers
 #include "../handlers/g09functions.hpp"
@@ -78,13 +77,8 @@ void Trainingsetbuilder::calculateTrainingSet() {
     ///std::cout << "CHECK: " << simtls::countUnique(10,4) << std::endl;
 
     // Store working parameters
-    ipt::Params params(iptData->getparams());
-    params.printdata();
-
-    // Store input coordinates and atom types locally
-    std::vector<glm::vec3> ixyz(iptData->getxyz());
-    std::vector<std::string> types(iptData->gettypes());
-    std::vector<double> masses(iptData->getmasses());
+    ipt::inputParameters params(iptData);
+    //params.printdata();
 
     // Local pointer to icrd for passing a private class to threads
     icrd.printdata();
@@ -115,7 +109,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
     std::vector<std::stringstream> outname(MaxT);
     std::vector<std::stringstream>::iterator it;
     for (it = outname.begin(); it != outname.end(); it++)
-        *it << iptData->getoname() << "_thread" << it - outname.begin();
+        *it << iptData.getParameter<std::string>("dfname") << "_thread" << it - outname.begin();
 
     // This is passed to each thread and contain unique seeds for each
     ParallelSeedGenerator seedGen(MaxT);
@@ -125,26 +119,21 @@ void Trainingsetbuilder::calculateTrainingSet() {
     std::string termstr("");
 
     // Begin parallel region
-    #pragma omp parallel default(shared) firstprivate(types,ixyz,masses,params,MaxT)
+    #pragma omp parallel default(shared) firstprivate(params,MaxT)
     {
-        std::vector<glm::vec3> ixyz_center;
-        ixyz_center = ixyz;
-
         // Thread safe copy of the internal coords calculator
         itrnl::Internalcoordinates licrd = icrd;
 
-        // Create the conservation object;
-        //conservation water(ixyz_center,masses);
-
         // Thread ID
-        int tid = omp_get_thread_num();
+        unsigned tid = omp_get_thread_num();
 
         // Some local variables
-        int nrpg = params.nrpg;
+        unsigned ngpr = params.getParameter<unsigned>("ngpr");
+        unsigned tss = params.getParameter<unsigned>("TSS");
 
         // Minimimum number of sets for this thread to calculate
-        int N = floor(params.tts/MaxT);
-        if (tid < params.tts % MaxT) {
+        int N = floor(tss/MaxT);
+        if (tid < tss % MaxT) {
             ++N;
         }
 
@@ -153,10 +142,12 @@ void Trainingsetbuilder::calculateTrainingSet() {
         seedGen.getThreadSeeds(tid,seedarray);
 
         // Prepare the random number generator
-        RandomReal rnGen(seedarray,params.mean,params.std,args->getflag("-r"));
+        RandomReal rnGen(seedarray,params.getParameter<float>("mean"),params.getParameter<float>("std"),params.getParameter<std::string>("rdm"));
 
         // Allocate space for new coordinates
-        std::vector<glm::vec3> wxyz(params.Na*nrpg);
+        unsigned na = params.getCoordinatesStr().size();
+        std::cout << "na: " << na << std::endl;
+        std::vector<glm::vec3> wxyz(na*ngpr);
 
         // Initialize counters
         int i(0); // Loop counter
@@ -166,18 +157,18 @@ void Trainingsetbuilder::calculateTrainingSet() {
         // Initialize some containers
         std::string datapoint;
         std::string input;
-        std::vector<std::string> outsll(nrpg);
-        std::vector<bool> chkoutsll(nrpg);
-        std::vector<std::string> outshl(nrpg);
-        std::vector<bool> chkoutshl(nrpg);
+        std::vector<std::string> outsll(ngpr);
+        std::vector<bool> chkoutsll(ngpr);
+        std::vector<std::string> outshl(ngpr);
+        std::vector<bool> chkoutshl(ngpr);
 
         // Z-matrix Stuff
-        std::vector<std::string> zmat(nrpg);
-        std::vector< std::vector<float> > icord(nrpg);
+        std::vector<std::string> zmat(ngpr);
+        std::vector< std::vector<float> > icord(ngpr);
 
         // Cartesian and force temp storage
-        std::vector< glm::vec3 > tcart(ixyz.size());
-        std::vector< glm::vec3 > tfrce(ixyz.size());
+        std::vector< glm::vec3 > tcart(na);
+        std::vector< glm::vec3 > tfrce(na);
 
         // Define and open thread output
         std::ofstream tsoutt;
@@ -201,11 +192,9 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 ---------------------------------*/
                 // Generate the random structure
                 mrtimer.start_point();
-                licrd.generateRandomZMat(icord,zmat,types,rnGen);
+                licrd.generateRandomZMat(icord,zmat,rnGen);
                 //m_generateRandomStructure(nrpg,ixyz,wxyz,rnGen);
 
-                /*ASDUJASIDHIUADHASD*/
-                //water.conserve(wxyz);
                 mrtimer.end_point();
 
                 /*------Gaussian 09 Running-------
@@ -222,14 +211,9 @@ void Trainingsetbuilder::calculateTrainingSet() {
 
                 // Build the g09 input file for the high level of theory
                 //g09::buildZmatInputg09(nrpg,input,params.hlt,"force",types,wxyz,0,1,1);
-                g09::buildZmatInputg09(nrpg,input,params.hlt,"force",zmat,0,1,1);
+                g09::buildZmatInputg09(ngpr,input,params.getParameter<std::string>("HOT"),"force",zmat,0,1,1);
 
-                // Execute the g09 run, if failure occures we restart the loop
-                g09::execg09(nrpg,input,outshl,chkoutshl);
-
-                /*std::stringstream sso;
-                std::stringstream ssi;
-                sso << "g09output." << tid << "." << i << ".dat";
+                /*std::stringstream ssi;
                 ssi << "g09input." << tid << "." << i << ".dat";
 
                 std::ofstream instream(ssi.str().c_str());
@@ -238,13 +222,19 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 } else {
                     std::cerr << "bad dustin" << std::endl;
                 }
+                instream.close();*/
+
+                // Execute the g09 run, if failure occures we restart the loop
+                g09::execg09(ngpr,input,outshl,chkoutshl);
+
+                /*std::stringstream sso;
+                sso << "g09output." << tid << "." << i << ".dat";
                 std::ofstream ostream(sso.str().c_str());
                 if (ostream) {
                     ostream << outshl[0];
                 } else {
                     std::cerr << "bad dustin" << std::endl;
                 }
-                instream.close();
                 ostream.close();*/
 
                 mgtimer.end_point();
@@ -254,7 +244,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 ---------------------------------*/
                 mstimer.start_point();
                 // Append the data to the datapoint string
-                for (int j=0; j<nrpg; ++j) {
+                for (unsigned j=0; j<ngpr; ++j) {
                     //if (!chkoutshl[j] && !chkoutsll[j]) {
                         //std::cout << "|***************************************|" << std::endl;
                     if (!chkoutshl[j]) {
@@ -273,6 +263,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
 
                         g09::ipcoordinateFinder(outshl[j],tcart);
                         g09::forceFinder(outshl[j],tfrce);
+                        std::cout << "ENERGY: " << g09::energyFinder(outshl[j]) << std::endl;
                         datapoint.append(simtls::cartesianToStandardSpherical(0,1,2,tfrce,tcart));
                         //datapoint.append(g09::forceFinder(outsll[j]));
                         //datapoint.append(g09::forceFinder(outshl[j]));
@@ -291,7 +282,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 // Loop printer.
                 #pragma omp critical
                 {
-                    loopPrinter(tid,N,i,gcf,gdf);
+                    //loopPrinter(tid,N,i,gcf,gdf);
                 }
 
             } catch (std::string error) {
@@ -308,7 +299,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
         // Final print, shows 100%
         #pragma omp critical
         {
-            loopPrinter(tid,1,1,gcf,gdf);
+            //loopPrinter(tid,1,1,gcf,gdf);
         }
 
         // Close the threads output
@@ -336,14 +327,15 @@ void Trainingsetbuilder::calculateTrainingSet() {
     // Combine all threads output
     MicroTimer fttimer;
     std::ofstream tsout;
-    tsout.open(iptData->getoname().c_str(),std::ios_base::binary);
+    std::string dfname(iptData.getParameter<std::string>("dfname"));
+    tsout.open(dfname.c_str(),std::ios_base::binary);
 
     fttimer.start_point();
     std::vector<std::stringstream>::iterator nameit;
     for (nameit = outname.begin(); nameit != outname.end(); nameit++) {
         // Move files individualy into the main output
         std::ifstream infile((*nameit).str().c_str(),std::ios_base::binary);
-        std::cout << "Transferring file " << (*nameit).str() << " -> " << iptData->getoname() << std::endl;
+        std::cout << "Transferring file " << (*nameit).str() << " -> " << dfname << std::endl;
         tsout << infile.rdbuf();
 
         // Remove old output once moved

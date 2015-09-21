@@ -112,6 +112,7 @@ public:
      --------------------------*/
     // Fill a vector with random floats
     void fillVector(std::vector<float> &rnv,int N) {
+        threadseeds.push_back(clock());
         (this->*RandomReal::randGenVec)(arg1,arg2,rnv,N);
     };
 
@@ -148,6 +149,7 @@ public:
     ---------------------------*/
     // Get a random float
     void getRandom(float &rnv) {
+        threadseeds.push_back(clock());
         (this->*RandomReal::randGenFlt)(arg1,arg2,rnv);
     };
 

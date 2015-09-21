@@ -4,6 +4,7 @@
 // Random
 #include "../utils/randnormflt.h"
 #include <fstream>
+#include <regex>
 
 namespace itrnl {
 
@@ -115,6 +116,8 @@ class Internalcoordinates {
     std::vector<angindex> aidx; // Angle index
     std::vector<dhlindex> didx; // Dihedral index
 
+    std::vector<std::string> type; // Atom Types
+
     std::vector<float> bnds; // Working storage for bonds
     std::vector<float> angs; // Working storage for angles
     std::vector<float> dhls; // Working storage for dihedrals
@@ -135,6 +138,18 @@ class Internalcoordinates {
 
     // Calculate the dihedral index
     void m_calculateDihedralIndex();
+
+    // Get atom types
+    void m_getAtomTypes(const std::vector< std::string > &icoords);
+
+    // Get the bonding index
+    void m_getBondIndex(const std::vector< std::string > &icoords);
+
+    // Get the angle index
+    void m_getAngleIndex(const std::vector< std::string > &icoords);
+
+    // Get the dihedral index
+    void m_getDihedralIndex(const std::vector< std::string > &icoords);
 
     // Calculate bond lengths
     void m_calculateBonds(const std::vector<glm::vec3> &xyz);
@@ -198,6 +213,31 @@ public:
         } catch (std::string error) dnntsErrorcatch(error);
     };
 
+    // Class index and initial iternals constructor
+    Internalcoordinates (const std::vector< std::string > &icoords) {
+        try {
+            /* Determing (IC) Internal Coords Index */
+            m_getAtomTypes(icoords);
+            m_getBondIndex(icoords);
+            m_getAngleIndex(icoords);
+            m_getDihedralIndex(icoords);
+
+            /* Allocate working IC memory */
+            bnds.resize(bidx.size());
+            angs.resize(aidx.size());
+            dhls.resize(didx.size());
+
+            /* Allocate Initial  IC memory */
+            ibnds.resize(bidx.size());
+            iangs.resize(aidx.size());
+            idhls.resize(didx.size());
+
+            /* Calculate and store the initial IC */
+            //m_calculateInternalCoordinates(ixyz);
+
+        } catch (std::string error) dnntsErrorcatch(error);
+    };
+
     // Calculate the CSV (Comma Separated Values) string of internal coords based on xyz input
     std::string calculateCSVInternalCoordinates(const std::vector<glm::vec3> &xyz);
 
@@ -205,7 +245,7 @@ public:
     std::string getCSVStringWithIC(const std::vector<float> &ic);
 
     // Calculate the CSV (Comma Separated Values) string of internal coords based on xyz input
-    void generateRandomZMat(std::vector< std::vector<float> > &ic,std::vector<std::string> &zmats,const std::vector<std::string> &type,RandomReal &rnGen);
+    void generateRandomZMat(std::vector< std::vector<float> > &ic,std::vector<std::string> &zmats,RandomReal &rnGen);
 
     // Data Printer
     void printdata() {

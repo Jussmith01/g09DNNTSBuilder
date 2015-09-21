@@ -1,6 +1,7 @@
 // Standary Library
 #include <stdlib.h>
 #include <stdio.h>
+#include <cstdlib>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -117,6 +118,78 @@ void itrnl::Internalcoordinates::m_calculateDihedralIndex() {
                     }
                 }
             }
+        }
+    }
+};
+
+/*---------Get the bond index------------
+
+------------------------------------------*/
+void itrnl::Internalcoordinates::m_getAtomTypes(const std::vector< std::string > &icoords) {
+
+    std::regex patt_atom("([A-Za-z]+)", std::regex_constants::icase);
+    type.reserve(icoords.size());
+    for ( unsigned i=0;i<icoords.size();++i ) {
+        std::smatch m;
+        std::regex_search(icoords[i],m,patt_atom);
+        type.push_back(m.str(0));
+        //std::cout << m.str(0) << std::endl;
+    }
+};
+
+/*---------Get the bond index------------
+
+------------------------------------------*/
+void itrnl::Internalcoordinates::m_getBondIndex(const std::vector< std::string > &icoords) {
+    std::regex patt_bond("[A-Za-z]+\\s+(\\d+)\\s+(\\d+\\.\\d+)", std::regex_constants::icase);
+    for ( unsigned i=0;i<icoords.size();++i ) {
+        std::smatch m;
+        std::regex_search(icoords[i],m,patt_bond);
+        if (!m.str(1).empty()) {
+            unsigned first = atoi(m.str(1).c_str());
+            unsigned second = i+1;
+            bidx.push_back(itrnl::CreateBondIndex(first,second));
+            ibnds.push_back(atof(m.str(2).c_str()));
+            //std::cout << "BOND: " << bidx.back().v1 << "->" << bidx.back().v2 << " VAL: " << ibnds.back() << std::endl;
+        }
+    }
+};
+
+/*---------Get the Angle index-----------
+
+----------------------------------------------*/
+void itrnl::Internalcoordinates::m_getAngleIndex(const std::vector< std::string > &icoords) {
+    std::regex patt_angle("[A-Za-z]+\\s+(\\d+)\\s+\\d+\\.\\d+\\s+(\\d+)\\s+(\\d+\\.\\d+)", std::regex_constants::icase);
+    for ( unsigned i=0;i<icoords.size();++i ) {
+        std::smatch m;
+        std::regex_search(icoords[i],m,patt_angle);
+        if (!m.str(2).empty()) {
+            unsigned first = atoi(m.str(1).c_str());
+            unsigned second = atoi(m.str(2).c_str());
+            unsigned third = i+1;
+            aidx.push_back(itrnl::CreateAngleIndex(first,second,third));
+            iangs.push_back(atof(m.str(3).c_str()));
+            //std::cout << "ANGLE: " << aidx.back().v1 << "-" << aidx.back().v2 << "-" << aidx.back().v3 << " VAL: " << iangs.back() << std::endl;
+        }
+    }
+};
+
+/*----------Get the Dihedral index------------
+
+----------------------------------------------------*/
+void itrnl::Internalcoordinates::m_getDihedralIndex(const std::vector< std::string > &icoords) {
+    std::regex patt_dihed("[A-Za-z]+\\s+(\\d+)\\s+\\d+\\.\\d+\\s+(\\d+)\\s+\\d+\\.\\d+\\s+(\\d+)\\s+(\\d+\\.\\d+)", std::regex_constants::icase);
+    for ( unsigned i=0;i<icoords.size();++i ) {
+        std::smatch m;
+        std::regex_search(icoords[i],m,patt_dihed);
+        if (!m.str(3).empty()) {
+            unsigned first = atoi(m.str(1).c_str());
+            unsigned second = atoi(m.str(2).c_str());
+            unsigned third = atoi(m.str(3).c_str());
+            unsigned fourth = i+1;
+            didx.push_back(itrnl::CreateDihedralIndex(first,second,third,fourth));
+            idhls.push_back(atof(m.str(4).c_str()));
+            //std::cout << "DIHLS: " << didx.back().v1 << "-" << didx.back().v2 << "-" << didx.back().v3 << "-" << didx.back().v4 << " VAL: " << idhls.back() << std::endl;
         }
     }
 };
@@ -309,17 +382,17 @@ void itrnl::Internalcoordinates::m_generateRandomIntrlStruct(RandomReal &rnGen) 
 
     //std::cout << "|---BONDS---|\n";
     for (unsigned i=0; i<ibnds.size(); ++i) {
-        rnGen.setRandomRange(ibnds[i]-0.2f,ibnds[i]+1.0f);
+        rnGen.setRandomRange(ibnds[i]-0.3f,ibnds[i]+3.0f);
         rnGen.getRandom(bnds[i]);
 
-        if (i!=0)
-            bnds[i]=ibnds[i];
+        //if (i!=0)
+            //bnds[i]=ibnds[i];
         //std::cout << " ibond=" << ibnds[i] << " rbond=" << bnds[i] << std::endl;
     }
 
     //std::cout << "|---ANGLES---|\n";
     for (unsigned i=0; i<iangs.size(); ++i) {
-        rnGen.setRandomRange(iangs[i]-1.0f,iangs[i]+1.0f);
+        rnGen.setRandomRange(iangs[i]-90.0f,iangs[i]+90.0f);
         rnGen.getRandom(angs[i]);
         //angs[i] = iangs[i];
         //std::cout << " iangles=" << iangs[i] << " rangles=" << angs[i] << std::endl;
@@ -327,9 +400,9 @@ void itrnl::Internalcoordinates::m_generateRandomIntrlStruct(RandomReal &rnGen) 
 
     //std::cout << "|---DIHEDRALS---|\n";
     for (unsigned i=0; i<idhls.size(); ++i) {
-        rnGen.setRandomRange(idhls[i]-1.0f,idhls[i]+1.0f);
+        rnGen.setRandomRange(idhls[i]-10.0f,idhls[i]+10.0f);
         rnGen.getRandom(dhls[i]);
-        dhls[i] = idhls[i];
+        //dhls[i] = idhls[i];
         //dhls[i] = idhls[i]-3.14+0.02*cnt;
         //++cnt;
         //std::cout << " idihedrals=" << idhls[i] << " rdihedrals=" << dhls[i] << std::endl;
@@ -341,11 +414,10 @@ void itrnl::Internalcoordinates::m_generateRandomIntrlStruct(RandomReal &rnGen) 
 Generate a random zmatrix for a g09 input
 
 ------------------------------------------*/
-void itrnl::Internalcoordinates::generateRandomZMat(std::vector<std::vector<float>> &ic,std::vector<std::string> &zmats,const std::vector<std::string> &type,RandomReal &rnGen) {
+void itrnl::Internalcoordinates::generateRandomZMat(std::vector< std::vector<float> > &ic,std::vector<std::string> &zmats,RandomReal &rnGen) {
 
     unsigned k=0;
     for (auto&& zms : zmats) {
-
         ///ic[k].clear();
         m_generateRandomIntrlStruct(rnGen);
 
@@ -359,17 +431,17 @@ void itrnl::Internalcoordinates::generateRandomZMat(std::vector<std::vector<floa
 
         for (unsigned i=0; i<bidx.size(); ++i) {
             ic[k].push_back(bnds[i]);
-            zmat_line[bidx[i].v2] << bidx[i].v1+1 << " " << std::setprecision(7) << bnds[i] << " ";
+            zmat_line[bidx[i].v2-1] << bidx[i].v1 << " " << std::setprecision(7) << bnds[i] << " ";
         }
 
         for (unsigned i=0; i<aidx.size(); ++i) {
             ic[k].push_back(angs[i]);
-            zmat_line[aidx[i].v3] << aidx[i].v2+1 << " " << std::setprecision(7) << angs[i] * 180.0f / M_PI << " ";
+            zmat_line[aidx[i].v3-1] << aidx[i].v2 << " " << std::setprecision(7) << angs[i] << " ";
         }
 
         for (unsigned i=0; i<didx.size(); ++i) {
             ic[k].push_back(dhls[i]);
-            zmat_line[didx[i].v4] << didx[i].v1+1 << " " << std::setprecision(7) << dhls[i] * 180.0f / M_PI << " ";
+            zmat_line[didx[i].v4-1] << didx[i].v3 << " " << std::setprecision(7) << dhls[i] << " ";
         }
 
         /**std::ofstream out("rdata.dat",std::ios::app);
@@ -386,7 +458,7 @@ void itrnl::Internalcoordinates::generateRandomZMat(std::vector<std::vector<floa
 
         zms = zmat.str();
         ++k;
-        //std::cout << zms;
+        //std::cout << zms << "\n\n";
     }
 };
 

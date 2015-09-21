@@ -6,8 +6,8 @@
 ----------------------------------------------*/
 class Trainingsetbuilder {
     // Class for calculating input coordinates
+    ipt::inputParameters iptData;
     itrnl::Internalcoordinates icrd;
-    ipt::input *iptData;
     FlagHandler *args;
 
     bool routecout;
@@ -21,12 +21,10 @@ class Trainingsetbuilder {
 
 public:
     // Constructor
-    Trainingsetbuilder (ipt::input *iptData,FlagHandler *args) :
-        icrd(iptData->getbonds(),iptData->getxyz()),routecout(false) {
-        // Save a pointer to the input data class
-        this->iptData = iptData;
-        if (this->iptData == NULL)
-            dnntsErrorcatch(std::string("Input data has not been declared!"));
+    Trainingsetbuilder (FlagHandler *args) :
+        iptData(args->getflag("-i"),args->getflag("-d")),
+        icrd(iptData.getCoordinatesStr()),
+        routecout(false) {
 
         // Save a pointer to the input data class
         this->args = args;

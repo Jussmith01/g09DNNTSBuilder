@@ -2,7 +2,9 @@
 #define READINPUT_H
 
 #include <string>
-#include <regex>
+//#include <regex>
+#include <tr1/unordered_map>
+#include <typeinfo>
 
 // GLM Mathematics Library
 #include "../../include/glm/detail/type_vec.hpp"
@@ -14,91 +16,249 @@
 namespace ipt
 {
 
-    struct Params {
-        int Na; // Number of atoms
-        int tts;    // Training set size to obtain
-        int nrpg;   // Number of runs per gaussian
-        float std;  // Standard deviation of random coordinates
-        float mean;
+/*----- Input Parameters-------
 
-        std::string llt; // Low Level of Theory
-        std::string hlt; // High Level of Theory
+This class is in charge of loading all
+parameters defined in the input file
+used to construct the class.
 
-        void printdata()
-        {
-            std::cout << "Input Parameters" << std::endl;
-            std::cout << "Number of Atoms: " << Na << std::endl;
-            std::cout << "Training Set size: " << tts << std::endl;
-            std::cout << "STd. Dev. of random numbers: " << std << std::endl;
-            std::cout << "Low Level of Theory: " << llt << std::endl;
-            std::cout << "High Level of Theory: " << hlt << std::endl;
-            std::cout << "Number of Runs Gaussians Per Inputs: " << nrpg << std::endl;
-            std::cout << std::endl;
-        };
+EXTERNAL API:
+nninputParamters(std::string inputfname)
+    Argument 1: Input file name
+    Constructor for the class. This loads
+    all parameters from the input file with
+    syntax: x = y !comment here
+    Also prints all loaded parameters.
+
+typename T getParameter<T>(std::string param)
+    Argument 1: Requested Parameter
+    Returns a parameter, converted to the
+    explicitly requested type. This also
+    checks for parameter existence in map
+    and throws and error std::string if
+    not found.
+
+bool checkParameter(std::string param)
+    Argument 1: Requested Parameter
+    Returns true if requested parameter
+    exists in the map else false.
+
+
+enum Initializers getRunType()
+    Returns the requested run type via
+    enum  Initializers.
+----------------------------------------*/
+class inputParameters {
+    //------------------------------------
+    //  Hash map to hold flags and values
+    //------------------------------------
+    /*NOTE! std::unordered_map does not work with NVCC for
+    some reason, so using tr1 */
+    std::tr1::unordered_map<std::string,std::string> m_params;
+    std::vector< std::string > m_coords;
+
+
+    //------------------------------------
+    //  Hash map to hold flags and values
+    //------------------------------------
+    void m_setDefaults() {
+        /*NOTE! since std::unordered_map does not work with
+        NVCC and tr1 does not have this constructor I use
+        vector here */
+        std::vector<std::pair<std::string,std::string>>
+        defaults({
+            //{param , default      descrip  },
+            {"dfname"  , "trainingData.dat"    },  // GPUID
+        });
+
+        m_params.insert(defaults.begin(),defaults.end());
     };
 
-class input {
-    /*----------------------------------------
-      Data Container for the Program
-    ------------------------------------------*/
-    Params params;
+    //------------------------------------
+    //       Read the input file
+    //------------------------------------
+    void m_readInput() {
+        std::ifstream ipt(getParameter<std::string>("ifname").c_str());
+        bool readcoords(false);
+        if (ipt.is_open()) {
+            std::string(line);
+            while ( getline (ipt,line) ) {
+                line = line.substr(0,line.find("#"));
+                if (readcoords) {
+                    if (simtls::trim(line).compare("$endcoordinates")!=0) {
+                        //std::cout << "COORDS: " << line << std::endl;
+                        m_coords.push_back(simtls::trim(line));
+                    } else {
+                        //readcoords = false;
+                        break;
+                    }
+                }
 
-    std::vector<glm::vec3> xyz; // xyz coords of atoms
-    std::vector<std::string> types; //  Atom types
-    std::vector<glm::ivec2> bonds; // bonding index
-    std::vector<double> _m; // masses of the atoms
+                if (simtls::trim(line).compare("$coordinates")==0) {
+                    readcoords = true;
+                }
+
+                if (!readcoords)
+                    //std::cout << "PARM: " << line << std::endl;
+                    m_setParameter(line);
+            }
+            ipt.close();
+        } else {
+            std::stringstream _err;
+            _err << "Unable to open file: " << getParameter<std::string>("inputfname") << std::endl;
+            dnntsErrorcatch(_err.str());
+        }
+    };
 
 
-    std::string fname; // Input filename
-    std::string oname; // Output filename
+    //------------------------------------
+    //     Set Parameter from the Map
+    //------------------------------------
+    void m_setParameter(std::string line) {
+        using namespace std;
 
-    // Read the input file
-    void readinput();
+        if (line.find("!")!=string::npos)
+            line=line.substr(0,line.find("!"));
+
+        size_t epos = line.find("=");
+        if (epos!=string::npos) {
+            string arg1(simtls::trim(line.substr(0,epos)));
+            string arg2(simtls::trim(line.substr(epos+1)));
+
+            std::tr1::unordered_map<std::string,std::string>::iterator it = m_params.find(arg1);
+            if (it == m_params.end()) {
+                pair<string,string> pset(arg1,arg2);
+                m_params.insert(pset);
+            } else {
+                it->second = arg2;
+            }
+        }
+    };
+
+    //------------------------------------
+    //   Print the parameters from Input
+    //------------------------------------
+    void m_printInputParameters() {
+        if (checkParameter("tss") && checkParameter("tbatchsz")) {
+            if (int(getParameter<unsigned>("tss"))%int(getParameter<unsigned>("tbatchsz"))!=0)
+                dnntsErrorcatch(std::string("Batch size must evenly divide training set size!"));
+        }
+
+        std::cout << "|--------Input Parameters-------|" << std::endl;
+        for (auto& x : m_params)
+            std::cout << " " << x.first << " = " << x.second << std::endl;
+
+        std::cout << "Coordinates: " << std::endl;
+        for (auto& x : m_coords)
+            std::cout << x << std::endl;
+
+        std::cout << "|-------------------------------|" << std::endl;
+    };
 
 public:
-    /*----------------------------------------
-          Function to Read the Input File
-    ------------------------------------------*/
 
-    // Constructor
-    input(const std::string &input, const std::string &output) :
-        fname(input), oname(output) {
-        try {
-            readinput();
-        } catch (std::string error) dnntsErrorcatch(error);
+    //-----------------------------------
+    //          Constructor
+    //-----------------------------------
+    inputParameters(std::string inputfname) {
+        m_setDefaults();
+        std::pair<std::string,std::string> iset("ifname",inputfname);
+        m_params.insert(iset);
+        m_readInput();
+        m_printInputParameters();
+    };
+
+    //-----------------------------------
+    //          Constructor
+    //-----------------------------------
+    inputParameters(std::string inputfname,std::string datafname) {
+        m_setDefaults();
+        std::pair<std::string,std::string> iset("ifname",inputfname);
+        std::pair<std::string,std::string> dset("dfname",datafname);
+        m_params.insert(iset);
+        m_params.insert(dset);
+        m_readInput();
+        m_printInputParameters();
+    };
+
+    //------------------------------------
+    //     Get Parameter from the Map
+    //------------------------------------
+    template <typename T>
+    T getParameter(std::string param) {
+        std::tr1::unordered_map<std::string,std::string>::const_iterator it = m_params.find(param);
+        if (it == m_params.end()) {
+            std::stringstream ss;
+            ss << "Requested parameter not found in input file!\n";
+            ss << "              Parameter: " << param << "\n";
+            ss << "              Check your input file for the above parameter!";
+            dnntsErrorcatch(ss.str());
+        }
+
+        if (typeid(T)==typeid(unsigned)) {
+            if (!simtls::stristype(it->second,"unsigned")){
+                std::stringstream ss;
+                ss << "Requested parameter not type unsigned int in input file!\n";
+                ss << "              Parameter: " << param << "\n";
+                ss << "              Value: " << it->second << "\n";
+                ss << "              Make sure the above parameter is correct!";
+                dnntsErrorcatch(ss.str());
+            }
+        } else if (typeid(T)==typeid(float)) {
+            if (!simtls::stristype(it->second,"float")){
+                std::stringstream ss;
+                ss << "Requested parameter not type float in input file!\n";
+                ss << "              Parameter: " << param << "\n";
+                ss << "              Value: " << it->second << "\n";
+                ss << "              Make sure the above parameter is correct!";
+                dnntsErrorcatch(ss.str());
+            }
+        } else if (typeid(T)==typeid(int)) {
+            if (!simtls::stristype(it->second,"int")){
+                std::stringstream ss;
+                ss << "Requested parameter not type int in input file!\n";
+                ss << "              Parameter: " << param << "\n";
+                ss << "              Value: " << it->second << "\n";
+                ss << "              Make sure the above parameter is correct!";
+                dnntsErrorcatch(ss.str());
+            }
+        } else if (typeid(T)==typeid(bool)) {
+            if (!simtls::stristype(it->second,"bool")){
+                std::stringstream ss;
+                ss << "Requested parameter not type bool in input file!\n";
+                ss << "              Parameter: " << param << "\n";
+                ss << "              Value: " << it->second << "\n";
+                ss << "              Make sure the above parameter is correct!";
+                dnntsErrorcatch(ss.str());
+            }
+        }
+
+        std::istringstream iss( it->second );
+
+        T value;
+        iss >> value;
+
+        return value;
     }
 
-    ~input() {
-        xyz.clear();
-        bonds.clear();
-    }
+    //------------------------------------
+    //    Check if Parameter is in Map
+    //------------------------------------
+    bool checkParameter(std::string param) {
+        std::tr1::unordered_map<std::string,std::string>::const_iterator it = m_params.find(param);
+        if (it == m_params.end()) {
+            return false;
+        }
 
-    // Member access functions
+        return true;
+    };
 
-    //Access xyz
-    const std::vector<glm::vec3>& getxyz() {
-        return xyz;
-    }
-
-    const std::vector<std::string>& gettypes() {
-        return types;
-    }
-
-    const std::vector<glm::ivec2>& getbonds() {
-        return bonds;
-    }
-
-    const std::vector<double>& getmasses() {
-        return _m;
-    }
-
-    const std::string& getoname() {
-        return oname;
-    }
-
-    const Params& getparams() {
-        return params;
-    }
+    //------------------------------------
+    //         Get coordinates
+    //------------------------------------
+    const std::vector< std::string >& getCoordinatesStr() {
+        return m_coords;
+    };
 };
 
 };
