@@ -146,7 +146,6 @@ void Trainingsetbuilder::calculateTrainingSet() {
 
         // Allocate space for new coordinates
         unsigned na = params.getCoordinatesStr().size();
-        std::cout << "na: " << na << std::endl;
         std::vector<glm::vec3> wxyz(na*ngpr);
 
         // Initialize counters
@@ -264,6 +263,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                         //g09::ipcoordinateFinder(outshl[j],tcart);
                         //g09::forceFinder(outshl[j],tfrce);
                         g09::ipcoordinateFinder(outshl[j],tcart);
+
                         datapoint.append( simtls::calculateDistMatrixCSV(tcart) );
                         datapoint.append( g09::energyFinder(outshl[j]) );
                         //datapoint.append(simtls::cartesianToStandardSpherical(0,1,2,tfrce,tcart));
@@ -284,7 +284,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 // Loop printer.
                 #pragma omp critical
                 {
-                    //loopPrinter(tid,N,i,gcf,gdf);
+                    loopPrinter(tid,N,i,gcf,gdf);
                 }
 
             } catch (std::string error) {
@@ -301,7 +301,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
         // Final print, shows 100%
         #pragma omp critical
         {
-            //loopPrinter(tid,1,1,gcf,gdf);
+            loopPrinter(tid,1,1,gcf,gdf);
         }
 
         // Close the threads output
