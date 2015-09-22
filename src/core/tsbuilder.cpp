@@ -261,10 +261,12 @@ void Trainingsetbuilder::calculateTrainingSet() {
                         //g09::forceFinder(outsll[j],tfrce);
                         //datapoint.append(simtls::cartesianToStandardSpherical(0,1,2,tfrce,tcart));
 
+                        //g09::ipcoordinateFinder(outshl[j],tcart);
+                        //g09::forceFinder(outshl[j],tfrce);
                         g09::ipcoordinateFinder(outshl[j],tcart);
-                        g09::forceFinder(outshl[j],tfrce);
-                        std::cout << "ENERGY: " << g09::energyFinder(outshl[j]) << std::endl;
-                        datapoint.append(simtls::cartesianToStandardSpherical(0,1,2,tfrce,tcart));
+                        datapoint.append( simtls::calculateDistMatrixCSV(tcart) );
+                        datapoint.append( g09::energyFinder(outshl[j]) );
+                        //datapoint.append(simtls::cartesianToStandardSpherical(0,1,2,tfrce,tcart));
                         //datapoint.append(g09::forceFinder(outsll[j]));
                         //datapoint.append(g09::forceFinder(outshl[j]));
 

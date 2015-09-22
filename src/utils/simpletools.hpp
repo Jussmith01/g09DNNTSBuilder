@@ -279,6 +279,22 @@ inline bool stristype(std::string value,std::string type) {
     return true;
 };
 
+inline std::string calculateDistMatrixCSV(std::vector< glm::vec3 > &vec) {
+    std::stringstream dmat_ss;
+    dmat_ss.setf( std::ios::fixed, std::ios::floatfield );
+
+    unsigned N(vec.size());
+    unsigned cnt(0);
+    for (unsigned i=0;i<N;++i) {
+        for (unsigned j=i+1;j<N;++j) {
+            dmat_ss << std::setprecision(7) << glm::length(vec[i]-vec[j]) << ",";
+            ++cnt;
+        }
+    }
+
+    return dmat_ss.str();
+};
+
 };
 
 #endif

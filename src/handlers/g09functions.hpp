@@ -133,7 +133,7 @@ inline std::string energyFinder(const std::string &filename) {
     while (getline(stream, line)) {
         std::smatch m;
         if (regex_search(line, m, patt_energy)) {
-            energy << m.str(1);
+            energy << m.str(1) << ",";
         }
     }
 
