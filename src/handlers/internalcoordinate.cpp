@@ -382,19 +382,25 @@ void itrnl::Internalcoordinates::m_generateRandomIntrlStruct(RandomReal &rnGen) 
 
     //std::cout << "|---BONDS---|\n";
     for (unsigned i=0; i<ibnds.size(); ++i) {
-        rnGen.setRandomRange(ibnds[i]-0.3f,ibnds[i]+3.0f);
+        rnGen.setRandomRange(ibnds[i]-0.3f,ibnds[i]+1.2f);
         rnGen.getRandom(bnds[i]);
 
-        //if (i!=0)
-            //bnds[i]=ibnds[i];
+        //if (i==0) {
+          //  bnds[i] = ibnds[i] - 0.3 + cnt * 0.001;
+            //std::cout << "DIST: " << bnds[i] << " - " << ibnds[i] << " - " << cnt << std::endl;
+            //++cnt;
+        //}
+
+        if (i!=0)
+            bnds[i] = ibnds[i];
         //std::cout << " ibond=" << ibnds[i] << " rbond=" << bnds[i] << std::endl;
     }
 
     //std::cout << "|---ANGLES---|\n";
     for (unsigned i=0; i<iangs.size(); ++i) {
-        rnGen.setRandomRange(iangs[i]-90.0f,iangs[i]+90.0f);
+        rnGen.setRandomRange(iangs[i]-30.0f,iangs[i]+30.0f);
         rnGen.getRandom(angs[i]);
-        //angs[i] = iangs[i];
+        angs[i] = iangs[i];
         //std::cout << " iangles=" << iangs[i] << " rangles=" << angs[i] << std::endl;
     }
 
@@ -418,7 +424,7 @@ void itrnl::Internalcoordinates::generateRandomZMat(std::vector< std::vector<flo
 
     unsigned k=0;
     for (auto&& zms : zmats) {
-        ///ic[k].clear();
+        ic[k].clear();
         m_generateRandomIntrlStruct(rnGen);
 
         std::vector< std::stringstream > zmat_line(type.size());

@@ -214,7 +214,8 @@ public:
     };
 
     // Class index and initial iternals constructor
-    Internalcoordinates (const std::vector< std::string > &icoords) {
+    Internalcoordinates (const std::vector< std::string > &icoords) :
+        cnt(0) {
         try {
             /* Determing (IC) Internal Coords Index */
             m_getAtomTypes(icoords);

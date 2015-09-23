@@ -265,8 +265,9 @@ void Trainingsetbuilder::calculateTrainingSet() {
                         g09::ipcoordinateFinder(outshl[j],tcart);
 
                         datapoint.append( simtls::calculateDistMatrixCSV(tcart) );
+                        datapoint.append( licrd.getCSVStringWithIC(icord[j]) );
+                        //datapoint.append( simtls::cartesianToStandardSpherical(0,1,2,tfrce,tcart) );
                         datapoint.append( g09::energyFinder(outshl[j]) );
-                        //datapoint.append(simtls::cartesianToStandardSpherical(0,1,2,tfrce,tcart));
                         //datapoint.append(g09::forceFinder(outsll[j]));
                         //datapoint.append(g09::forceFinder(outshl[j]));
 
