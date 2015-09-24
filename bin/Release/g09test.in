@@ -1,4 +1,4 @@
-#P HF/6-31g* opt=ModRedundant
+#P b3lyp/6-31g* opt=tight
 
 comment
 
