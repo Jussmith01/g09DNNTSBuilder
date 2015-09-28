@@ -382,9 +382,18 @@ void itrnl::Internalcoordinates::m_generateRandomIntrlStruct(RandomReal &rnGen) 
 
     //std::cout << "|---BONDS---|\n";
     for (unsigned i=0; i<ibnds.size(); ++i) {
-        rnGen.setRandomRange(ibnds[i]-0.3f,ibnds[i]+1.5f);
-        rnGen.getRandom(bnds[i]);
-        bnds[i] = ibnds[i];
+	if (i==1) {
+		rnGen.setRandomRange(ibnds[i]-0.1f,ibnds[i]+0.1f);
+        	rnGen.getRandom(bnds[i]);
+        	bnds[i] = ibnds[i] - 0.6 + cnt * 0.01;
+		++cnt;
+	} else {
+		rnGen.setRandomRange(ibnds[i]-0.1f,ibnds[i]+0.1f);
+        	rnGen.getRandom(bnds[i]);
+		bnds[i] = ibnds[i];
+        }
+
+	//bnds[i] = ibnds[i];
 
         //if (i==0) {
           //  bnds[i] = ibnds[i] - 0.3 + cnt * 0.005;
@@ -399,11 +408,11 @@ void itrnl::Internalcoordinates::m_generateRandomIntrlStruct(RandomReal &rnGen) 
 
     //std::cout << "|---ANGLES---|\n";
     for (unsigned i=0; i<iangs.size(); ++i) {
-        rnGen.setRandomRange(iangs[i]-40.0f,iangs[i]+40.0f);
+        rnGen.setRandomRange(iangs[i]-5.0f,iangs[i]+5.0f);
         rnGen.getRandom(angs[i]);
-        //angs[i] = iangs[i];
-        angs[i] = iangs[i] - 45.0 + cnt * 0.2;
-        ++cnt;
+        angs[i] = iangs[i];
+        //angs[i] = iangs[i] - 45.0 + cnt * 0.2;
+        //++cnt;
         //std::cout << " iangles=" << iangs[i] << " rangles=" << angs[i] << std::endl;
     }
 
@@ -411,8 +420,8 @@ void itrnl::Internalcoordinates::m_generateRandomIntrlStruct(RandomReal &rnGen) 
     for (unsigned i=0; i<idhls.size(); ++i) {
         rnGen.setRandomRange(idhls[i]-10.0f,idhls[i]+10.0f);
         rnGen.getRandom(dhls[i]);
-        //dhls[i] = idhls[i];
-        //dhls[i] = idhls[i]-3.14+0.02*cnt;
+        dhls[i] = idhls[i];
+        //dhls[i] = idhls[i]-180.0+0.5*cnt;
         //++cnt;
         //std::cout << " idihedrals=" << idhls[i] << " rdihedrals=" << dhls[i] << std::endl;
     }
