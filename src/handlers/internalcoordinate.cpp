@@ -384,12 +384,12 @@ void itrnl::Internalcoordinates::m_generateRandomIntrlStruct(RandomReal &rnGen) 
     for (unsigned i=0; i<ibnds.size(); ++i) {
 	if (i==1) {
 		rnGen.setRandomRange(ibnds[i]-0.1f,ibnds[i]+0.1f);
-        	rnGen.getRandom(bnds[i]);
-        	bnds[i] = ibnds[i] - 0.6 + cnt * 0.01;
+        rnGen.getRandom(bnds[i]);
+        bnds[i] = ibnds[i] - 0.6 + cnt * 0.01;
 		++cnt;
 	} else {
 		rnGen.setRandomRange(ibnds[i]-0.1f,ibnds[i]+0.1f);
-        	rnGen.getRandom(bnds[i]);
+        rnGen.getRandom(bnds[i]);
 		bnds[i] = ibnds[i];
         }
 
