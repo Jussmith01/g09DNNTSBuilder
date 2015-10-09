@@ -39,6 +39,7 @@
 		</Compiler>
 		<Linker>
 			<Add library="gomp" />
+			<Add library="InternalCoordinateAPI" />
 			<Add directory="lib" />
 			<Add directory="/opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/intel64/" />
 		</Linker>
@@ -48,8 +49,6 @@
 		<Unit filename="src/handlers/atom_masses.h" />
 		<Unit filename="src/handlers/g09functions.hpp" />
 		<Unit filename="src/handlers/input.h" />
-		<Unit filename="src/handlers/internalcoordinate.cpp" />
-		<Unit filename="src/handlers/internalcoordinate.h" />
 		<Unit filename="src/main.cpp" />
 		<Unit filename="src/utils/flaghandler.h" />
 		<Unit filename="src/utils/micro_timer.cpp" />

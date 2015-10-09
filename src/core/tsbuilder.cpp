@@ -18,6 +18,9 @@
 // Error Handlers
 #include "../errorhandlers.h"
 
+// Custom Libs
+#include <internalcoordinate.h>
+
 // Utilities
 #include "../utils/simpletools.hpp"
 #include "../utils/systools.hpp"
@@ -28,7 +31,6 @@
 // Handlers
 #include "../handlers/g09functions.hpp"
 #include "../handlers/input.h"
-#include "../handlers/internalcoordinate.h"
 
 // Class Definition
 #include "tsbuilder.h"
@@ -163,7 +165,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
 
         // Z-matrix Stuff
         std::vector<std::string> zmat(ngpr);
-        std::vector< std::vector<float> > icord(ngpr);
+        std::vector< itrnl::t_iCoords > icord(ngpr);
 
         // Cartesian and force temp storage
         std::vector< glm::vec3 > tcart(na);
@@ -191,9 +193,10 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 ---------------------------------*/
                 // Generate the random structure
                 mrtimer.start_point();
-                licrd.generateRandomZMat(icord,zmat,rnGen);
-                //m_generateRandomStructure(nrpg,ixyz,wxyz,rnGen);
-
+                for (unsigned j=0;j<ngpr;++j) {
+                    icord[j] = licrd.generateRandomICoords(rnGen); // Generate Random Structure
+                    itrnl::iCoordToZMat(icord[j],zmat[j]); // Convert ICoord to Zmat
+                }
                 mrtimer.end_point();
 
                 /*------Gaussian 09 Running-------
@@ -262,10 +265,11 @@ void Trainingsetbuilder::calculateTrainingSet() {
 
                         //g09::ipcoordinateFinder(outshl[j],tcart);
                         //g09::forceFinder(outshl[j],tfrce);
-                        g09::ipcoordinateFinder(outshl[j],tcart);
+                        //g09::ipcoordinateFinder(outshl[j],tcart);
+                        itrnl::iCoordToXYZ(icord[j],tcart);
 
                         datapoint.append( simtls::calculateDistMatrixCSV(tcart) );
-                        datapoint.append( licrd.getCSVStringWithIC(icord[j]) );
+                        datapoint.append( itrnl::getCsvICoordStr(icord[j]) );
                         //datapoint.append( simtls::cartesianToStandardSpherical(0,1,2,tfrce,tcart) );
                         datapoint.append( g09::energyFinder(outshl[j]) );
                         //datapoint.append(g09::forceFinder(outsll[j]));

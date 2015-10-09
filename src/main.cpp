@@ -14,6 +14,9 @@
 // Error Handling
 #include "errorhandlers.h" // Contains the error handlers.
 
+// Custom Libs
+#include <internalcoordinate.h>
+
 // Utilities
 #include "utils/randnormflt.h"
 #include "utils/simpletools.hpp"
@@ -24,7 +27,6 @@
 // Handlers
 #include "handlers/input.h"
 #include "handlers/g09functions.hpp"
-#include "handlers/internalcoordinate.h"
 
 // Core
 #include "core/tsbuilder.h"

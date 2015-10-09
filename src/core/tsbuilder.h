@@ -26,6 +26,8 @@ public:
         icrd(iptData.getCoordinatesStr()),
         routecout(false) {
 
+        icrd.getRandRng().setRandomRanges(iptData.getRandStr());
+
         // Save a pointer to the input data class
         this->args = args;
         if (this->args == NULL)

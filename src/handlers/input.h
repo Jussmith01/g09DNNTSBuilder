@@ -10,9 +10,6 @@
 #include "../../include/glm/detail/type_vec.hpp"
 #include <glm/glm.hpp>
 
-// Atom Masses
-#include "atom_masses.h"
-
 namespace ipt
 {
 
@@ -56,6 +53,7 @@ class inputParameters {
     some reason, so using tr1 */
     std::tr1::unordered_map<std::string,std::string> m_params;
     std::vector< std::string > m_coords;
+    std::vector< std::string > m_rand;
 
 
     //------------------------------------
@@ -80,17 +78,29 @@ class inputParameters {
     void m_readInput() {
         std::ifstream ipt(getParameter<std::string>("ifname").c_str());
         bool readcoords(false);
+        bool readrand(false);
         if (ipt.is_open()) {
             std::string(line);
             while ( getline (ipt,line) ) {
                 line = line.substr(0,line.find("#"));
+
                 if (readcoords) {
                     if (simtls::trim(line).compare("$endcoordinates")!=0) {
                         //std::cout << "COORDS: " << line << std::endl;
                         m_coords.push_back(simtls::trim(line));
                     } else {
                         //readcoords = false;
-                        break;
+                        readcoords=false;
+                    }
+                }
+
+                if (readrand) {
+                    if (simtls::trim(line).compare("$endrandomrange")!=0) {
+                        //std::cout << "COORDS: " << line << std::endl;
+                        m_rand.push_back(simtls::trim(line));
+                    } else {
+                        //readcoords = false;
+                        readrand=false;
                     }
                 }
 
@@ -98,7 +108,11 @@ class inputParameters {
                     readcoords = true;
                 }
 
-                if (!readcoords)
+                if (simtls::trim(line).compare("$randomrange")==0) {
+                    readrand = true;
+                }
+
+                if (!readcoords && !readrand)
                     //std::cout << "PARM: " << line << std::endl;
                     m_setParameter(line);
             }
@@ -258,6 +272,13 @@ public:
     //------------------------------------
     const std::vector< std::string >& getCoordinatesStr() {
         return m_coords;
+    };
+
+    //------------------------------------
+    //         Get coordinates
+    //------------------------------------
+    std::vector< std::string >& getRandStr() {
+        return m_rand;
     };
 };
 

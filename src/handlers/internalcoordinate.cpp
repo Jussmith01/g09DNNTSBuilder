@@ -18,7 +18,7 @@
 #include <glm/glm.hpp>
 
 // Namespace header
-#include "internalcoordinate.h"
+#include <internalcoordinate.h>
 
 #define Rad 180.0/M_PI; /*radians to degrees*/
 
