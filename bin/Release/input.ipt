@@ -1,6 +1,6 @@
 TSS=100 # Training Set Size
 LOT=AM1 # Low level of theory
-HOT=b3lyp/6-31g* # High level of theory
+HOT=ub3lyp/6-31g* # High level of theory
 rdm=uniform #Random type
 std=1.5  # Standard Deviation of random numbers
 mean=-1.5 #
@@ -13,7 +13,7 @@ H 2 0.9687 1 103.6516
 $endcoordinates
 
 $randomrange # Ranges for the random structure perturbations
-B 0.3 1.0
-B 0.3 1.0
-A 20.0 20.0
+B 0.3 5.0
+B 0.0 0.0
+A 0.0 0.0
 $endrandomrange

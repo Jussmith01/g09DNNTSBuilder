@@ -295,6 +295,18 @@ inline std::string calculateDistMatrixCSV(std::vector< glm::vec3 > &vec) {
     return dmat_ss.str();
 };
 
+inline std::string xyzToCSV(std::vector< glm::vec3 > &vec) {
+    std::stringstream dmat_ss;
+    dmat_ss.setf( std::ios::fixed, std::ios::floatfield );
+
+    unsigned N(vec.size());
+    for (unsigned i=0;i<N;++i) {
+            dmat_ss << std::setprecision(7) << vec[i].x << ","  << vec[i].y << ","  << vec[i].z << ",";
+    }
+
+    return dmat_ss.str();
+};
+
 };
 
 #endif

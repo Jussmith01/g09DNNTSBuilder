@@ -191,7 +191,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 /*------Structure Generation------
 
                 ---------------------------------*/
-                // Generate the random structure
+                // Generate the random structures
                 mrtimer.start_point();
                 for (unsigned j=0;j<ngpr;++j) {
                     icord[j] = licrd.generateRandomICoords(rnGen); // Generate Random Structure
@@ -213,7 +213,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
 
                 // Build the g09 input file for the high level of theory
                 //g09::buildZmatInputg09(nrpg,input,params.hlt,"force",types,wxyz,0,1,1);
-                g09::buildZmatInputg09(ngpr,input,params.getParameter<std::string>("HOT"),"force",zmat,0,1,1);
+                g09::buildZmatInputg09(ngpr,input,params.getParameter<std::string>("HOT"),"SCF(XQC) force",zmat,1,0,1);
 
                 /*std::stringstream ssi;
                 ssi << "g09input." << tid << "." << i << ".dat";
@@ -268,7 +268,8 @@ void Trainingsetbuilder::calculateTrainingSet() {
                         //g09::ipcoordinateFinder(outshl[j],tcart);
                         itrnl::iCoordToXYZ(icord[j],tcart);
 
-                        datapoint.append( simtls::calculateDistMatrixCSV(tcart) );
+                        //datapoint.append( simtls::calculateDistMatrixCSV(tcart) );
+                        datapoint.append( simtls::xyzToCSV(tcart) );
                         datapoint.append( itrnl::getCsvICoordStr(icord[j]) );
                         //datapoint.append( simtls::cartesianToStandardSpherical(0,1,2,tfrce,tcart) );
                         datapoint.append( g09::energyFinder(outshl[j]) );

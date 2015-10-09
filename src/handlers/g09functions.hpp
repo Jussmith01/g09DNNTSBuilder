@@ -124,7 +124,7 @@ inline std::string icforceFinder(const std::string &filename) {
 inline std::string energyFinder(const std::string &filename) {
     using namespace std;
 
-    stringstream energy;
+    string energy;
     //energy.setf( std::ios::scientific, std::ios::floatfield );
 
     regex patt_energy("\\sSCF Done:.*=\\s+(-*\\d+\\.\\d+)\\s");
@@ -133,13 +133,13 @@ inline std::string energyFinder(const std::string &filename) {
     while (getline(stream, line)) {
         std::smatch m;
         if (regex_search(line, m, patt_energy)) {
-            energy << m.str(1) << ",";
+            energy = m.str(1) + ",";
         }
     }
 
     //std::cout << " FORCE: " << force_csv.str() << std::endl;
 
-    return energy.str();
+    return energy;
 };
 
 /*----------------------------------------
@@ -280,7 +280,7 @@ inline void buildZmatInputg09(int nrpg,std::string &input,std::string lot,std::s
         tmpipt << "\n%mem=" << 500 << "MB\n";
         tmpipt << "#p " << lot << " " << additional << "\n\n";
         tmpipt << "COMMENT LINE\n\n";
-        tmpipt << mult << "  " << charge << "\n";
+        tmpipt <<  charge << "  " << mult << "\n";
 
         tmpipt << zmat[j] << "\n";
 
