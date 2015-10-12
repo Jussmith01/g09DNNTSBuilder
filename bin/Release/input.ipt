@@ -1,4 +1,4 @@
-TSS=100 # Training Set Size
+TSS=1000 # Training Set Size
 LOT=AM1 # Low level of theory
 HOT=ub3lyp/6-31g* # High level of theory
 rdm=uniform #Random type

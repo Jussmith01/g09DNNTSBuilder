@@ -1,9 +1,20 @@
-#P ub3lyp/6-31g* SCF(XQC)
+#P ub3lyp/6-31g* SCF(XQC,nosymm)
 
 comment
 
 0 1
 H
 O 1 0.9
-H 2 4.0 1 105.0
+H 2 3.44 1 105.0
+
+--link1--
+#P ub3lyp/6-31g* SCF(QC,nosymm)
+
+comment
+
+0 1
+H
+O 1 0.9
+H 2 3.44 1 105.0
+
 

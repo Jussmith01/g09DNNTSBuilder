@@ -213,7 +213,8 @@ void Trainingsetbuilder::calculateTrainingSet() {
 
                 // Build the g09 input file for the high level of theory
                 //g09::buildZmatInputg09(nrpg,input,params.hlt,"force",types,wxyz,0,1,1);
-                g09::buildZmatInputg09(ngpr,input,params.getParameter<std::string>("HOT"),"SCF(XQC) force",zmat,1,0,1);
+                //g09::buildZmatInputg09(ngpr,input,params.getParameter<std::string>("HOT"),"SCF(XQC,nosymm) force",zmat,1,0,1);
+                g09::buildZmatInputg09(ngpr,input,params.getParameter<std::string>("HOT"),"SCF(QC,nosymm) force",zmat,1,0,1);
 
                 /*std::stringstream ssi;
                 ssi << "g09input." << tid << "." << i << ".dat";
@@ -268,9 +269,11 @@ void Trainingsetbuilder::calculateTrainingSet() {
                         //g09::ipcoordinateFinder(outshl[j],tcart);
                         itrnl::iCoordToXYZ(icord[j],tcart);
 
+                        if (m_checkRandomStructure(tcart)) {++gdf;}
+
                         //datapoint.append( simtls::calculateDistMatrixCSV(tcart) );
-                        datapoint.append( simtls::xyzToCSV(tcart) );
-                        datapoint.append( itrnl::getCsvICoordStr(icord[j]) );
+                        //datapoint.append( simtls::xyzToCSV(tcart) );
+                        //datapoint.append( itrnl::getCsvICoordStr(icord[j]) );
                         //datapoint.append( simtls::cartesianToStandardSpherical(0,1,2,tfrce,tcart) );
                         datapoint.append( g09::energyFinder(outshl[j]) );
                         //datapoint.append(g09::forceFinder(outsll[j]));
@@ -362,46 +365,6 @@ void Trainingsetbuilder::calculateTrainingSet() {
     std::cout << "\n------------------------------" << std::endl;
     std::cout << "Finished building training set" << std::endl;
     std::cout << "------------------------------" << std::endl;
-};
-
-/*-----Generate a Random Structure-------
-
-----------------------------------------*/
-void Trainingsetbuilder::m_generateRandomStructure(int nrpg,const std::vector<glm::vec3> &ixyz,std::vector<glm::vec3> &oxyz,RandomReal &rnGen) {
-    // Number of coords per molecules
-    int N = ixyz.size();
-
-    // Do this for all nrpg gaussian inputs
-    for (int j=0; j<nrpg; ++j) {
-        bool sgot = false;
-        while (!sgot) {
-            std::vector<glm::vec3> wxyz(ixyz.size());
-            std::vector<float> rn;
-
-            rnGen.fillVector(rn,3*ixyz.size());
-
-            for (uint32_t i=0; i<ixyz.size(); ++i) {
-                //wxyz[i].x = ixyz[i].x + rn[i*3];
-                wxyz[i].x = rn[i*3];
-                //wxyz[i].x = ixyz[i].x;
-                //wxyz[i].y = ixyz[i].y + rn[i*3+1];
-                wxyz[i].y = rn[i*3+1];
-                //wxyz[i].y = ixyz[i].y;
-                //wxyz[i].z = ixyz[i].z + rn[i*3+2];
-                wxyz[i].z = rn[i*3+2];
-                //wxyz[i] = ixyz[i] * rn[0];
-            }
-
-            // Check structure distances for viability
-            if (!m_checkRandomStructure(wxyz)) {
-                // Save structure in output xyz vector
-                for (uint32_t i=0; i<ixyz.size(); ++i) {
-                    oxyz[j*N+i] = wxyz[i];
-                }
-                sgot=true;
-            }
-        }
-    }
 };
 
 /*------Check a Random Structure--------

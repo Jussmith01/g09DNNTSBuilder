@@ -11,10 +11,6 @@ class Trainingsetbuilder {
     FlagHandler *args;
 
     bool routecout;
-    //std::streambuf *coutbuf;
-
-    // This generates a random structure from the minimum
-    void m_generateRandomStructure(int nrpg,const std::vector<glm::vec3> &ixyz,std::vector<glm::vec3> &oxyz,RandomReal &rnGen);
 
     // This checks if a random structure is okay for gaussian
     bool m_checkRandomStructure(const std::vector<glm::vec3> &xyz);
@@ -36,7 +32,8 @@ public:
         // Route cout to output file if output was supplied
         if (!this->args->getflag("-o").empty()) {
             routecout = true;
-            freopen(this->args->getflag("-o").c_str(),"w",stdout);
+            FILE* stdo = freopen(this->args->getflag("-o").c_str(),"w",stdout);
+            if (stdo) {};
         }
     };
 
