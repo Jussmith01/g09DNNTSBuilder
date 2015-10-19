@@ -22,7 +22,11 @@ public:
         icrd(iptData.getCoordinatesStr()),
         routecout(false) {
 
-        icrd.getRandRng().setRandomRanges(iptData.getRandStr());
+        if        (iptData.getRandStr().size() > 0) {
+            icrd.getRandRng().setRandomRanges(iptData.getRandStr());
+        } else if (iptData.getScanStr().size() > 0) {
+            icrd.getScanRng().setScanRanges(iptData.getScanStr());
+        } else {dnntsErrorcatch(std::string("Structure generation scan or random range has not been set!"));}
 
         // Save a pointer to the input data class
         this->args = args;

@@ -15,7 +15,7 @@
 /* Check for sufficient compiler version */
 #if defined(__GNUC__) || defined(__GNUG__)
     #if !(__GNUC__ >= 4 && __GNUC_MINOR__ >= 9)
-        #error "Insufficient GNU Compiler Version -- 4.9 or greater required"
+        #error "Insufficient GNU compiler version to install this library-- 4.9 or greater required"
     #endif
 #else
     #warning "Currently only GNU compilers are supported and tested, but go ahead if you know what you're doing."
@@ -243,6 +243,53 @@ public:
     };
 };
 
+/*--------Internal Coordinates RandRng----------
+
+
+This type stores the Ranges of the random
+purturbations of the IC.
+
+----------------------------------------------*/
+class t_ICScanRng {
+
+    bool sset;
+    unsigned scnt;
+
+    std::vector< std::pair<float,float> > rngb; // Range of bonds
+    std::vector< std::pair<float,float> > rnga; // Range of angles
+    std::vector< std::pair<float,float> > rngd; // Range of dihedrals
+
+public:
+
+    t_ICScanRng () :
+        sset(false),scnt(0)
+    {};
+
+    // Returns true if the range values are set.
+    bool isset() {return sset;};
+
+    // Returns the scan counter and increment it by one.
+    unsigned getCounter() {
+        unsigned tmp(scnt);
+        ++scnt;
+        return tmp;
+    };
+
+    // Const Access Functions
+    const std::pair<float,float>& getRngBnd(unsigned i) {return rngb[i];};
+    const std::pair<float,float>& getRngAng(unsigned i) {return rnga[i];};
+    const std::pair<float,float>& getRngDhl(unsigned i) {return rngd[i];};
+
+    // Function for defining the scan ranges
+    void setScanRanges (std::vector< std::string > &scnin);
+
+    void clear () {
+        rnga.clear();
+        rngb.clear();
+        rngd.clear();
+    };
+};
+
 /*--------Internal Coordinates Class----------
 
 
@@ -253,6 +300,7 @@ class Internalcoordinates {
 
     t_iCoords iic; // Initial Internal Coordinates
     t_ICRandRng rrg; // Random Range Container
+    t_ICScanRng srg; // Scan Range Container
 
 
     /** Member Fucntions **/
@@ -337,6 +385,9 @@ public:
     // Generate a random structure
     t_iCoords generateRandomICoords(RandomReal &rnGen);
 
+    // Generate a random structure
+    t_iCoords generateScanICoords();
+
     // Data Printer
     void printdata() {
         std::cout << "Internal Coordinates Class Setup" << std::endl;
@@ -354,6 +405,10 @@ public:
         return rrg;
     }
 
+    t_ICScanRng& getScanRng() {
+        return srg;
+    }
+
     // Destructor
     ~Internalcoordinates() {
         iic.clear();
@@ -367,6 +422,6 @@ extern void iCoordToZMat(const t_iCoords &ics,std::string &zmats);
 extern std::string getCsvICoordStr(const t_iCoords &ics);
 
 // Convert internal coordinates to XYZ
-void iCoordToXYZ(const t_iCoords &ics,std::vector<glm::vec3> &xyz);
+extern void iCoordToXYZ(const t_iCoords &ics,std::vector<glm::vec3> &xyz);
 };
 #endif

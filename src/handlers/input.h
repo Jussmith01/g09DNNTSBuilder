@@ -54,6 +54,7 @@ class inputParameters {
     std::tr1::unordered_map<std::string,std::string> m_params;
     std::vector< std::string > m_coords;
     std::vector< std::string > m_rand;
+    std::vector< std::string > m_scan;
 
 
     //------------------------------------
@@ -79,6 +80,7 @@ class inputParameters {
         std::ifstream ipt(getParameter<std::string>("ifname").c_str());
         bool readcoords(false);
         bool readrand(false);
+        bool readscan(false);
         if (ipt.is_open()) {
             std::string(line);
             while ( getline (ipt,line) ) {
@@ -104,6 +106,16 @@ class inputParameters {
                     }
                 }
 
+                if (readscan) {
+                    if (simtls::trim(line).compare("$endscanrange")!=0) {
+                        //std::cout << "COORDS: " << line << std::endl;
+                        m_scan.push_back(simtls::trim(line));
+                    } else {
+                        //readcoords = false;
+                        readscan=false;
+                    }
+                }
+
                 if (simtls::trim(line).compare("$coordinates")==0) {
                     readcoords = true;
                 }
@@ -112,7 +124,11 @@ class inputParameters {
                     readrand = true;
                 }
 
-                if (!readcoords && !readrand)
+                if (simtls::trim(line).compare("$scanrange")==0) {
+                    readscan = true;
+                }
+
+                if (!readcoords && !readrand && !readscan)
                     //std::cout << "PARM: " << line << std::endl;
                     m_setParameter(line);
             }
@@ -279,6 +295,13 @@ public:
     //------------------------------------
     std::vector< std::string >& getRandStr() {
         return m_rand;
+    };
+
+    //------------------------------------
+    //         Get coordinates
+    //------------------------------------
+    std::vector< std::string >& getScanStr() {
+        return m_scan;
     };
 };
 

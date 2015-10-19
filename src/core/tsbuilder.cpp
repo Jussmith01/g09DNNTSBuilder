@@ -13,6 +13,7 @@
 #include <unordered_map>
 
 // GLM Mathematics
+//#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 
 // Error Handlers
@@ -194,7 +195,12 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 // Generate the random structures
                 mrtimer.start_point();
                 for (unsigned j=0;j<ngpr;++j) {
-                    icord[j] = licrd.generateRandomICoords(rnGen); // Generate Random Structure
+                    if (licrd.getRandRng().isset()) {
+                        icord[j] = licrd.generateRandomICoords(rnGen); // Generate Random Structure
+                    } else if (licrd.getScanRng().isset()) {
+                        icord[j] = licrd.generateScanICoords(); // Generate Random Structure
+                    } else {termstr = std::string("Random or scan range is not set!");}
+
                     itrnl::iCoordToZMat(icord[j],zmat[j]); // Convert ICoord to Zmat
                 }
                 mrtimer.end_point();
@@ -213,8 +219,8 @@ void Trainingsetbuilder::calculateTrainingSet() {
 
                 // Build the g09 input file for the high level of theory
                 //g09::buildZmatInputg09(nrpg,input,params.hlt,"force",types,wxyz,0,1,1);
-                //g09::buildZmatInputg09(ngpr,input,params.getParameter<std::string>("HOT"),"SCF(XQC,nosymm) force",zmat,1,0,1);
-                g09::buildZmatInputg09(ngpr,input,params.getParameter<std::string>("HOT"),"SCF(QC,nosymm) force",zmat,1,0,1);
+                g09::buildZmatInputg09(ngpr,input,params.getParameter<std::string>("HOT"),"force",zmat,1,0,1);
+                //g09::buildZmatInputg09(ngpr,input,params.getParameter<std::string>("HOT"),"SCF(QC,nosymm) force",zmat,1,0,1);
 
                 /*std::stringstream ssi;
                 ssi << "g09input." << tid << "." << i << ".dat";
@@ -271,9 +277,9 @@ void Trainingsetbuilder::calculateTrainingSet() {
 
                         if (m_checkRandomStructure(tcart)) {++gdf;}
 
-                        //datapoint.append( simtls::calculateDistMatrixCSV(tcart) );
+                        datapoint.append( simtls::calculateDistMatrixCSV(tcart) );
                         datapoint.append( simtls::xyzToCSV(tcart) );
-                        //datapoint.append( itrnl::getCsvICoordStr(icord[j]) );
+                        datapoint.append( itrnl::getCsvICoordStr(icord[j]) );
                         //datapoint.append( simtls::cartesianToStandardSpherical(0,1,2,tfrce,tcart) );
                         datapoint.append( g09::energyFinder(outshl[j]) );
                         //datapoint.append(g09::forceFinder(outsll[j]));
