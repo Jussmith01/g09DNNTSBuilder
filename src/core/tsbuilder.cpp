@@ -277,8 +277,8 @@ void Trainingsetbuilder::calculateTrainingSet() {
 
                         if (m_checkRandomStructure(tcart)) {++gdf;}
 
-                        datapoint.append( simtls::calculateDistMatrixCSV(tcart) );
-                        datapoint.append( simtls::xyzToCSV(tcart) );
+                        //datapoint.append( simtls::calculateDistMatrixCSV(tcart) );
+                        //datapoint.append( simtls::xyzToCSV(tcart) );
                         datapoint.append( itrnl::getCsvICoordStr(icord[j]) );
                         //datapoint.append( simtls::cartesianToStandardSpherical(0,1,2,tfrce,tcart) );
                         datapoint.append( g09::energyFinder(outshl[j]) );
