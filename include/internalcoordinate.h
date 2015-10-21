@@ -76,6 +76,7 @@
 #include <utility>
 
 // GLM Vector Math
+//#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
@@ -419,7 +420,7 @@ public:
 extern void iCoordToZMat(const t_iCoords &ics,std::string &zmats);
 
 // Calculate the CSV (Comma Separated Values) string of internal coords based on xyz input
-extern std::string getCsvICoordStr(const t_iCoords &ics);
+extern std::string getCsvICoordStr(const t_iCoords &ics, std::string units="degrees");
 
 // Convert internal coordinates to XYZ
 extern void iCoordToXYZ(const t_iCoords &ics,std::vector<glm::vec3> &xyz);

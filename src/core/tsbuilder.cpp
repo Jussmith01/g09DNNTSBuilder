@@ -279,7 +279,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
 
                         //datapoint.append( simtls::calculateDistMatrixCSV(tcart) );
                         //datapoint.append( simtls::xyzToCSV(tcart) );
-                        datapoint.append( itrnl::getCsvICoordStr(icord[j]) );
+                        datapoint.append( itrnl::getCsvICoordStr(icord[j],"radians") );
                         //datapoint.append( simtls::cartesianToStandardSpherical(0,1,2,tfrce,tcart) );
                         datapoint.append( g09::energyFinder(outshl[j]) );
                         //datapoint.append(g09::forceFinder(outsll[j]));
