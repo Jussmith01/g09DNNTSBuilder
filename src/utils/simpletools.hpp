@@ -307,6 +307,17 @@ inline std::string xyzToCSV(std::vector< glm::vec3 > &vec) {
     return dmat_ss.str();
 };
 
+inline std::string stringsToCSV(std::vector< std::string > vec) {
+    std::stringstream ss;
+
+    unsigned N(vec.size());
+    for (unsigned i=0;i<N;++i) {
+            ss << vec[i] << ",";
+    }
+
+    return ss.str();
+};
+
 };
 
 #endif

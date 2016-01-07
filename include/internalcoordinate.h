@@ -389,6 +389,10 @@ public:
     // Generate a random structure
     t_iCoords generateScanICoords();
 
+    std::vector<std::string> getAtomTypes (void) {
+        return iic.type;
+    }
+
     // Data Printer
     void printdata() {
         std::cout << "Internal Coordinates Class Setup" << std::endl;

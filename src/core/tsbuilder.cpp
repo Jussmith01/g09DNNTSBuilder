@@ -140,6 +140,8 @@ void Trainingsetbuilder::calculateTrainingSet() {
             ++N;
         }
 
+        std::string typescsv( simtls::stringsToCSV(licrd.getAtomTypes()) );
+
         // Prepare the random number seeds
         std::vector<int> seedarray;
         seedGen.getThreadSeeds(tid,seedarray);
@@ -278,8 +280,14 @@ void Trainingsetbuilder::calculateTrainingSet() {
                         if (m_checkRandomStructure(tcart)) {++gdf;}
 
                         //datapoint.append( simtls::calculateDistMatrixCSV(tcart) );
-                        //datapoint.append( simtls::xyzToCSV(tcart) );
-                        datapoint.append( itrnl::getCsvICoordStr(icord[j],"radians") );
+                        std::stringstream ss;
+                        ss << tcart.size();
+
+                        datapoint.append( ss.str().c_str() );
+                        datapoint.append( "," );
+                        datapoint.append( typescsv );
+                        datapoint.append( simtls::xyzToCSV(tcart) );
+                        //datapoint.append( itrnl::getCsvICoordStr(icord[j],"radians") );
                         //datapoint.append( simtls::cartesianToStandardSpherical(0,1,2,tfrce,tcart) );
                         datapoint.append( g09::energyFinder(outshl[j]) );
                         //datapoint.append(g09::forceFinder(outsll[j]));
