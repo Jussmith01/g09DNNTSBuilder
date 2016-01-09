@@ -1,0 +1,33 @@
+TSS=1000 # Training Set Size
+LOT=AM1 # Low level of theory
+HOT=UB3LYP/6-31g* # High level of theory
+rdm=uniform #Random type
+std=1.5  # Standard Deviation of random numbers
+mean=-1.5 #
+ngpr=1 #
+
+$coordinates # Initial coordinates
+H
+O 1 0.9737
+O 2 1.4558 1 99.6811
+H 3 0.9737 2 99.6811 1 118.6258
+$endcoordinates
+
+$randomrange # Ranges for the random structure perturbations
+B 0.3 0.6
+B 0.5 1.0
+B 0.3 0.6
+A 20.0 20.0
+A 20.0 20.0
+D 118.0 61.0
+$endrandomrange
+
+#$scanrange # Ranges for the random structure perturbations
+#B 0.0 0.0
+#B 0.0 0.0
+#B 0.005 0.3
+#A 0.0 0.0
+#A 0.0 0.0
+#D 0.0 0.0
+#$endscanrange
+
