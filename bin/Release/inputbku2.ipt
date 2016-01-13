@@ -1,4 +1,4 @@
-TSS=1000 # Training Set Size
+TSS=15000 # Training Set Size
 LOT=AM1 # Low level of theory
 HOT=UB3LYP/6-31g* # High level of theory
 rdm=uniform #Random type
@@ -17,8 +17,8 @@ $randomrange # Ranges for the random structure perturbations
 B 0.3 0.6
 B 0.5 1.0
 B 0.3 0.6
-A 20.0 20.0
-A 20.0 20.0
+A 30.0 30.0
+A 30.0 30.0
 D 118.0 61.0
 $endrandomrange
 

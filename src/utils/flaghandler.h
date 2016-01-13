@@ -49,7 +49,7 @@ class FlagHandler {
                 std::cout << "  -d [dataoutfilename] must have .dat extension " << std::endl;
 
                 std::cout << "Example execution: dnntsbuilder -i input.ipt -v 0 -p 8\n" << std::endl;
-                exit(0);
+                //exit(0);
             } else if ((*it).find("-v")!=std::string::npos) {
                 std::unordered_map<std::string,std::string>::
                 iterator get = flagshash.find("-v");
