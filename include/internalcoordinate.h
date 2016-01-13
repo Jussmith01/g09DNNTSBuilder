@@ -14,7 +14,10 @@
 //      *************************************************************     //
 /* Check for sufficient compiler version */
 #if defined(__GNUC__) || defined(__GNUG__)
-    #if !(__GNUC__ >= 4 && __GNUC_MINOR__ >= 9)
+    #if (__GNUC__ < 4)
+        #error "Insufficient GNU compiler version to install this library-- 4.9 or greater required"
+    #endif
+    #if (__GNUC__ == 4 && __GNUC_MINOR__ < 9)
         #error "Insufficient GNU compiler version to install this library-- 4.9 or greater required"
     #endif
 #else
@@ -339,7 +342,7 @@ class Internalcoordinates {
     std::string m_createCSVICstring(const std::vector<glm::vec3> &xyz);
 
     // Calculate the values for the internal coords based on xyz input
-    void m_setInternalCoordinatesFromXYZ(const std::vector<glm::vec3> &xyz);
+    void m_setInternalCoordinatesFromXYZ(const std::vector<glm::vec3> &xyz,const std::vector<std::string> &type);
 
 public:
 
@@ -355,7 +358,7 @@ public:
     };
 
     // Class index and initial iternals constructor
-    Internalcoordinates (const std::vector< glm::ivec2 > &mbond,const std::vector<glm::vec3> &ixyz) {
+    Internalcoordinates (const std::vector< glm::ivec2 > &mbond,const std::vector<glm::vec3> &ixyz,const std::vector<std::string> &type) {
         try {
             /* Determing (IC) Internal Coords Index */
             m_calculateBondIndex(mbond);
@@ -363,7 +366,7 @@ public:
             m_calculateDihedralIndex();
 
             /* Calculate and store the initial IC */
-            m_setInternalCoordinatesFromXYZ(ixyz);
+            m_setInternalCoordinatesFromXYZ(ixyz,type);
 
         } catch (std::string error) itrnlErrorcatch(error);
     };
