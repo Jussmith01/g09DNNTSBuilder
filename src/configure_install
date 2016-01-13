@@ -1,0 +1,36 @@
+Executable:bin/Release/g09DNNTSBuilder
+$c++:
+	compiler:
+		g++
+	flags:
+		-std=c++11 -O3 -I../include -fopenmp
+	dir:
+		core/
+	files:
+		tsbuilder
+	dir:
+		utils/
+	files:
+		micro_timer
+        dir: 
+        	none  
+        files:
+        	main
+	DONE
+$ENDc++
+$cuda:
+	compiler:
+	flags:
+        dir: 
+        files:
+	DONE
+$ENDcuda
+$linkerflags:
+	compiler:
+		g++ -L../lib
+	flags:
+		-s -lInternalCoordinateAPI -fopenmp
+	DONE
+$ENDlinkerflags
+$END OF FILE$
+
