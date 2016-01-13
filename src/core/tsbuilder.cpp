@@ -278,7 +278,6 @@ void Trainingsetbuilder::calculateTrainingSet() {
                         itrnl::iCoordToXYZ(icord[j],tcart);
 
                         if (m_checkRandomStructure(tcart)) {++gdf;}
-
                         //datapoint.append( simtls::calculateDistMatrixCSV(tcart) );
                         std::stringstream ss;
                         ss << tcart.size();
