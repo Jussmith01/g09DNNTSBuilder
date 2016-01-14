@@ -1,9 +1,0 @@
-#P ub3lyp/6-31g* opt=tight
-
-comment
-
-0 1
-H
-H 1 0.96
-O 2 0.96 1 103.64
-

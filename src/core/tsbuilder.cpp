@@ -236,6 +236,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 instream.close();*/
 
                 // Execute the g09 run, if failure occures we restart the loop
+                //std::cout << input << std::endl;
                 g09::execg09(ngpr,input,outshl,chkoutshl);
 
                 /*std::stringstream sso;

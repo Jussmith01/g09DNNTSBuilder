@@ -318,6 +318,20 @@ inline std::string stringsToCSV(std::vector< std::string > vec) {
     return ss.str();
 };
 
+/*inline std::string carttypeToCSV(std::vector< std::string > &type,std::vector< glm::vec3 > &vec) {
+    std::stringstream dmat_ss;
+    dmat_ss.setf( std::ios::fixed, std::ios::floatfield );
+
+    for (unsigned i = 0; i < type.size(), ++i) {
+        if (type[i].compare("X")==0) {
+
+        };
+    }
+
+
+    return dmat_ss.str();
+};*/
+
 };
 
 #endif
