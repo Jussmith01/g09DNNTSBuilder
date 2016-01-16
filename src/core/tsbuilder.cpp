@@ -199,6 +199,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 for (unsigned j=0;j<ngpr;++j) {
                     if (licrd.getRandRng().isset()) {
                         icord[j] = licrd.generateRandomICoords(rnGen); // Generate Random Structure
+                        //icord[j] = licrd.getInitialICoords();
                     } else if (licrd.getScanRng().isset()) {
                         icord[j] = licrd.generateScanICoords(); // Generate Random Structure
                     } else {termstr = std::string("Random or scan range is not set!");}

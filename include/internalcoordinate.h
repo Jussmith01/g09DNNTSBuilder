@@ -390,6 +390,9 @@ public:
     t_iCoords generateRandomICoords(RandomReal &rnGen);
 
     // Generate a random structure
+    t_iCoords getInitialICoords();
+
+    // Generate a random structure
     t_iCoords generateScanICoords();
 
     std::vector<std::string> getAtomTypes (void) {
