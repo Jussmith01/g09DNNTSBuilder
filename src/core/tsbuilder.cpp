@@ -199,6 +199,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 for (unsigned j=0;j<ngpr;++j) {
                     if (licrd.getRandRng().isset()) {
                         icord[j] = licrd.generateRandomICoords(rnGen); // Generate Random Structure
+                        //icord[j] = licrd.getInitialICoords();
                     } else if (licrd.getScanRng().isset()) {
                         icord[j] = licrd.generateScanICoords(); // Generate Random Structure
                     } else {termstr = std::string("Random or scan range is not set!");}
@@ -236,6 +237,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 instream.close();*/
 
                 // Execute the g09 run, if failure occures we restart the loop
+                //std::cout << input << std::endl;
                 g09::execg09(ngpr,input,outshl,chkoutshl);
 
                 /*std::stringstream sso;
