@@ -14,14 +14,14 @@
 //      *************************************************************     //
 /* Check for sufficient compiler version */
 #if defined(__GNUC__) || defined(__GNUG__)
-    #if (__GNUC__ < 4)
-        #error "Insufficient GNU compiler version to install this library-- 4.9 or greater required"
-    #endif
-    #if (__GNUC__ == 4 && __GNUC_MINOR__ < 9)
-        #error "Insufficient GNU compiler version to install this library-- 4.9 or greater required"
-    #endif
+#if (__GNUC__ < 4)
+#error "Insufficient GNU compiler version to install this library-- 4.9 or greater required"
+#endif
+#if (__GNUC__ == 4 && __GNUC_MINOR__ < 9)
+#error "Insufficient GNU compiler version to install this library-- 4.9 or greater required"
+#endif
 #else
-    #warning "Currently only GNU compilers are supported and tested, but go ahead if you know what you're doing."
+#warning "Currently only GNU compilers are supported and tested, but go ahead if you know what you're doing."
 #endif
 
 /*----------------------------------------------
@@ -202,9 +202,13 @@ public:
     std::vector<float> dhls; // Storage for dihedrals
 
     void clear () {
-        bidx.clear();aidx.clear();didx.clear();
+        bidx.clear();
+        aidx.clear();
+        didx.clear();
         type.clear();
-        bnds.clear();angs.clear();dhls.clear();
+        bnds.clear();
+        angs.clear();
+        dhls.clear();
     };
 };
 
@@ -226,16 +230,24 @@ class t_ICRandRng {
 public:
 
     t_ICRandRng () :
-        rset(false)
-    {};
+        rset(false) {
+    };
 
     // Returns true if the range values are set.
-    bool isset() {return rset;};
+    bool isset() {
+        return rset;
+    };
 
     // Const Access Functions
-    const std::pair<float,float>& getRngBnd(unsigned i) {return rngb[i];};
-    const std::pair<float,float>& getRngAng(unsigned i) {return rnga[i];};
-    const std::pair<float,float>& getRngDhl(unsigned i) {return rngd[i];};
+    const std::pair<float,float>& getRngBnd(unsigned i) {
+        return rngb[i];
+    };
+    const std::pair<float,float>& getRngAng(unsigned i) {
+        return rnga[i];
+    };
+    const std::pair<float,float>& getRngDhl(unsigned i) {
+        return rngd[i];
+    };
 
     // Function for defining the random ranges
     void setRandomRanges (std::vector< std::string > &rngin);
@@ -266,11 +278,13 @@ class t_ICScanRng {
 public:
 
     t_ICScanRng () :
-        sset(false),scnt(0)
-    {};
+        sset(false),scnt(0) {
+    };
 
     // Returns true if the range values are set.
-    bool isset() {return sset;};
+    bool isset() {
+        return sset;
+    };
 
     // Returns the scan counter and increment it by one.
     unsigned getCounter() {
@@ -280,9 +294,15 @@ public:
     };
 
     // Const Access Functions
-    const std::pair<float,float>& getRngBnd(unsigned i) {return rngb[i];};
-    const std::pair<float,float>& getRngAng(unsigned i) {return rnga[i];};
-    const std::pair<float,float>& getRngDhl(unsigned i) {return rngd[i];};
+    const std::pair<float,float>& getRngBnd(unsigned i) {
+        return rngb[i];
+    };
+    const std::pair<float,float>& getRngAng(unsigned i) {
+        return rnga[i];
+    };
+    const std::pair<float,float>& getRngDhl(unsigned i) {
+        return rngd[i];
+    };
 
     // Function for defining the scan ranges
     void setScanRanges (std::vector< std::string > &scnin);
@@ -434,5 +454,88 @@ extern std::string getCsvICoordStr(const t_iCoords &ics, std::string units="degr
 
 // Convert internal coordinates to XYZ
 extern void iCoordToXYZ(const t_iCoords &ics,std::vector<glm::vec3> &xyz);
+
+/*---------IC Distance Matrix Class------------
+
+
+----------------------------------------------*/
+class RandomCartesian {
+
+    std::vector<glm::vec3>   ixyz; // Initial Cartesian Coords
+    std::vector<float>       irnd; // Random ranges for each atom
+    std::vector<std::string> ityp; // Input Types
+    std::vector<std::string> otyp; // Output types
+
+    void m_parsecrdsin(const std::vector< std::string > &crdsin) {
+        using namespace std;
+
+        //std::cout << "-------------------------------------\n";
+        //std::cout << crdsin << std::endl;
+        //std::cout << "-------------------------------------\n";
+
+        regex pattern_crds("\\s*([A-Z][a-z]*)\\s*([A-Z][a-z]*\\d*)\\s*([-]*\\d.\\d+)\\s*([-]*\\d.\\d+)\\s*([-]*\\d.\\d+)\\s*(\\d.\\d+)\\s*");
+
+        for (auto&& i : crdsin) {
+            smatch m;
+            if (regex_search(i,m,pattern_crds)) {
+
+                /*std::cout << "-------------------------------------\n";
+                std::cout << m.str(1) << " "
+                          << m.str(2) << " "
+                          << m.str(3) << " "
+                          << m.str(4) << " "
+                          << m.str(5) << " "
+                          << m.str(6) << "\n";
+                std::cout << "-------------------------------------\n";*/
+
+                ityp.push_back( m.str(1) );
+                otyp.push_back( m.str(2) );
+                ixyz.push_back( glm::vec3( atof(m.str(3).c_str())
+                                           ,atof(m.str(4).c_str())
+                                           ,atof(m.str(5).c_str()) ) );
+
+                irnd.push_back( atof(m.str(6).c_str()) );
+
+            } else {
+                cout << "No matching pattern found in menu script file!" << endl;
+            }
+        }
+    };
+
+public:
+
+    // Class index constructor
+    RandomCartesian (const std::vector< std::string > crdsin) {
+        m_parsecrdsin(crdsin);
+    };
+
+    // Generate a set of random coordinates
+    void generateRandomCoords(std::vector<glm::vec3> &oxyz,RandomReal &rnGen) {
+        oxyz.clear();
+        oxyz.resize(ixyz.size());
+
+        for (unsigned i = 0; i < oxyz.size(); ++i) {
+            rnGen.setRandomRange(ixyz[i].x - irnd[i],ixyz[i].x + irnd[i]);
+            rnGen.getRandom(oxyz[i].x);
+
+            rnGen.setRandomRange(ixyz[i].y - irnd[i],ixyz[i].y + irnd[i]);
+            rnGen.getRandom(oxyz[i].y);
+
+            rnGen.setRandomRange(ixyz[i].z - irnd[i],ixyz[i].z + irnd[i]);
+            rnGen.getRandom(oxyz[i].z);
+        }
+    };
+
+    // Get the input types
+    std::vector<std::string> getitype() {
+        return ityp;
+    };
+
+    // Get the output types
+    std::vector<std::string> getotype() {
+        return otyp;
+    };
+};
+
 };
 #endif

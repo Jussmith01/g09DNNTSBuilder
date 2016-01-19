@@ -7,7 +7,7 @@
 class Trainingsetbuilder {
     // Class for calculating input coordinates
     ipt::inputParameters iptData;
-    itrnl::Internalcoordinates icrd;
+    itrnl::RandomCartesian rcrd;
     FlagHandler *args;
 
     bool routecout;
@@ -19,14 +19,17 @@ public:
     // Constructor
     Trainingsetbuilder (FlagHandler *args) :
         iptData(args->getflag("-i"),args->getflag("-d")),
-        icrd(iptData.getCoordinatesStr()),
+        rcrd(iptData.getCoordinatesStr()),
         routecout(false) {
 
-        if        (iptData.getRandStr().size() > 0) {
+        /*if        (iptData.getRandStr().size() > 0) {
             icrd.getRandRng().setRandomRanges(iptData.getRandStr());
         } else if (iptData.getScanStr().size() > 0) {
             icrd.getScanRng().setScanRanges(iptData.getScanStr());
         } else {dnntsErrorcatch(std::string("Structure generation scan or random range has not been set!"));}
+        */
+
+
 
         // Save a pointer to the input data class
         this->args = args;

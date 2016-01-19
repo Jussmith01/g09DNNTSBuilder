@@ -239,7 +239,7 @@ inline void buildCartesianInputg09(int nrpg,std::string &input,std::string lot,s
         tmpipt << "\n%nproc=" << nproc << "\n";
         tmpipt << "#p " << lot << " " << additional << "\n\n";
         tmpipt << "COMMENT LINE\n\n";
-        tmpipt << mult << "  " << charge << "\n";
+        tmpipt << charge << "  " << mult << "\n";
 
         for (uint32_t i = 0; i<type.size(); ++i)
             tmpipt << type[i] << std::setprecision(7) << " " << xyz[j*N+i].x << " " << xyz[j*N+i].y << " " << xyz[j*N+i].z << "\n";
@@ -252,6 +252,9 @@ inline void buildCartesianInputg09(int nrpg,std::string &input,std::string lot,s
 
         // Return input string
         input.append(tmpipt.str());
+        std::cout << "---------------------------" << std::endl;
+        std::cout << input << std::endl;
+        std::cout << "---------------------------" << std::endl;
     }
 };
 

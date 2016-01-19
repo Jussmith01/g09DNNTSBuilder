@@ -84,7 +84,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
     //params.printdata();
 
     // Local pointer to icrd for passing a private class to threads
-    icrd.printdata();
+    //rcrd.printdata();
 
     // Get the maximum number of threads
     int MaxT = omp_get_max_threads();
@@ -125,7 +125,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
     #pragma omp parallel default(shared) firstprivate(params,MaxT)
     {
         // Thread safe copy of the internal coords calculator
-        itrnl::Internalcoordinates licrd = icrd;
+        itrnl::RandomCartesian licrd = rcrd;
 
         // Thread ID
         unsigned tid = omp_get_thread_num();
@@ -140,7 +140,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
             ++N;
         }
 
-        std::string typescsv( simtls::stringsToCSV(licrd.getAtomTypes()) );
+        std::string typescsv( simtls::stringsToCSV(licrd.getotype()) );
 
         // Prepare the random number seeds
         std::vector<int> seedarray;
@@ -166,9 +166,14 @@ void Trainingsetbuilder::calculateTrainingSet() {
         std::vector<std::string> outshl(ngpr);
         std::vector<bool> chkoutshl(ngpr);
 
+        std::vector<std::string> itype(licrd.getitype());
+
+        std::string HOT(params.getParameter<std::string>("HOT"));
+
         // Z-matrix Stuff
         std::vector<std::string> zmat(ngpr);
-        std::vector< itrnl::t_iCoords > icord(ngpr);
+        //std::vector< itrnl::t_iCoords > icord(ngpr);
+        std::vector<std::string> cord(ngpr);
 
         // Cartesian and force temp storage
         std::vector< glm::vec3 > tcart(na);
@@ -196,7 +201,10 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 ---------------------------------*/
                 // Generate the random structures
                 mrtimer.start_point();
-                for (unsigned j=0;j<ngpr;++j) {
+
+                licrd.generateRandomCoords(tcart,rnGen);
+
+                /*for (unsigned j=0;j<ngpr;++j) {
                     if (licrd.getRandRng().isset()) {
                         icord[j] = licrd.generateRandomICoords(rnGen); // Generate Random Structure
                         //icord[j] = licrd.getInitialICoords();
@@ -205,7 +213,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                     } else {termstr = std::string("Random or scan range is not set!");}
 
                     itrnl::iCoordToZMat(icord[j],zmat[j]); // Convert ICoord to Zmat
-                }
+                }*/
                 mrtimer.end_point();
 
                 /*------Gaussian 09 Running-------
@@ -222,7 +230,8 @@ void Trainingsetbuilder::calculateTrainingSet() {
 
                 // Build the g09 input file for the high level of theory
                 //g09::buildZmatInputg09(nrpg,input,params.hlt,"force",types,wxyz,0,1,1);
-                g09::buildZmatInputg09(ngpr,input,params.getParameter<std::string>("HOT"),"force",zmat,1,0,1);
+                g09::buildCartesianInputg09(ngpr,input,HOT,"",itype,tcart,1,0,1);
+                //g09::buildZmatInputg09(ngpr,input,params.getParameter<std::string>("HOT"),"force",zmat,1,0,1);
                 //g09::buildZmatInputg09(ngpr,input,params.getParameter<std::string>("HOT"),"SCF(QC,nosymm) force",zmat,1,0,1);
 
                 /*std::stringstream ssi;
@@ -277,7 +286,8 @@ void Trainingsetbuilder::calculateTrainingSet() {
                         //g09::ipcoordinateFinder(outshl[j],tcart);
                         //g09::forceFinder(outshl[j],tfrce);
                         //g09::ipcoordinateFinder(outshl[j],tcart);
-                        itrnl::iCoordToXYZ(icord[j],tcart);
+                        //itrnl::iCoordToXYZ(icord[j],tcart);
+                        //icord[j] = simtls::xyzToCSV(tcart);
 
                         if (m_checkRandomStructure(tcart)) {++gdf;}
                         //datapoint.append( simtls::calculateDistMatrixCSV(tcart) );
@@ -308,7 +318,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 // Loop printer.
                 #pragma omp critical
                 {
-                    loopPrinter(tid,N,i,gcf,gdf);
+                    //loopPrinter(tid,N,i,gcf,gdf);
                 }
 
             } catch (std::string error) {
