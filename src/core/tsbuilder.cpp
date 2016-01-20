@@ -318,7 +318,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 // Loop printer.
                 #pragma omp critical
                 {
-                    //loopPrinter(tid,N,i,gcf,gdf);
+                    loopPrinter(tid,N,i,gcf,gdf);
                 }
 
             } catch (std::string error) {

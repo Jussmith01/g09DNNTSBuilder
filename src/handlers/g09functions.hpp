@@ -252,9 +252,9 @@ inline void buildCartesianInputg09(int nrpg,std::string &input,std::string lot,s
 
         // Return input string
         input.append(tmpipt.str());
-        std::cout << "---------------------------" << std::endl;
-        std::cout << input << std::endl;
-        std::cout << "---------------------------" << std::endl;
+        //std::cout << "---------------------------" << std::endl;
+        //std::cout << input << std::endl;
+        //std::cout << "---------------------------" << std::endl;
     }
 };
 
