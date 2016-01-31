@@ -202,7 +202,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 // Generate the random structures
                 mrtimer.start_point();
 
-                licrd.generateRandomCoords(tcart,rnGen);
+                licrd.generateRandomCoordsSpherical(tcart,rnGen);
 
                 /*for (unsigned j=0;j<ngpr;++j) {
                     if (licrd.getRandRng().isset()) {
