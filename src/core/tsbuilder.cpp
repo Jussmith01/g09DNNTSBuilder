@@ -241,7 +241,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 if (instream) {
                     instream << input;
                 } else {
-                    std::cerr << "bad dustin" << std::endl;
+                    std::cerr << "bad justin" << std::endl;
                 }
                 instream.close();*/
 
