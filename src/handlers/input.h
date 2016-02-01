@@ -2,7 +2,7 @@
 #define READINPUT_H
 
 #include <string>
-//#include <regex>
+#include <regex>
 #include <tr1/unordered_map>
 #include <typeinfo>
 
@@ -10,8 +10,7 @@
 #include "../../include/glm/detail/type_vec.hpp"
 #include <glm/glm.hpp>
 
-namespace ipt
-{
+namespace ipt {
 
 /*----- Input Parameters-------
 
@@ -52,9 +51,9 @@ class inputParameters {
     /*NOTE! std::unordered_map does not work with NVCC for
     some reason, so using tr1 */
     std::tr1::unordered_map<std::string,std::string> m_params;
-    std::vector< std::string > m_coords;
-    std::vector< std::string > m_rand;
-    std::vector< std::string > m_scan;
+    std::string m_crds;
+    std::string m_rand;
+    std::string m_scan;
 
 
     //------------------------------------
@@ -67,7 +66,7 @@ class inputParameters {
         std::vector<std::pair<std::string,std::string>>
         defaults({
             //{param , default      descrip  },
-            {"dfname"  , "trainingData.dat"    },  // GPUID
+            {"dfname", "trainingData.dat"    },    // GPUID
         });
 
         m_params.insert(defaults.begin(),defaults.end());
@@ -77,91 +76,55 @@ class inputParameters {
     //       Read the input file
     //------------------------------------
     void m_readInput() {
-        std::ifstream ipt(getParameter<std::string>("ifname").c_str());
-        bool readcoords(false);
-        bool readrand(false);
-        bool readscan(false);
-        if (ipt.is_open()) {
-            std::string(line);
-            while ( getline (ipt,line) ) {
-                line = line.substr(0,line.find("#"));
+        using namespace std;
 
-                if (readcoords) {
-                    if (simtls::trim(line).compare("$endcoordinates")!=0) {
-                        //std::cout << "COORDS: " << line << std::endl;
-                        m_coords.push_back(simtls::trim(line));
-                    } else {
-                        //readcoords = false;
-                        readcoords=false;
-                    }
-                }
+        // Open File
+        string msfile(getParameter<std::string>("ifname"));
+        ifstream ipt(msfile.c_str(), ios::in | ios::binary);
 
-                if (readrand) {
-                    if (simtls::trim(line).compare("$endrandomrange")!=0) {
-                        //std::cout << "COORDS: " << line << std::endl;
-                        m_rand.push_back(simtls::trim(line));
-                    } else {
-                        //readcoords = false;
-                        readrand=false;
-                    }
-                }
-
-                if (readscan) {
-                    if (simtls::trim(line).compare("$endscanrange")!=0) {
-                        //std::cout << "COORDS: " << line << std::endl;
-                        m_scan.push_back(simtls::trim(line));
-                    } else {
-                        //readcoords = false;
-                        readscan=false;
-                    }
-                }
-
-                if (simtls::trim(line).compare("$coordinates")==0) {
-                    readcoords = true;
-                }
-
-                if (simtls::trim(line).compare("$randomrange")==0) {
-                    readrand = true;
-                }
-
-                if (simtls::trim(line).compare("$scanrange")==0) {
-                    readscan = true;
-                }
-
-                if (!readcoords && !readrand && !readscan)
-                    //std::cout << "PARM: " << line << std::endl;
-                    m_setParameter(line);
-            }
-            ipt.close();
-        } else {
-            std::stringstream _err;
-            _err << "Unable to open file: " << getParameter<std::string>("inputfname") << std::endl;
-            dnntsErrorcatch(_err.str());
+        if (!ipt) {
+            cout << "NO FILE!" << endl;
+            std::string __err(string("Cannot open file ") + msfile);
+            dnntsErrorcatch(__err);
         }
+
+        // Load entire file into a string on memory
+        string instr( (istreambuf_iterator<char>(ipt)), istreambuf_iterator<char>() );
+        ipt.close();
+
+        regex pattern_parametr("([^\\s]+)\\s*=\\s*([^\\s]+)\\s*#",regex_constants::optimize);
+        if (regex_search(instr,pattern_parametr)) {
+            sregex_iterator items(instr.begin(),instr.end(),pattern_parametr);
+            sregex_iterator end;
+            for (; items != end; ++items) {
+                m_setParameter(items->str(1),items->str(2));
+            }
+        }
+
+        regex pattern_crdblock("\\$coordinates.*\\n([^&]*)",regex_constants::optimize);
+        smatch cm;
+        regex_search(instr,cm,pattern_crdblock);
+        m_crds = cm.str(1);
+
+        regex pattern_rndblock("\\$randomrange.*\\n([^&]*)",regex_constants::optimize);
+        smatch rm;
+        regex_search(instr,rm,pattern_rndblock);
+        m_rand = rm.str(1);
     };
 
 
     //------------------------------------
     //     Set Parameter from the Map
     //------------------------------------
-    void m_setParameter(std::string line) {
+    void m_setParameter(std::string param,std::string value) {
         using namespace std;
 
-        if (line.find("!")!=string::npos)
-            line=line.substr(0,line.find("!"));
-
-        size_t epos = line.find("=");
-        if (epos!=string::npos) {
-            string arg1(simtls::trim(line.substr(0,epos)));
-            string arg2(simtls::trim(line.substr(epos+1)));
-
-            std::tr1::unordered_map<std::string,std::string>::iterator it = m_params.find(arg1);
-            if (it == m_params.end()) {
-                pair<string,string> pset(arg1,arg2);
-                m_params.insert(pset);
-            } else {
-                it->second = arg2;
-            }
+        std::tr1::unordered_map<std::string,std::string>::iterator it = m_params.find(param);
+        if (it == m_params.end()) {
+            pair<string,string> pset(param,value);
+            m_params.insert(pset);
+        } else {
+            it->second = value;
         }
     };
 
@@ -178,9 +141,11 @@ class inputParameters {
         for (auto& x : m_params)
             std::cout << " " << x.first << " = " << x.second << std::endl;
 
-        std::cout << "Coordinates: " << std::endl;
-        for (auto& x : m_coords)
-            std::cout << x << std::endl;
+        std::cout << "\nCoordinates: " << std::endl;
+        std::cout << m_crds << std::endl;
+
+        std::cout << "\nRandom Sets: " << std::endl;
+        std::cout << m_crds << std::endl;
 
         std::cout << "|-------------------------------|" << std::endl;
     };
@@ -226,7 +191,7 @@ public:
         }
 
         if (typeid(T)==typeid(unsigned)) {
-            if (!simtls::stristype(it->second,"unsigned")){
+            if (!simtls::stristype(it->second,"unsigned")) {
                 std::stringstream ss;
                 ss << "Requested parameter not type unsigned int in input file!\n";
                 ss << "              Parameter: " << param << "\n";
@@ -235,7 +200,7 @@ public:
                 dnntsErrorcatch(ss.str());
             }
         } else if (typeid(T)==typeid(float)) {
-            if (!simtls::stristype(it->second,"float")){
+            if (!simtls::stristype(it->second,"float")) {
                 std::stringstream ss;
                 ss << "Requested parameter not type float in input file!\n";
                 ss << "              Parameter: " << param << "\n";
@@ -244,7 +209,7 @@ public:
                 dnntsErrorcatch(ss.str());
             }
         } else if (typeid(T)==typeid(int)) {
-            if (!simtls::stristype(it->second,"int")){
+            if (!simtls::stristype(it->second,"int")) {
                 std::stringstream ss;
                 ss << "Requested parameter not type int in input file!\n";
                 ss << "              Parameter: " << param << "\n";
@@ -253,7 +218,7 @@ public:
                 dnntsErrorcatch(ss.str());
             }
         } else if (typeid(T)==typeid(bool)) {
-            if (!simtls::stristype(it->second,"bool")){
+            if (!simtls::stristype(it->second,"bool")) {
                 std::stringstream ss;
                 ss << "Requested parameter not type bool in input file!\n";
                 ss << "              Parameter: " << param << "\n";
@@ -286,21 +251,21 @@ public:
     //------------------------------------
     //         Get coordinates
     //------------------------------------
-    const std::vector< std::string >& getCoordinatesStr() {
-        return m_coords;
+    const std::string& getCoordinatesStr() {
+        return m_crds;
     };
 
     //------------------------------------
     //         Get coordinates
     //------------------------------------
-    std::vector< std::string >& getRandStr() {
+    std::string& getRandStr() {
         return m_rand;
     };
 
     //------------------------------------
     //         Get coordinates
     //------------------------------------
-    std::vector< std::string >& getScanStr() {
+    std::string& getScanStr() {
         return m_scan;
     };
 };

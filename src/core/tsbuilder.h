@@ -19,7 +19,7 @@ public:
     // Constructor
     Trainingsetbuilder (FlagHandler *args) :
         iptData(args->getflag("-i"),args->getflag("-d")),
-        rcrd(iptData.getCoordinatesStr()),
+        rcrd(iptData.getCoordinatesStr(),iptData.getRandStr()),
         routecout(false) {
 
         /*if        (iptData.getRandStr().size() > 0) {
