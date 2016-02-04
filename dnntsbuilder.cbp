@@ -35,13 +35,12 @@
 			<Add option="-fopenmp" />
 			<Add option="-Wno-comment" />
 			<Add directory="include" />
-			<Add directory="/usr/local/include/eigen3" />
+			<Add directory="../InternalCoordinateAPI/src" />
 		</Compiler>
 		<Linker>
 			<Add library="gomp" />
 			<Add library="InternalCoordinateAPI" />
-			<Add directory="lib" />
-			<Add directory="/opt/intel/composer_xe_2013_sp1.3.174/mkl/lib/intel64/" />
+			<Add directory="../InternalCoordinateAPI/bin/lib" />
 		</Linker>
 		<Unit filename="src/core/tsbuilder.cpp" />
 		<Unit filename="src/core/tsbuilder.h" />
