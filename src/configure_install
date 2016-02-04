@@ -1,9 +1,9 @@
-Executable:bin/Release/g09DNNTSBuilder
+Executable:bin/Release/dnntsbuilder
 $c++:
 	compiler:
 		g++
 	flags:
-		-std=c++11 -O3 -I../include -fopenmp
+		-std=c++11 -O3 -I../include -I../../InternalCoordinateAPI/src -fopenmp
 	dir:
 		core/
 	files:

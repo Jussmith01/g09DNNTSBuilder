@@ -514,15 +514,37 @@ public:
         oxyz.clear();
         oxyz.resize(ixyz.size());
 
+
+        float theta,Z,R;
         for (unsigned i = 0; i < oxyz.size(); ++i) {
-            rnGen.setRandomRange(ixyz[i].x - irnd[i],ixyz[i].x + irnd[i]);
-            rnGen.getRandom(oxyz[i].x);
+            // Compute a random vector
+            rnGen.setRandomRange(-1.0f,1.0f);
+            rnGen.getRandom(Z);
 
-            rnGen.setRandomRange(ixyz[i].y - irnd[i],ixyz[i].y + irnd[i]);
-            rnGen.getRandom(oxyz[i].y);
+            rnGen.setRandomRange(0.0f,2.0f * M_PI);
+            rnGen.getRandom(theta);
 
-            rnGen.setRandomRange(ixyz[i].z - irnd[i],ixyz[i].z + irnd[i]);
-            rnGen.getRandom(oxyz[i].z);
+            rnGen.setRandomRange(0.0,irnd[i]);
+            rnGen.getRandom(R);
+
+            float x ( sqrt(1.0f-Z*Z) * cos(theta) );
+            float y ( sqrt(1.0f-Z*Z) * sin(theta) );
+            float z ( Z );
+
+            glm::vec3 Rvec( R * glm::normalize( glm::vec3(x,y,z) ) );
+
+            oxyz[i] = ixyz[i] + Rvec;
+
+            //std::cout << "Rvec: [" << Rvec.x << "," << Rvec.x << "," << Rvec.x << "]\n";
+
+            //rnGen.setRandomRange(ixyz[i].x - irnd[i],ixyz[i].x + irnd[i]);
+            //rnGen.getRandom(oxyz[i].x);
+
+            //rnGen.setRandomRange(ixyz[i].y - irnd[i],ixyz[i].y + irnd[i]);
+            //rnGen.getRandom(oxyz[i].y);
+
+            //rnGen.setRandomRange(ixyz[i].z - irnd[i],ixyz[i].z + irnd[i]);
+            //rnGen.getRandom(oxyz[i].z);
         }
     };
 

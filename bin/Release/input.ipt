@@ -1,4 +1,4 @@
-TSS=1000 # Training Set Size
+TSS=20000 # Training Set Size
 LOT=AM1 # Low level of theory
 HOT=UB3LYP/6-31g* # High level of theory
 rdm=uniform #Random type
@@ -7,12 +7,12 @@ mean=-1.5 #
 ngpr=1#
 
 $coordinates # Initial coordinates
-C C1 0.0000 0.00000 0.66550 0.25
-C C1 0.0000 0.00000 -0.6655 0.25
-H H1 0.0000 0.92360 1.23970 0.25
-H H1 0.0000 -0.9236 1.23970 0.25
-H H1 0.0000 -0.9236 -1.2397 0.25
-H H1 0.0000 0.92360 -1.2397 0.25
+C C 0.0000 0.00000 0.66550 0.4
+C C 0.0000 0.00000 -0.6655 0.4
+H H 0.0000 0.92360 1.23970 0.4
+H H 0.0000 -0.9236 1.23970 0.4
+H H 0.0000 -0.9236 -1.2397 0.4
+H H 0.0000 0.92360 -1.2397 0.4
 $endcoordinates
 
 $randomrange # Ranges for the random structure perturbations
