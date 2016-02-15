@@ -1,53 +1,32 @@
-#ifndef TSBUILDER_H
-#define TSBUILDER_H
+#ifndef __SSBUILDER_INCLUDED__
+#define __SSBUILDER_INCLUDED__
 
-/*------------Training Set Builder-------------
+/*------------Scan Set Builder-------------
 
-----------------------------------------------*/
-class Trainingsetbuilder {
+------------------------------------------*/
+class Scansetbuilder {
     // Class for calculating input coordinates
     ipt::inputParameters *iptData;
-    itrnl::RandomCartesian rcrd;
+    itrnl::ScanCartesian scrd;
     FlagHandler *args;
-
-    bool routecout;
 
     // This checks if a random structure is okay for gaussian
     bool m_checkRandomStructure(const std::vector<glm::vec3> &xyz);
 
 public:
     // Constructor
-    Trainingsetbuilder (FlagHandler *args,ipt::inputParameters *iptData) :
+    Scansetbuilder (FlagHandler *args,ipt::inputParameters *iptData) :
         iptData(iptData),
-        rcrd(iptData->getCoordinatesStr(),iptData->getConnStr(),iptData->getRandStr()),
-        args(args),
-        routecout(false) {
+        scrd(iptData->getCoordinatesStr(),iptData->getConnStr(),iptData->getScanStr()),
+        args(args) {
 
-        /*if        (iptData.getRandStr().size() > 0) {
-            icrd.getRandRng().setRandomRanges(iptData.getRandStr());
-        } else if (iptData.getScanStr().size() > 0) {
-            icrd.getScanRng().setScanRanges(iptData.getScanStr());
-        } else {dnntsErrorcatch(std::string("Structure generation scan or random range has not been set!"));}
-        */
-
-        // Save a pointer to the input data class
-        this->args = args;
-        if (this->args == NULL)
-            dnntsErrorcatch(std::string("Arguments has not been declared!"));
-
-        // Route cout to output file if output was supplied
-        if (!this->args->getflag("-o").empty()) {
-            routecout = true;
-            FILE* stdo = freopen(this->args->getflag("-o").c_str(),"w",stdout);
-            if (stdo) {};
-        }
     };
 
     // Destructor
-    ~Trainingsetbuilder() {};
+    ~Scansetbuilder() {};
 
     // This holds the main loop for calculating the training set
-    void calculateTrainingSet();
+    void calculateScanSet();
 };
 
 #endif

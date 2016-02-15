@@ -48,6 +48,7 @@ int main(int argc, char *argv[]) {
     //--------------------------------
     //        Main Loop Class
     //--------------------------------
+    /** Random Training Set Building **/
     if (iptdata.getParameter<std::string>("type").compare("random")==0) {
         omp_set_num_threads( iptdata.getParameter<unsigned>("threads") );
 
@@ -62,6 +63,8 @@ int main(int argc, char *argv[]) {
         tsb.calculateTrainingSet();
         mtimer.end_point();
         mtimer.print_generic_to_cout(std::string("Calculate training set time --\n"));
+
+    /** Scan Testing Set Building **/
     } else if (iptdata.getParameter<std::string>("type").compare("scan")==0) {
         omp_set_num_threads(1);
 
