@@ -1,13 +1,22 @@
-TTS=1000 # Training Set Size
-LOT=AM1 # Low level of theory
-HOT=PM6 # High level of theory
-std=0.1  # Standard Deviation of random numbers
-coordinates # Minimized initial coordinates
-O 0.0000 0.0000 0.0000
-H 0.7500 0.0000 0.5200
-H 0.7500 0.0000 -0.5200
-end coordinates
-bonds # Bond links
-0 1
-0 2
-end bonds
+TSS=100 # Training Set Size
+HOT=UB3LYP/6-31g* # High level of theory
+rdm=uniform 
+ngpr=1 #test
+type=random # random or scan
+threads=1
+
+$coordinates # Minimized initial coordinates
+ O O 0.0000 0.0000 0.00000 0.2
+ H H 0.7500 0.0000 0.52000 0.2
+ H H 0.7500 0.0000 -0.5200 0.2
+&
+
+$connectivity # Atomic Connectivity
+ 1 2
+ 1 3
+&
+
+$randrange # Random Transformation Range
+ A 2 1 3 10.0 10.0
+&
+
