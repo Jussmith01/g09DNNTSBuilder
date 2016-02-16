@@ -18,6 +18,6 @@ $connectivity # Atomic Connectivity
 &
 
 $scanrange # Random Transformation Range
- A 1 2 3 26.0 180.0 2.0
+ A 1 2 3 26.0 180.0 1.0
 &
 
