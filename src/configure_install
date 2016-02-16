@@ -1,13 +1,14 @@
 Executable:bin/Release/dnntsbuilder
 $c++:
 	compiler:
-		g++
+		g++-4.9
 	flags:
 		-std=c++11 -O3 -I../include -I../../InternalCoordinateAPI/src -fopenmp
 	dir:
 		core/
 	files:
 		tsbuilder
+		ssbuilder
 	dir:
 		utils/
 	files:
@@ -27,7 +28,7 @@ $cuda:
 $ENDcuda
 $linkerflags:
 	compiler:
-		g++ -L../lib
+		g++-4.9 -L../lib -L../../InternalCoordinateAPI/lib
 	flags:
 		-s -lInternalCoordinateAPI -fopenmp
 	DONE
