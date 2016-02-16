@@ -1,5 +1,5 @@
-#ifndef TSBUILDER_H
-#define TSBUILDER_H
+#ifndef __TSBUILDER_INCLUDE__
+#define __TSBUILDER_INCLUDE__
 
 /*------------Training Set Builder-------------
 

@@ -118,8 +118,9 @@ class inputParameters {
 
         regex pattern_scnblock("\\$scanrange.*\\n([^&]*)",regex_constants::optimize);
         smatch sm;
-        if (regex_search(instr,sm,pattern_scnblock))
-            m_scan = rm.str(1);
+        if (regex_search(instr,sm,pattern_scnblock)) {
+            m_scan = sm.str(1);
+        }
 
         if ((m_rand.size() > 0 || m_rand.size() > 0) && m_conn.size() == 0 ) {
             dnntsErrorcatch(std::string("ERROR: If randrange or scanrange is set then connectivity must also be set."));

@@ -35,12 +35,12 @@
 			<Add option="-fopenmp" />
 			<Add option="-Wno-comment" />
 			<Add directory="include" />
-			<Add directory="../InternalCoordinateAPI/src" />
+			<Add directory="../InternalCoordinatesAPI/src" />
 		</Compiler>
 		<Linker>
 			<Add library="gomp" />
 			<Add library="InternalCoordinateAPI" />
-			<Add directory="../InternalCoordinateAPI/bin/lib" />
+			<Add directory="../InternalCoordinatesAPI/bin/lib" />
 		</Linker>
 		<Unit filename="src/core/ssbuilder.cpp" />
 		<Unit filename="src/core/ssbuilder.h" />

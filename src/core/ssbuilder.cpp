@@ -47,6 +47,10 @@ void Scansetbuilder::calculateScanSet() {
     std::cout << "    Begin building scan set   " << std::endl;
     std::cout << "------------------------------\n" << std::endl;
 
+    // Get the maximum number of threads
+    int MaxT = omp_get_max_threads();
+    std::cout << "Using " << MaxT << " threads." << std::endl;
+
     // Prepare private thread output filenames
     std::string outname(iptData->getParameter<std::string>("dfname"));
 
@@ -97,7 +101,9 @@ void Scansetbuilder::calculateScanSet() {
     // Begin main loop
     mttimer.start_point();
 
-    while (true) { // TERMINATES WHEN
+    bool complete(false);
+    while (!complete) { // TERMINATES WHEN
+        //std::cout << "Complete: " << complete << std::endl;
         try {
             //std::cout << i << std::endl;
 
@@ -106,12 +112,8 @@ void Scansetbuilder::calculateScanSet() {
             ---------------------------------*/
             // Generate the random structures
             mrtimer.start_point();
-
             //std::cout << "Generate Random Coords" << std::endl;
-            if ( scrd.generateNextScanStructure(tcart) ) {
-                break;
-            };
-
+            complete = scrd.generateNextScanStructure(tcart);
             mrtimer.end_point();
 
             /*------Gaussian 09 Running-------
@@ -121,7 +123,11 @@ void Scansetbuilder::calculateScanSet() {
 
             g09::buildCartesianInputg09(ngpr,input,HOT,"",itype,tcart,1,0,1);
 
+            //std::cout << input << std::endl;
+
             g09::execg09(ngpr,input,outshl,chkoutshl);
+
+            //std::cout << outshl[0] << std::endl;
 
             mgtimer.end_point();
 
@@ -154,6 +160,7 @@ void Scansetbuilder::calculateScanSet() {
                     datapoint.clear();
                     ++i;
                 } else {
+                    std::cout << "Gaussian Failure!" << std::endl;
                     ++gcf;
                 }
             }
@@ -190,7 +197,7 @@ void Scansetbuilder::calculateScanSet() {
 /*------Check a Random Structure--------
 
 ----------------------------------------*/
-bool Trainingsetbuilder::m_checkRandomStructure(const std::vector<glm::vec3> &xyz) {
+bool Scansetbuilder::m_checkRandomStructure(const std::vector<glm::vec3> &xyz) {
     bool failchk = false; // Defaults to no failure
 
     for (uint32_t i=0; i<xyz.size(); ++i) {

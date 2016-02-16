@@ -30,6 +30,7 @@
 
 // Core
 #include "core/tsbuilder.h"
+#include "core/ssbuilder.h"
 
 int main(int argc, char *argv[]) {
     //--------------------------------
@@ -76,7 +77,7 @@ int main(int argc, char *argv[]) {
 
         // Calculate the training set
         mtimer.start_point();
-        tsb.calculateScanSet();
+        ssb.calculateScanSet();
         mtimer.end_point();
         mtimer.print_generic_to_cout(std::string("Calculate scan set time --\n"));
     } else {
