@@ -1,12 +1,12 @@
-#ifndef TSBUILDER_H
-#define TSBUILDER_H
+#ifndef __TSBUILDER_INCLUDE__
+#define __TSBUILDER_INCLUDE__
 
 /*------------Training Set Builder-------------
 
 ----------------------------------------------*/
 class Trainingsetbuilder {
     // Class for calculating input coordinates
-    ipt::inputParameters iptData;
+    ipt::inputParameters *iptData;
     itrnl::RandomCartesian rcrd;
     FlagHandler *args;
 
@@ -17,9 +17,10 @@ class Trainingsetbuilder {
 
 public:
     // Constructor
-    Trainingsetbuilder (FlagHandler *args) :
-        iptData(args->getflag("-i"),args->getflag("-d")),
-        rcrd(iptData.getCoordinatesStr(),iptData.getRandStr()),
+    Trainingsetbuilder (FlagHandler *args,ipt::inputParameters *iptData) :
+        iptData(iptData),
+        rcrd(iptData->getCoordinatesStr(),iptData->getConnStr(),iptData->getRandStr()),
+        args(args),
         routecout(false) {
 
         /*if        (iptData.getRandStr().size() > 0) {
@@ -28,8 +29,6 @@ public:
             icrd.getScanRng().setScanRanges(iptData.getScanStr());
         } else {dnntsErrorcatch(std::string("Structure generation scan or random range has not been set!"));}
         */
-
-
 
         // Save a pointer to the input data class
         this->args = args;

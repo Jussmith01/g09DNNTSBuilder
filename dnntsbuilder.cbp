@@ -30,18 +30,20 @@
 			</Target>
 		</Build>
 		<Compiler>
-			<Add option="-std=c++11" />
 			<Add option="-Wall" />
+			<Add option="-std=c++11" />
 			<Add option="-fopenmp" />
 			<Add option="-Wno-comment" />
 			<Add directory="include" />
-			<Add directory="../InternalCoordinateAPI/src" />
+			<Add directory="../InternalCoordinatesAPI/src" />
 		</Compiler>
 		<Linker>
 			<Add library="gomp" />
 			<Add library="InternalCoordinateAPI" />
-			<Add directory="../InternalCoordinateAPI/bin/lib" />
+			<Add directory="../InternalCoordinatesAPI/bin/lib" />
 		</Linker>
+		<Unit filename="src/core/ssbuilder.cpp" />
+		<Unit filename="src/core/ssbuilder.h" />
 		<Unit filename="src/core/tsbuilder.cpp" />
 		<Unit filename="src/core/tsbuilder.h" />
 		<Unit filename="src/errorhandlers.h" />

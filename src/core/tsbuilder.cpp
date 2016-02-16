@@ -80,7 +80,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
     ///std::cout << "CHECK: " << simtls::countUnique(10,4) << std::endl;
 
     // Store working parameters
-    ipt::inputParameters params(iptData);
+    ipt::inputParameters params(*iptData);
     //params.printdata();
 
     // Local pointer to icrd for passing a private class to threads
@@ -112,7 +112,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
     std::vector<std::stringstream> outname(MaxT);
     std::vector<std::stringstream>::iterator it;
     for (it = outname.begin(); it != outname.end(); it++)
-        *it << iptData.getParameter<std::string>("dfname") << "_thread" << it - outname.begin();
+        *it << iptData->getParameter<std::string>("dfname") << "_thread" << it - outname.begin();
 
     // This is passed to each thread and contain unique seeds for each
     ParallelSeedGenerator seedGen(MaxT);
@@ -147,7 +147,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
         seedGen.getThreadSeeds(tid,seedarray);
 
         // Prepare the random number generator
-        RandomReal rnGen(seedarray,params.getParameter<float>("mean"),params.getParameter<float>("std"),params.getParameter<std::string>("rdm"));
+        RandomReal rnGen(seedarray,params.getParameter<std::string>("rdm"));
 
         // Allocate space for new coordinates
         unsigned na = params.getCoordinatesStr().size();
@@ -202,6 +202,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 // Generate the random structures
                 mrtimer.start_point();
 
+                //std::cout << "Generate Random Coords" << std::endl;
                 licrd.generateRandomCoordsSpherical(tcart,rnGen);
 
                 /*for (unsigned j=0;j<ngpr;++j) {
@@ -230,6 +231,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
 
                 // Build the g09 input file for the high level of theory
                 //g09::buildZmatInputg09(nrpg,input,params.hlt,"force",types,wxyz,0,1,1);
+                //std::cout << "Build Cartesian Input" << std::endl;
                 g09::buildCartesianInputg09(ngpr,input,HOT,"",itype,tcart,1,0,1);
                 //g09::buildZmatInputg09(ngpr,input,params.getParameter<std::string>("HOT"),"force",zmat,1,0,1);
                 //g09::buildZmatInputg09(ngpr,input,params.getParameter<std::string>("HOT"),"SCF(QC,nosymm) force",zmat,1,0,1);
@@ -247,6 +249,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
 
                 // Execute the g09 run, if failure occures we restart the loop
                 //std::cout << input << std::endl;
+                //std::cout << "Execg09" << std::endl;
                 g09::execg09(ngpr,input,outshl,chkoutshl);
 
                 /*std::stringstream sso;
@@ -266,6 +269,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 ---------------------------------*/
                 mstimer.start_point();
                 // Append the data to the datapoint string
+                //std::cout << "Store Data" << std::endl;
                 for (unsigned j=0; j<ngpr; ++j) {
                     //if (!chkoutshl[j] && !chkoutsll[j]) {
                         //std::cout << "|***************************************|" << std::endl;
@@ -312,6 +316,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                     } else {
                         ++gcf;
                     }
+                    //std::cout << "COMPLETE" << std::endl;
                 }
                 mstimer.end_point();
 
@@ -363,7 +368,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
     // Combine all threads output
     MicroTimer fttimer;
     std::ofstream tsout;
-    std::string dfname(iptData.getParameter<std::string>("dfname"));
+    std::string dfname(iptData->getParameter<std::string>("dfname"));
     tsout.open(dfname.c_str(),std::ios_base::binary);
 
     fttimer.start_point();

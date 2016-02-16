@@ -52,9 +52,9 @@ class inputParameters {
     some reason, so using tr1 */
     std::tr1::unordered_map<std::string,std::string> m_params;
     std::string m_crds;
+    std::string m_conn;
     std::string m_rand;
     std::string m_scan;
-
 
     //------------------------------------
     //  Hash map to hold flags and values
@@ -92,7 +92,7 @@ class inputParameters {
         string instr( (istreambuf_iterator<char>(ipt)), istreambuf_iterator<char>() );
         ipt.close();
 
-        regex pattern_parametr("([^\\s]+)\\s*=\\s*([^\\s]+)\\s*#",regex_constants::optimize);
+        regex pattern_parametr("([^\\s]+)\\s*=\\s*([^\\s]+)\\s*\\#*",regex_constants::optimize);
         if (regex_search(instr,pattern_parametr)) {
             sregex_iterator items(instr.begin(),instr.end(),pattern_parametr);
             sregex_iterator end;
@@ -103,13 +103,28 @@ class inputParameters {
 
         regex pattern_crdblock("\\$coordinates.*\\n([^&]*)",regex_constants::optimize);
         smatch cm;
-        regex_search(instr,cm,pattern_crdblock);
-        m_crds = cm.str(1);
+        if (regex_search(instr,cm,pattern_crdblock))
+            m_crds = cm.str(1);
 
-        regex pattern_rndblock("\\$randomrange.*\\n([^&]*)",regex_constants::optimize);
+        regex pattern_conblock("\\$connectivity.*\\n([^&]*)",regex_constants::optimize);
+        smatch cn;
+        if (regex_search(instr,cn,pattern_conblock))
+            m_conn = cn.str(1);
+
+        regex pattern_rndblock("\\$randrange.*\\n([^&]*)",regex_constants::optimize);
         smatch rm;
-        regex_search(instr,rm,pattern_rndblock);
-        m_rand = rm.str(1);
+        if (regex_search(instr,rm,pattern_rndblock))
+            m_rand = rm.str(1);
+
+        regex pattern_scnblock("\\$scanrange.*\\n([^&]*)",regex_constants::optimize);
+        smatch sm;
+        if (regex_search(instr,sm,pattern_scnblock)) {
+            m_scan = sm.str(1);
+        }
+
+        if ((m_rand.size() > 0 || m_rand.size() > 0) && m_conn.size() == 0 ) {
+            dnntsErrorcatch(std::string("ERROR: If randrange or scanrange is set then connectivity must also be set."));
+        }
     };
 
 
@@ -144,8 +159,22 @@ class inputParameters {
         std::cout << "\nCoordinates: " << std::endl;
         std::cout << m_crds << std::endl;
 
-        std::cout << "\nRandom Sets: " << std::endl;
-        std::cout << m_crds << std::endl;
+        std::cout << "\nConnectivity: " << std::endl;
+        std::cout << m_conn << std::endl;
+
+        if (getParameter<std::string>("type").compare("random")==0 && !m_rand.empty()) {
+            std::cout << "\nRandom Range: " << std::endl;
+            std::cout << m_rand << std::endl;
+        } else if (getParameter<std::string>("type").compare("random")==0 && m_rand.empty()) {
+            dnntsErrorcatch(std::string("ERROR: For type random, randrange must be set in input."));
+        }
+
+        if (getParameter<std::string>("type").compare("scan")==0 && !m_scan.empty()) {
+            std::cout << "\nScan Range: " << std::endl;
+            std::cout << m_scan << std::endl;
+        } else if (getParameter<std::string>("type").compare("scan")==0 && m_scan.empty()) {
+            dnntsErrorcatch(std::string("ERROR: For type scan, scanrange must be set in input."));
+        }
 
         std::cout << "|-------------------------------|" << std::endl;
     };
@@ -249,23 +278,31 @@ public:
     };
 
     //------------------------------------
-    //         Get coordinates
+    //      Get coordinates String
     //------------------------------------
     const std::string& getCoordinatesStr() {
         return m_crds;
     };
 
     //------------------------------------
-    //         Get coordinates
+    //      Get Connectivity String
     //------------------------------------
-    std::string& getRandStr() {
+    const std::string& getConnStr() {
+        return m_conn;
+    };
+
+
+    //------------------------------------
+    //     Get Random Tranform String
+    //------------------------------------
+    const std::string& getRandStr() {
         return m_rand;
     };
 
     //------------------------------------
-    //         Get coordinates
+    //     Get Scan Tranform String
     //------------------------------------
-    std::string& getScanStr() {
+    const std::string& getScanStr() {
         return m_scan;
     };
 };
