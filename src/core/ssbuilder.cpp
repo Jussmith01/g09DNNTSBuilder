@@ -78,7 +78,10 @@ void Scansetbuilder::calculateScanSet() {
 
     std::vector<std::string> itype(scrd.getitype());
 
-    std::string HOT(iptData->getParameter<std::string>("HOT"));
+    int charge (iptData->getParameter<int>("charge"));
+    int multip (iptData->getParameter<int>("multip"));
+
+    std::string HOT(iptData->getParameter<std::string>("LOT"));
 
     // Z-matrix Stuff
     std::vector<std::string> zmat(ngpr);
@@ -121,7 +124,7 @@ void Scansetbuilder::calculateScanSet() {
             ---------------------------------*/
             mgtimer.start_point();
 
-            g09::buildCartesianInputg09(ngpr,input,HOT,"",itype,tcart,1,0,1);
+            g09::buildCartesianInputg09(ngpr,input,HOT,"",itype,tcart,multip,charge,1);
 
             //std::cout << input << std::endl;
 

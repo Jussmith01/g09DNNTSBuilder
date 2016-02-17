@@ -36,11 +36,13 @@
 			<Add option="-Wno-comment" />
 			<Add directory="include" />
 			<Add directory="../InternalCoordinatesAPI/src" />
+			<Add directory="../InternalCoordinateAPI/src" />
 		</Compiler>
 		<Linker>
 			<Add library="gomp" />
 			<Add library="InternalCoordinateAPI" />
 			<Add directory="../InternalCoordinatesAPI/bin/lib" />
+			<Add directory="../InternalCoordinateAPI/bin/lib" />
 		</Linker>
 		<Unit filename="src/core/ssbuilder.cpp" />
 		<Unit filename="src/core/ssbuilder.h" />

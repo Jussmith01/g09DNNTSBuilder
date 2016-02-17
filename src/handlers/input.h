@@ -66,7 +66,9 @@ class inputParameters {
         std::vector<std::pair<std::string,std::string>>
         defaults({
             //{param , default      descrip  },
-            {"dfname", "trainingData.dat"    },    // GPUID
+            {"dfname", "trainingData.dat"  },   // Output data filename
+            {"charge", "0"                 },   // Molecule charge
+            {"multip", "1"                 }    // Molecule Multiplicity
         });
 
         m_params.insert(defaults.begin(),defaults.end());

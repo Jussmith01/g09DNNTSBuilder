@@ -227,7 +227,7 @@ inline void buildCartesianInputg09(int nrpg,std::string &input,std::string lot,s
     int N = xyz.size()/nrpg;
 
     // Error check
-    if (type.size()!=static_cast<unsigned int>(N))
+    if (type.size()!=static_cast<unsigned>(N))
         throwException("type and xyz are not the same size.");
 
     input="";

@@ -158,6 +158,9 @@ void Trainingsetbuilder::calculateTrainingSet() {
         int gcf(0); // Gaussian Convergence Fail counter
         int gdf(0); // Geometry distance failure
 
+        int charge (params.getParameter<int>("charge"));
+        int multip (params.getParameter<int>("multip"));
+
         // Initialize some containers
         std::string datapoint;
         std::string input;
@@ -168,7 +171,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
 
         std::vector<std::string> itype(licrd.getitype());
 
-        std::string HOT(params.getParameter<std::string>("HOT"));
+        std::string HOT(params.getParameter<std::string>("LOT"));
 
         // Z-matrix Stuff
         std::vector<std::string> zmat(ngpr);
@@ -232,7 +235,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 // Build the g09 input file for the high level of theory
                 //g09::buildZmatInputg09(nrpg,input,params.hlt,"force",types,wxyz,0,1,1);
                 //std::cout << "Build Cartesian Input" << std::endl;
-                g09::buildCartesianInputg09(ngpr,input,HOT,"",itype,tcart,1,0,1);
+                g09::buildCartesianInputg09(ngpr,input,HOT,"",itype,tcart,multip,charge,1);
                 //g09::buildZmatInputg09(ngpr,input,params.getParameter<std::string>("HOT"),"force",zmat,1,0,1);
                 //g09::buildZmatInputg09(ngpr,input,params.getParameter<std::string>("HOT"),"SCF(QC,nosymm) force",zmat,1,0,1);
 
