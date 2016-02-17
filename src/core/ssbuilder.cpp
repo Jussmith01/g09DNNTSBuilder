@@ -60,7 +60,7 @@ void Scansetbuilder::calculateScanSet() {
     std::string typescsv( simtls::stringsToCSV(scrd.getotype()) );
 
     // Allocate space for new coordinates
-    unsigned na = iptData->getCoordinatesStr().size();
+    unsigned na( iptData->getCoordinatesStr().size() );
     std::vector<glm::vec3> wxyz(na*ngpr);
 
     // Initialize counters
