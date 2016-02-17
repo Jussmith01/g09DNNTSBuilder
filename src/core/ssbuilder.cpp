@@ -115,7 +115,7 @@ void Scansetbuilder::calculateScanSet() {
             ---------------------------------*/
             // Generate the random structures
             mrtimer.start_point();
-            //std::cout << "Generate Random Coords" << std::endl;
+            //std::cout << "Generate Scan Coords" << std::endl;
             complete = scrd.generateNextScanStructure(tcart);
             mrtimer.end_point();
 
