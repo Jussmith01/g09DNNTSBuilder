@@ -28,6 +28,17 @@
 					<Add option="-s" />
 				</Linker>
 			</Target>
+			<Target title="vd-Release">
+				<Option output="dnntsbuilder" prefix_auto="1" extension_auto="1" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option use_console_runner="0" />
+			</Target>
+			<Target title="vd-Debug">
+				<Option output="bin/Debug/dnntsbuilder" prefix_auto="1" extension_auto="1" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+			</Target>
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
@@ -44,21 +55,70 @@
 			<Add directory="../InternalCoordinatesAPI/bin/lib" />
 			<Add directory="../InternalCoordinateAPI/bin/lib" />
 		</Linker>
-		<Unit filename="src/core/ssbuilder.cpp" />
-		<Unit filename="src/core/ssbuilder.h" />
-		<Unit filename="src/core/tsbuilder.cpp" />
-		<Unit filename="src/core/tsbuilder.h" />
-		<Unit filename="src/errorhandlers.h" />
-		<Unit filename="src/handlers/atom_masses.h" />
-		<Unit filename="src/handlers/g09functions.hpp" />
-		<Unit filename="src/handlers/input.h" />
-		<Unit filename="src/main.cpp" />
-		<Unit filename="src/utils/flaghandler.h" />
-		<Unit filename="src/utils/micro_timer.cpp" />
-		<Unit filename="src/utils/micro_timer.h" />
-		<Unit filename="src/utils/randnormflt.h" />
-		<Unit filename="src/utils/simpletools.hpp" />
-		<Unit filename="src/utils/systools.hpp" />
+		<Unit filename="src/core/ssbuilder.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/core/ssbuilder.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/core/tsbuilder.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/core/tsbuilder.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/errorhandlers.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/handlers/atom_masses.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/handlers/g09functions.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/handlers/input.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/main.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/utils/flaghandler.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/utils/micro_timer.cpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/utils/micro_timer.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/utils/randnormflt.h">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/utils/simpletools.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/utils/systools.hpp">
+			<Option target="Debug" />
+			<Option target="Release" />
+		</Unit>
+		<Unit filename="src/validatedata.cpp">
+			<Option target="vd-Release" />
+			<Option target="vd-Debug" />
+		</Unit>
 		<Extensions>
 			<code_completion />
 			<debugger />
