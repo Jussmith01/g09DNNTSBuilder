@@ -168,10 +168,10 @@ inline void parseg09OutputLinks(int nrpg,std::string &multioutput,std::vector<st
 inline void execg09(int nrpg,const std::string &input,std::vector<std::string> &out,std::vector<bool> &chkout) {
     // Build bash command for launching g09
     std::stringstream sscmd;
-    sscmd << "#!/bin/sh\ng09 <<END 2>&1 " << input.c_str() << "END\n"; // Redirect cerr to cout
+    sscmd << "#!/bin/sh\ng09 <<END 2>&1 " << input << "END\n"; // Redirect cerr to cout
 
     // Open a pipe and run g09 command -- output saved in string 'out'.
-    std::string mout(systls::exec(sscmd.str().c_str(),10000));
+    std::string mout(systls::exec(sscmd.str(),10000));
 
     parseg09OutputLinks(nrpg,mout,out);
 
