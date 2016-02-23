@@ -206,9 +206,9 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 mrtimer.start_point();
 
                 //std::cout << "Generate Random Coords" << std::endl;
-                //licrd.generateRandomCoordsSpherical(tcart,rnGen);
+                licrd.generateRandomCoordsSpherical(tcart,rnGen);
                 //licrd.generateRandomCoordsBox(tcart,rnGen);
-                licrd.generateRandomCoordsDistmat(tcart,rnGen);
+                //licrd.generateRandomCoordsDistmat(tcart,rnGen);
 
                 /*for (unsigned j=0;j<ngpr;++j) {
                     if (licrd.getRandRng().isset()) {
