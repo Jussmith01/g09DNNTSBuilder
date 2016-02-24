@@ -66,9 +66,10 @@ class inputParameters {
         std::vector<std::pair<std::string,std::string>>
         defaults({
             //{param , default      descrip  },
-            {"dfname", "trainingData.dat"  },   // Output data filename
-            {"charge", "0"                 },   // Molecule charge
-            {"multip", "1"                 }    // Molecule Multiplicity
+            {"dfname" , "trainingData.dat"    },   // Output data filename
+            {"charge" , "0"                   },   // Molecule charge
+            {"multip" , "1"                   },   // Molecule Multiplicity
+            {"threads", "0"/* 0 Uses Default*/}    // Number of threads to use
         });
 
         m_params.insert(defaults.begin(),defaults.end());
@@ -266,6 +267,25 @@ public:
 
         return value;
     }
+
+    //------------------------------------
+    //     Set Parameter from the Map
+    //------------------------------------
+    template <typename T>
+    void setParameter(std::string param,T value) {
+        using namespace std;
+
+        std::stringstream _in;
+        _in << value;
+
+        std::tr1::unordered_map<std::string,std::string>::iterator it = m_params.find(param);
+        if (it == m_params.end()) {
+            pair<string,string> pset(param,_in.str());
+            m_params.insert(pset);
+        } else {
+            it->second = _in.str();
+        }
+    };
 
     //------------------------------------
     //    Check if Parameter is in Map

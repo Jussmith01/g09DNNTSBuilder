@@ -66,6 +66,13 @@ void print_for_cout(int tid,int N,int i,int gcfail,int gdfail) {
     std::cout << "\033["<< tid+1 <<"A\033[K\033[1;30mThread " << tid << " is " << round((i/float(N))*100.0) << "% complete. G09 Convergence Fails " << gcfail << " Distance Fails: " << gdfail << "\033["<< tid+1 <<"B\033[100D\033[0m";
 };
 
+void Trainingsetbuilder::calculateValidationSet() {
+
+    iptData->setParameter("dfname",iptData->getParameter<std::string>("vdfname") );
+    iptData->setParameter("TSS",iptData->getParameter<std::string>("VSS") );
+
+    calculateTrainingSet();
+}
 
 /*--------Calculate Training Set---------
 
@@ -86,10 +93,13 @@ void Trainingsetbuilder::calculateTrainingSet() {
     // Local pointer to icrd for passing a private class to threads
     //rcrd.printdata();
 
+    std::string typescsv( simtls::stringsToCSV(rcrd.getotype()) );
+    unsigned    atoms   ( rcrd.getNa() );
+
+    std::cout << "atoms: " << atoms << std::endl;
+
     // Get the maximum number of threads
     int MaxT = omp_get_max_threads();
-    std::cout << "Using " << MaxT << " threads." << std::endl;
-
     // Setup loop output function
     void (*loopPrinter)(int tid,int N,int i,int gcfail,int gdfail);
     switch ((int)routecout) {
@@ -140,8 +150,6 @@ void Trainingsetbuilder::calculateTrainingSet() {
             ++N;
         }
 
-        std::string typescsv( simtls::stringsToCSV(licrd.getotype()) );
-
         // Prepare the random number seeds
         std::vector<int> seedarray;
         seedGen.getThreadSeeds(tid,seedarray);
@@ -150,7 +158,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
         RandomReal rnGen(seedarray,params.getParameter<std::string>("rdm"));
 
         // Allocate space for new coordinates
-        unsigned na = params.getCoordinatesStr().size();
+        unsigned na = licrd.getNa();//params.getCoordinatesStr().size();
         std::vector<glm::vec3> wxyz(na*ngpr);
 
         // Initialize counters
@@ -300,12 +308,12 @@ void Trainingsetbuilder::calculateTrainingSet() {
 
                         if (m_checkRandomStructure(tcart)) {++gdf;}
                         //datapoint.append( simtls::calculateDistMatrixCSV(tcart) );
-                        std::stringstream ss;
-                        ss << tcart.size();
+                        //std::stringstream ss;
+                        //ss << tcart.size();
 
-                        datapoint.append( ss.str().c_str() );
-                        datapoint.append( "," );
-                        datapoint.append( typescsv );
+                        //datapoint.append( ss.str().c_str() );
+                        //datapoint.append( "," );
+                        //datapoint.append( typescsv );
                         datapoint.append( simtls::xyzToCSV(tcart) );
                         //datapoint.append( itrnl::getCsvICoordStr(icord[j],"radians") );
                         //datapoint.append( simtls::cartesianToStandardSpherical(0,1,2,tfrce,tcart) );
@@ -375,6 +383,8 @@ void Trainingsetbuilder::calculateTrainingSet() {
     std::ofstream tsout;
     std::string dfname(iptData->getParameter<std::string>("dfname"));
     tsout.open(dfname.c_str(),std::ios_base::binary);
+
+    tsout << params.getParameter<std::string>("TSS") << "," << atoms << ","<< typescsv << std::endl;
 
     fttimer.start_point();
     std::vector<std::stringstream>::iterator nameit;

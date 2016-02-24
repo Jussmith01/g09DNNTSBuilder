@@ -51,7 +51,13 @@ int main(int argc, char *argv[]) {
     //--------------------------------
     /** Random Training Set Building **/
     if (iptdata.getParameter<std::string>("type").compare("random")==0) {
-        omp_set_num_threads( iptdata.getParameter<unsigned>("threads") );
+
+        unsigned threads ( iptdata.getParameter<unsigned>("threads") );
+        if (threads != 0) {
+            omp_set_num_threads( threads );
+        }
+
+        std::cout << "Using " << threads << " threads." << std::endl;
 
         // Construct/prepare the class
         mtimer.start_point();
@@ -64,6 +70,12 @@ int main(int argc, char *argv[]) {
         tsb.calculateTrainingSet();
         mtimer.end_point();
         mtimer.print_generic_to_cout(std::string("Calculate training set time --\n"));
+
+        // Calculate the validation set
+        mtimer.start_point();
+        tsb.calculateValidationSet();
+        mtimer.end_point();
+        mtimer.print_generic_to_cout(std::string("Calculate validation set time --\n"));
 
     /** Scan Testing Set Building **/
     } else if (iptdata.getParameter<std::string>("type").compare("scan")==0) {
