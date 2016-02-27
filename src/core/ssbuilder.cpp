@@ -60,7 +60,7 @@ void Scansetbuilder::calculateScanSet() {
     std::string typescsv( simtls::stringsToCSV(scrd.getotype()) );
 
     // Allocate space for new coordinates
-    unsigned na( iptData->getCoordinatesStr().size() );
+    unsigned na( scrd.getNa() );
     std::vector<glm::vec3> wxyz(na*ngpr);
 
     // Initialize counters
@@ -94,6 +94,9 @@ void Scansetbuilder::calculateScanSet() {
     // Define and open thread output
     std::ofstream tsoutt;
     tsoutt.open(outname.c_str());
+
+    // Append data shape line
+    tsoutt << scrd.getScanCount() << "," << na << "," << typescsv << std::endl;
 
     // Thread timers
     MicroTimer mttimer; // Time the whole loop
@@ -147,12 +150,6 @@ void Scansetbuilder::calculateScanSet() {
                         ++gdf;
                     }
 
-                    std::stringstream ss;
-                    ss << tcart.size();
-
-                    datapoint.append( ss.str().c_str() );
-                    datapoint.append( "," );
-                    datapoint.append( typescsv );
                     datapoint.append( simtls::xyzToCSV(tcart) );
                     datapoint.append( g09::energyFinder(outshl[j]) );
 
