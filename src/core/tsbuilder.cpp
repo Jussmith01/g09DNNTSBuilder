@@ -37,6 +37,50 @@
 #include "tsbuilder.h"
 
 
+void Trainingsetbuilder::optimizeStoredStructure() {
+    using namespace std;
+    cout << "Optimizing Structure..." << endl;
+    vector<  glm::vec3 > xyz  (rcrd.getixyz() );
+    vector<string> itype(rcrd.getitype());
+
+    // Store working parameters
+    ipt::inputParameters params(*iptData);
+
+    // Some local variables
+    int charge (params.getParameter<int>("charge"));
+    int multip (params.getParameter<int>("multip"));
+    string HOT(params.getParameter<string>("LOT"));
+
+    string input;
+
+    g09::buildCartesianInputg09(1,input,HOT,"opt",itype,xyz,multip,charge,omp_get_max_threads());
+
+    vector<string>    output(1);
+    vector< bool > chkoutshl(1);
+    g09::execg09(1,input,output,chkoutshl);
+
+    //std::ofstream gaut("gau.log");
+    //gaut << output[0];
+    //gaut.close();
+
+    g09::ipcoordinateFinder(output[0],xyz);
+
+    if ( chkoutshl[0] ) {
+        dnntsErrorcatch(string("Optimization Failed!!"))
+    }
+
+    cout << "------------------------------------" << endl;
+    cout << " Optimized Coordinates:\n" << endl;
+    cout.setf( ios::fixed, ios::floatfield );
+    for (unsigned i=0;i<xyz.size();++i) {
+        cout << " " << itype[i] << setprecision(7) << " " << setw(10) << xyz[i].x << " " << setw(10) << xyz[i].y << " " << setw(10) << xyz[i].z << endl;
+    }
+
+    rcrd.setixyz(xyz);
+    cout << "------------------------------------" << endl;
+    cout << "Optimization Complete.\n" << endl;
+}
+
 /*--------Loop Printer Functions---------
 
 These functions supply different file output
@@ -63,9 +107,13 @@ void print_for_file(int tid,int N,int i,int gcfail,int gdfail) {
 };
 
 void print_for_cout(int tid,int N,int i,int gcfail,int gdfail) {
-    std::cout << "\033["<< tid+1 <<"A\033[K\033[1;30mThread " << tid << " is " << round((i/float(N))*100.0) << "% complete. G09 Convergence Fails " << gcfail << " Distance Fails: " << gdfail << "\033["<< tid+1 <<"B\033[100D\033[0m";
+    std::cout << "\033["<< tid+1 <<"A\033[K\033[1;30mThread " << tid << " is " << static_cast<int>(round((i/float(N))*100.0)) << "% complete. G09 Convergence Fails " << gcfail << " Distance Fails: " << gdfail << "\033["<< tid+1 <<"B\033[100D\033[0m";
 };
 
+/*--------Calculate Validation Set---------
+
+
+----------------------------------------*/
 void Trainingsetbuilder::calculateValidationSet() {
 
     iptData->setParameter("dfname",iptData->getParameter<std::string>("vdfname") );
@@ -384,7 +432,9 @@ void Trainingsetbuilder::calculateTrainingSet() {
     std::string dfname(iptData->getParameter<std::string>("dfname"));
     tsout.open(dfname.c_str(),std::ios_base::binary);
 
-    tsout << params.getParameter<std::string>("TSS") << "," << atoms << ","<< typescsv << std::endl;
+    tsout << params.getParameter<std::string>("LOT") << std::endl;
+    tsout << params.getParameter<std::string>("TSS") << std::endl;
+    tsout << atoms << ","<< typescsv << std::endl;
 
     fttimer.start_point();
     std::vector<std::stringstream>::iterator nameit;

@@ -51,34 +51,30 @@ inline void forceFinder(const std::string &filename,std::vector<glm::vec3> &tfrc
  Output String
 
 ------------------------------------------*/
-inline void ipcoordinateFinder(const std::string &filename,std::vector<glm::vec3> &tcart) {
+inline void ipcoordinateFinder(const std::string &output,std::vector<glm::vec3> &tcart) {
     using namespace std;
 
-    stringstream cart_csv;
-    //force_csv.setf( std::ios::scientific, std::ios::floatfield );
+    regex pattern_opt("!   Optimized Parameters   !\\n[\\s\\S]+Input orientation:([\\s\\S]+)\\sStoichiometry");
+    regex pattern_crd("\\s+\\d+\\s+\\d+\\s+\\d+\\s+([+-]*\\d+\\.\\d+)\\s+([+-]*\\d+\\.\\d+)\\s+([+-]*\\d+\\.\\d+)");
 
-    regex pattern_force("Input orientation:");
-    regex pattern_cart("Distance matrix");
-    regex pattern_value("\\-?[[:d:]]+\\.[[:d:]]+");
-    string line;
-    istringstream stream(filename);
-    while (getline(stream, line)) {
-        if (regex_search(line, pattern_force)) {
-            string line2;
-            int ln(-4);
-            while (getline(stream, line2) && !regex_search(line2, pattern_cart)) {
-                sregex_iterator pos(line2.begin(), line2.end(), pattern_value);
-                sregex_iterator end;
-                int ax(0);
-                for (; pos != end; ++pos) {
-                    tcart[ln][ax] = atof(pos->str(0).c_str());
-                    //std::cout << tcart[ln][ax] << ",";
-                    ++ax;
-                }
-                //std::cout << ln << std::endl;
-                ++ln;
-                //std::cout << std::endl;
-            }
+    string coordstr;
+    smatch sm;
+    if ( regex_search ( output, sm, pattern_opt ) ) {
+        coordstr = sm.str(1);
+    } else {
+        cout << "Coordinate Pattern Not Found in ipcoordinateFinder!" << endl;
+    }
+
+    unsigned atcnt(0);
+    if (regex_search(coordstr,pattern_crd)) {
+        sregex_iterator items(coordstr.begin(),coordstr.end(),pattern_crd);
+        sregex_iterator end;
+        for (; items != end; ++items) {
+            tcart[atcnt].x = atof(items->str(1).c_str());
+            tcart[atcnt].y = atof(items->str(2).c_str());
+            tcart[atcnt].z = atof(items->str(3).c_str());
+            //cout << "[" << tcart[atcnt].x << "," << tcart[atcnt].y << "," << tcart[atcnt].z << "]\n";
+            ++atcnt;
         }
     }
 };

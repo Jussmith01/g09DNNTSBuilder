@@ -57,8 +57,6 @@ int main(int argc, char *argv[]) {
             omp_set_num_threads( threads );
         }
 
-        std::cout << "Using " << threads << " threads." << std::endl;
-
         // Construct/prepare the class
         mtimer.start_point();
         Trainingsetbuilder tsb(&args,&iptdata);

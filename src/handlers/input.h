@@ -66,10 +66,12 @@ class inputParameters {
         std::vector<std::pair<std::string,std::string>>
         defaults({
             //{param , default      descrip  },
-            {"dfname" , "trainingData.dat"    },   // Output data filename
-            {"charge" , "0"                   },   // Molecule charge
-            {"multip" , "1"                   },   // Molecule Multiplicity
-            {"threads", "0"/* 0 Uses Default*/}    // Number of threads to use
+            {"dfname"  , "trainingData.dat"    },   // Output data filename
+            {"charge"  , "0"                   },   // Molecule charge
+            {"multip"  , "1"                   },   // Molecule Multiplicity
+            {"minimize", "0"                   },   // Molecule Multiplicity
+            {"threads" , "0"/* 0 Uses Default*/},   // Number of threads to use (if set to 0, the program uses the max threads it can)
+            {"ngpr"    , "1"                   }    // Number gaussian inputs per pipe opened (one is fine)
         });
 
         m_params.insert(defaults.begin(),defaults.end());
@@ -192,7 +194,7 @@ public:
         std::pair<std::string,std::string> iset("ifname",inputfname);
         m_params.insert(iset);
         m_readInput();
-        m_printInputParameters();
+        //m_printInputParameters();
     };
 
     //-----------------------------------
@@ -205,7 +207,7 @@ public:
         m_params.insert(iset);
         m_params.insert(dset);
         m_readInput();
-        m_printInputParameters();
+        //m_printInputParameters();
     };
 
     //------------------------------------
