@@ -96,7 +96,9 @@ void Scansetbuilder::calculateScanSet() {
     tsoutt.open(outname.c_str());
 
     // Append data shape line
-    tsoutt << scrd.getScanCount() << "," << na << "," << typescsv << std::endl;
+    tsoutt << HOT << std::endl;
+    tsoutt << scrd.getScanCount() << std::endl;
+    tsoutt << na << "," << typescsv << std::endl;
 
     // Thread timers
     MicroTimer mttimer; // Time the whole loop
