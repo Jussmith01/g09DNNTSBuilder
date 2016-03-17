@@ -77,8 +77,10 @@ int main(int argc, char *argv[]) {
 
     /** Scan Testing Set Building **/
     } else if (iptdata.getParameter<std::string>("type").compare("scan")==0) {
-        omp_set_num_threads(1);
-
+        unsigned threads ( iptdata.getParameter<unsigned>("threads") );
+        if (threads != 0) {
+            omp_set_num_threads( threads );
+        }
         // Construct/prepare the class
         mtimer.start_point();
         Scansetbuilder ssb(&args,&iptdata);

@@ -307,12 +307,28 @@ inline std::string xyzToCSV(std::vector< glm::vec3 > &vec) {
     return std::move(dmat_ss.str());
 };
 
+inline std::string xyzToCSVTypeCheck(std::vector< glm::vec3 > &vec,const std::vector<std::string> &type) {
+    std::stringstream dmat_ss;
+    dmat_ss.setf( std::ios::scientific, std::ios::floatfield );
+
+    unsigned N(vec.size());
+    for (unsigned i=0;i<N;++i) {
+        if ( type[i].compare("X") != 0 ) {
+            dmat_ss << std::setprecision(7) << vec[i].x << ","  << vec[i].y << ","  << vec[i].z << ",";
+        }
+    }
+
+    return std::move(dmat_ss.str());
+};
+
 inline std::string stringsToCSV(std::vector< std::string > vec) {
     std::stringstream ss;
 
     unsigned N(vec.size());
     for (unsigned i=0;i<N;++i) {
+        if ( vec[i].compare("X") != 0 ) {
             ss << vec[i] << ",";
+        }
     }
 
     return std::move(ss.str());

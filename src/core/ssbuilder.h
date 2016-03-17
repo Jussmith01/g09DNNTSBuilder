@@ -11,7 +11,7 @@ class Scansetbuilder {
     FlagHandler *args;
 
     // This checks if a random structure is okay for gaussian
-    bool m_checkRandomStructure(const std::vector<glm::vec3> &xyz);
+    bool m_checkRandomStructure(const std::vector<glm::vec3> &xyz,const std::vector<std::string> &type);
 
 public:
     // Constructor

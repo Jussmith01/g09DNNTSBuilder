@@ -129,7 +129,7 @@ void Scansetbuilder::calculateScanSet() {
             ---------------------------------*/
             mgtimer.start_point();
 
-            g09::buildCartesianInputg09(ngpr,input,HOT,"",itype,tcart,multip,charge,1);
+            g09::buildCartesianInputg09(ngpr,input,HOT,"",itype,tcart,multip,charge,MaxT);
 
             //std::cout << input << std::endl;
 
@@ -148,11 +148,11 @@ void Scansetbuilder::calculateScanSet() {
             for (unsigned j=0; j<ngpr; ++j) {
                 if (!chkoutshl[j]) {
 
-                    if (m_checkRandomStructure(tcart)) {
+                    if (m_checkRandomStructure(tcart,scrd.getotype())) {
                         ++gdf;
                     }
 
-                    datapoint.append( simtls::xyzToCSV(tcart) );
+                    datapoint.append( simtls::xyzToCSVTypeCheck(tcart,scrd.getotype()) );
                     datapoint.append( g09::energyFinder(outshl[j]) );
 
 
@@ -199,14 +199,16 @@ void Scansetbuilder::calculateScanSet() {
 /*------Check a Random Structure--------
 
 ----------------------------------------*/
-bool Scansetbuilder::m_checkRandomStructure(const std::vector<glm::vec3> &xyz) {
+bool Scansetbuilder::m_checkRandomStructure(const std::vector<glm::vec3> &xyz,const std::vector<std::string> &type) {
     bool failchk = false; // Defaults to no failure
 
     for (uint32_t i=0; i<xyz.size(); ++i) {
         for (uint32_t j=i+1; j<xyz.size(); ++j) {
-            if (glm::length(xyz[i]-xyz[j]) < 0.5) {
-                failchk = true;
-                break;
+            if ( (type[i].compare("X") != 0) && (type[j].compare("X") != 0) ) {
+                if (glm::length(xyz[i]-xyz[j]) < 0.5) {
+                    failchk = true;
+                    break;
+                }
             }
         }
 

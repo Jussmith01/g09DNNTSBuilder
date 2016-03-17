@@ -123,7 +123,8 @@ inline std::string energyFinder(const std::string &filename) {
     string energy;
     //energy.setf( std::ios::scientific, std::ios::floatfield );
 
-    regex patt_energy("\\sSCF Done:.*=\\s+(-*\\d+\\.\\d+)\\s");
+    //regex patt_energy("\\sSCF Done:.*=\\s+(-*\\d+\\.\\d+)\\s");
+    regex patt_energy("\\sSCF Done:.*=\\s+([^\\s]+)\\s");
     string line;
     istringstream stream(filename);
     while (getline(stream, line)) {
@@ -237,8 +238,11 @@ inline void buildCartesianInputg09(int nrpg,std::string &input,std::string lot,s
         tmpipt << "COMMENT LINE\n\n";
         tmpipt << charge << "  " << mult << "\n";
 
-        for (uint32_t i = 0; i<type.size(); ++i)
-            tmpipt << type[i] << std::setprecision(7) << " " << xyz[j*N+i].x << " " << xyz[j*N+i].y << " " << xyz[j*N+i].z << "\n";
+        for (uint32_t i = 0; i<type.size(); ++i) {
+            if ( type[i].compare("X") != 0 ) {
+                tmpipt << type[i] << std::setprecision(7) << " " << xyz[j*N+i].x << " " << xyz[j*N+i].y << " " << xyz[j*N+i].z << "\n";
+            }
+        }
 
         tmpipt << "\n";
 
