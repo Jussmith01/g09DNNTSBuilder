@@ -53,7 +53,7 @@ void Trainingsetbuilder::optimizeStoredStructure() {
 
     string input;
 
-    g09::buildCartesianInputg09(1,input,HOT,"opt(cartesian)",itype,xyz,multip,charge,omp_get_max_threads());
+    g09::buildCartesianInputg09(1,input,HOT,"opt(cartesian,Loose,MaxStep=100,MaxCycles=1000)",itype,xyz,multip,charge,omp_get_max_threads());
 
     vector<string>    output(1);
     vector< bool > chkoutshl(1);
