@@ -39,7 +39,7 @@
 
 void Trainingsetbuilder::optimizeStoredStructure() {
     using namespace std;
-    cout << "Optimizing Structure..." << endl;
+
     vector<  glm::vec3 > xyz  (rcrd.getixyz() );
     vector<string> itype(rcrd.getitype());
 
@@ -49,19 +49,23 @@ void Trainingsetbuilder::optimizeStoredStructure() {
     // Some local variables
     int charge (params.getParameter<int>("charge"));
     int multip (params.getParameter<int>("multip"));
-    string HOT(params.getParameter<string>("LOT"));
-
+    string LOT("PM6");
     string input;
 
-    g09::buildCartesianInputg09(1,input,HOT,"opt(cartesian,Loose,MaxStep=100,MaxCycles=1000)",itype,xyz,multip,charge,omp_get_max_threads());
+    //-----------------------------
+    // Low level minimization
+    //-----------------------------
+    g09::buildCartesianInputg09(1,input,LOT,"opt(cartesian,Loose,MaxStep=100,MaxCycles=1000)",itype,xyz,multip,charge,omp_get_max_threads());
 
     vector<string>    output(1);
     vector< bool > chkoutshl(1);
+
+    cout << "Optimizing Structure at " << LOT << " level..." << endl;
     g09::execg09(1,input,output,chkoutshl);
 
-    //std::ofstream gaut("gau.log");
-    //gaut << output[0];
-    //gaut.close();
+    ofstream optout("optout.log");
+    optout << output[0] << endl;
+    optout.close();
 
     g09::ipcoordinateFinder(output[0],xyz);
 
@@ -69,6 +73,37 @@ void Trainingsetbuilder::optimizeStoredStructure() {
         dnntsErrorcatch(string("Optimization Failed!!"))
     }
 
+    //-----------------------------
+    // High level minimization
+    //-----------------------------
+    bool mini(false);
+    unsigned cnt(0);
+    string conv("");
+    while (!mini) {
+        string HOT(params.getParameter<string>("LOT"));
+        g09::buildCartesianInputg09(1,input,LOT,"opt(cartesian"+conv+",MaxStep=100,MaxCycles=1000)",itype,xyz,multip,charge,omp_get_max_threads());
+
+        output.clear(); output.resize(1);
+        cout << "Optimizing Structure at " << HOT << " level..." << endl;
+        g09::execg09(1,input,output,chkoutshl);
+
+        if ( chkoutshl[0] ) {
+            ++cnt;
+
+            if (cnt == 2) {
+                dnntsErrorcatch(string("Optimization Failed!!"));
+            }
+
+            string conv(",Loose");
+            cout << "Optimization Failed, switching to loose convergence and trying again..." << endl;
+        } else {
+            g09::ipcoordinateFinder(output[0],xyz);
+            mini = true;
+        }
+    }
+
+
+    // Print Results
     cout << "------------------------------------" << endl;
     cout << " Optimized Coordinates:\n" << endl;
     cout.setf( ios::fixed, ios::floatfield );
