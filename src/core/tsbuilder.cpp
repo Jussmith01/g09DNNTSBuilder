@@ -63,11 +63,27 @@ void Trainingsetbuilder::optimizeStoredStructure() {
     cout << "Optimizing Structure at " << LOT << " level..." << endl;
     g09::execg09(1,input,output,chkoutshl);
 
-    ofstream optout("optout.log");
-    optout << output[0] << endl;
-    optout.close();
+    if ( chkoutshl[0] ) {
+        cout << "Opt Fail!\n";
+        dnntsErrorcatch(string("Optimization Failed!!"))
+    }
+
+    g09::ipcoordinateFinder(output[0],xyz);
+
+    //-----------------------------
+    // Medium level minimization
+    //-----------------------------
+
+    string MOT("UHF/6-31g*");
+
+    g09::buildCartesianInputg09(1,input,MOT,"opt(cartesian,MaxStep=100,MaxCycles=1000)",itype,xyz,multip,charge,omp_get_max_threads());
+
+    output.clear(); output.resize(1);
+    cout << "Optimizing Structure at " << MOT << " level..." << endl;
+    g09::execg09(1,input,output,chkoutshl);
 
     if ( chkoutshl[0] ) {
+        cout << "Opt Fail!\n";
         dnntsErrorcatch(string("Optimization Failed!!"))
     }
 
@@ -81,7 +97,7 @@ void Trainingsetbuilder::optimizeStoredStructure() {
     string conv("");
     while (!mini) {
         string HOT(params.getParameter<string>("LOT"));
-        g09::buildCartesianInputg09(1,input,LOT,"opt(cartesian"+conv+",MaxStep=100,MaxCycles=1000)",itype,xyz,multip,charge,omp_get_max_threads());
+        g09::buildCartesianInputg09(1,input,HOT,"opt(cartesian"+conv+",NStep=500,MaxCycles=1000)",itype,xyz,multip,charge,omp_get_max_threads());
 
         output.clear(); output.resize(1);
         cout << "Optimizing Structure at " << HOT << " level..." << endl;
@@ -92,6 +108,9 @@ void Trainingsetbuilder::optimizeStoredStructure() {
 
             if (cnt == 2) {
                 cout << "Opt Fail!\n";
+                ofstream optfailout("optfailout.log");
+                optfailout << output[0];
+                optfailout.close();
                 dnntsErrorcatch(string("Optimization Failed!!"));
             }
 
