@@ -63,12 +63,11 @@ void Trainingsetbuilder::optimizeStoredStructure() {
     cout << "Optimizing Structure at " << LOT << " level..." << endl;
     g09::execg09(1,input,output,chkoutshl);
 
-    if ( chkoutshl[0] ) {
-        cout << "Opt Fail!\n";
-        dnntsErrorcatch(string("Optimization Failed!!"))
+    if ( !chkoutshl[0] ) {
+        g09::ipcoordinateFinder(output[0],xyz);
+    } else {
+        cout << "Low level optimization failed... continuing." << endl;
     }
-
-    g09::ipcoordinateFinder(output[0],xyz);
 
     //-----------------------------
     // Medium level minimization
@@ -82,12 +81,11 @@ void Trainingsetbuilder::optimizeStoredStructure() {
     cout << "Optimizing Structure at " << MOT << " level..." << endl;
     g09::execg09(1,input,output,chkoutshl);
 
-    if ( chkoutshl[0] ) {
-        cout << "Opt Fail!\n";
-        dnntsErrorcatch(string("Optimization Failed!!"))
+    if ( !chkoutshl[0] ) {
+        g09::ipcoordinateFinder(output[0],xyz);
+    } else {
+        cout << "Mid level optimization failed... continuing." << endl;
     }
-
-    g09::ipcoordinateFinder(output[0],xyz);
 
     //-----------------------------
     // High level minimization
@@ -107,7 +105,7 @@ void Trainingsetbuilder::optimizeStoredStructure() {
             ++cnt;
 
             if (cnt == 2) {
-                cout << "Opt Fail!\n";
+                cout << "Optimization Fail!! -- Aborting\n";
                 ofstream optfailout("optfailout.log");
                 optfailout << output[0];
                 optfailout.close();
