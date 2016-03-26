@@ -97,7 +97,7 @@ void Trainingsetbuilder::optimizeStoredStructure() {
     string conv("");
     while (!mini) {
         string HOT(params.getParameter<string>("LOT"));
-        g09::buildCartesianInputg09(1,input,HOT,"opt(cartesian"+conv+",NStep=500,MaxCycles=1000)",itype,xyz,multip,charge,omp_get_max_threads());
+        g09::buildCartesianInputg09(1,input,HOT,"opt(cartesian"+conv+",MaxStep=500,MaxCycles=1000)",itype,xyz,multip,charge,omp_get_max_threads());
 
         output.clear(); output.resize(1);
         cout << "Optimizing Structure at " << HOT << " level..." << endl;
