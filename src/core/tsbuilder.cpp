@@ -128,9 +128,10 @@ This function contians the main loop for
 building the training set.
 ----------------------------------------*/
 void Trainingsetbuilder::calculateTrainingSet() {
-    std::cout << "------------------------------" << std::endl;
-    std::cout << "  Begin building training set " << std::endl;
-    std::cout << "------------------------------\n" << std::endl;
+    using namespace std;
+    cout << "------------------------------" << endl;
+    cout << "  Begin building training set " << endl;
+    cout << "------------------------------\n" << endl;
 
     ///std::cout << "CHECK: " << simtls::countUnique(10,4) << std::endl;
 
@@ -141,10 +142,10 @@ void Trainingsetbuilder::calculateTrainingSet() {
     // Local pointer to icrd for passing a private class to threads
     //rcrd.printdata();
 
-    std::string typescsv( simtls::stringsToCSV(rcrd.getotype()) );
+    string typescsv( simtls::stringsToCSV(rcrd.getotype()) );
     unsigned    atoms   ( rcrd.getNa() );
 
-    std::cout << "atoms: " << atoms << std::endl;
+    cout << "atoms: " << atoms << endl;
 
     // Get the maximum number of threads
     int MaxT = omp_get_max_threads();
@@ -152,32 +153,32 @@ void Trainingsetbuilder::calculateTrainingSet() {
     void (*loopPrinter)(int tid,int N,int i,int gcfail,int gdfail);
     switch ((int)routecout) {
     case 0: {
-        std::cout << "Output setup for terminal writing." << std::endl;
+        cout << "Output setup for terminal writing." << endl;
         loopPrinter = &print_for_cout;
         for (int i=0; i<MaxT; ++i) {
-            std::cout << std::endl;
+            cout << endl;
         }
         break;
     }
     case 1: {
-        std::cout << "Output setup for file writing." << std::endl;
+        cout << "Output setup for file writing." << endl;
         loopPrinter = &print_for_file;
         break;
     }
     }
 
     // Prepare private thread output filenames
-    std::vector<std::stringstream> outname(MaxT);
-    std::vector<std::stringstream>::iterator it;
+    vector<stringstream> outname(MaxT);
+    vector<stringstream>::iterator it;
     for (it = outname.begin(); it != outname.end(); it++)
-        *it << iptData->getParameter<std::string>("dfname") << "_thread" << it - outname.begin();
+        *it << iptData->getParameter<string>("dfname") << "_thread" << it - outname.begin();
 
     // This is passed to each thread and contain unique seeds for each
     ParallelSeedGenerator seedGen(MaxT);
 
     // This is the termination string. If an error is caught it
     // saves it here and the threads then exit.
-    std::string termstr("");
+    string termstr("");
 
     // Begin parallel region
     #pragma omp parallel default(shared) firstprivate(params,MaxT)
