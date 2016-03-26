@@ -67,11 +67,11 @@ void Trainingsetbuilder::optimizeStoredStructure() {
     optout << output[0] << endl;
     optout.close();
 
-    g09::ipcoordinateFinder(output[0],xyz);
-
     if ( chkoutshl[0] ) {
         dnntsErrorcatch(string("Optimization Failed!!"))
     }
+
+    g09::ipcoordinateFinder(output[0],xyz);
 
     //-----------------------------
     // High level minimization
@@ -91,6 +91,7 @@ void Trainingsetbuilder::optimizeStoredStructure() {
             ++cnt;
 
             if (cnt == 2) {
+                cout << "Opt Fail!\n";
                 dnntsErrorcatch(string("Optimization Failed!!"));
             }
 
