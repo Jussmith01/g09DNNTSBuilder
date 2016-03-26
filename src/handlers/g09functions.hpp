@@ -233,7 +233,7 @@ inline void buildCartesianInputg09(int nrpg,std::string &input,std::string lot,s
         // Build gaussian 09 input
         std::stringstream tmpipt;
         tmpipt.setf( std::ios::scientific, std::ios::floatfield );
-        tmpipt << "\n%nproc=" << nproc << "\n";
+        tmpipt << "\n%NProcShared=" << nproc << "\n";
         tmpipt << "#p " << lot << " " << additional << "\n\n";
         tmpipt << "COMMENT LINE\n\n";
         tmpipt << charge << "  " << mult << "\n";
