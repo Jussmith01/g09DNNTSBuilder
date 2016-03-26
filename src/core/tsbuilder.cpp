@@ -64,6 +64,7 @@ void Trainingsetbuilder::optimizeStoredStructure() {
     g09::execg09(1,input,output,chkoutshl);
 
     if ( !chkoutshl[0] ) {
+        cout << LOT << " optimization complete... continuing." << endl;
         g09::ipcoordinateFinder(output[0],xyz);
     } else {
         cout << "Low level optimization failed... continuing." << endl;
@@ -82,6 +83,7 @@ void Trainingsetbuilder::optimizeStoredStructure() {
     g09::execg09(1,input,output,chkoutshl);
 
     if ( !chkoutshl[0] ) {
+        cout << MOT << " optimization complete... continuing." << endl;
         g09::ipcoordinateFinder(output[0],xyz);
     } else {
         cout << "Mid level optimization failed... continuing." << endl;
