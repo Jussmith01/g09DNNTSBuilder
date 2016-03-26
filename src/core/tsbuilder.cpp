@@ -49,7 +49,7 @@ void Trainingsetbuilder::optimizeStoredStructure() {
     // Some local variables
     int charge (params.getParameter<int>("charge"));
     int multip (params.getParameter<int>("multip"));
-    string LOT("PM6");
+    string LOT("AM1");
     string input;
 
     //-----------------------------
