@@ -40,7 +40,7 @@
 void Trainingsetbuilder::optimizeStoredStructure() {
     using namespace std;
 
-    vector<  glm::vec3 > xyz  (rcrd.getixyz() );
+    vector<  glm::vec3 > xyz  (rcrd.getixyz());
     vector<string> itype(rcrd.getitype());
 
     // Store working parameters
@@ -55,7 +55,7 @@ void Trainingsetbuilder::optimizeStoredStructure() {
     //-----------------------------
     // Low level minimization
     //-----------------------------
-    g09::buildCartesianInputg09(1,input,LOT,"opt(cartesian,Loose,MaxStep=100,MaxCycles=1000)",itype,xyz,multip,charge,omp_get_max_threads());
+    g09::buildCartesianInputg09(1,input,LOT,"opt(cartesian,Loose,MaxStep=100,MaxCycles=1000) Guess(Huckel)",itype,xyz,multip,charge,omp_get_max_threads());
 
     vector<string>    output(1);
     vector< bool > chkoutshl(1);
@@ -65,7 +65,7 @@ void Trainingsetbuilder::optimizeStoredStructure() {
 
     if ( !chkoutshl[0] ) {
         cout << LOT << " optimization complete... continuing." << endl;
-        g09::ipcoordinateFinder(output[0],xyz);
+        g09::ipcoordinateFinder(output[0],xyz,false);
     } else {
         cout << "Low level optimization failed... continuing." << endl;
     }
@@ -74,9 +74,9 @@ void Trainingsetbuilder::optimizeStoredStructure() {
     // Medium level minimization
     //-----------------------------
 
-    string MOT("UHF/6-31g*");
+    string MOT("HF/6-31g*");
 
-    g09::buildCartesianInputg09(1,input,MOT,"opt(cartesian,MaxStep=100,MaxCycles=1000)",itype,xyz,multip,charge,omp_get_max_threads());
+    g09::buildCartesianInputg09(1,input,MOT,"opt(cartesian,MaxStep=100,MaxCycles=1000) Guess(Huckel)",itype,xyz,multip,charge,omp_get_max_threads());
 
     output.clear(); output.resize(1);
     cout << "Optimizing Structure at " << MOT << " level..." << endl;
@@ -84,9 +84,28 @@ void Trainingsetbuilder::optimizeStoredStructure() {
 
     if ( !chkoutshl[0] ) {
         cout << MOT << " optimization complete... continuing." << endl;
-        g09::ipcoordinateFinder(output[0],xyz);
+        g09::ipcoordinateFinder(output[0],xyz,false);
     } else {
         cout << "Mid level optimization failed... continuing." << endl;
+    }
+
+    //-----------------------------
+    // Medium-High level minimization
+    //-----------------------------
+
+    string MHOT("MP2/6-31g*");
+
+    g09::buildCartesianInputg09(1,input,MHOT,"opt(cartesian,MaxStep=100,MaxCycles=1000) Guess(Huckel)",itype,xyz,multip,charge,omp_get_max_threads());
+
+    output.clear(); output.resize(1);
+    cout << "Optimizing Structure at " << MHOT << " level..." << endl;
+    g09::execg09(1,input,output,chkoutshl);
+
+    if ( !chkoutshl[0] ) {
+        cout << MHOT << " optimization complete... continuing." << endl;
+        g09::ipcoordinateFinder(output[0],xyz,false);
+    } else {
+        cout << "Mid-High level optimization failed... continuing." << endl;
     }
 
     //-----------------------------
@@ -96,8 +115,9 @@ void Trainingsetbuilder::optimizeStoredStructure() {
     unsigned cnt(0);
     string conv("");
     while (!mini) {
-        string HOT(params.getParameter<string>("LOT"));
-        g09::buildCartesianInputg09(1,input,HOT,"opt(cartesian"+conv+",MaxStep=500,MaxCycles=1000)",itype,xyz,multip,charge,omp_get_max_threads());
+        //string HOT(params.getParameter<string>("LOT"));
+        string HOT("B3LYP/6-31g*");
+        g09::buildCartesianInputg09(1,input,HOT,"opt(cartesian"+conv+",MaxStep=500,MaxCycles=1000) Guess(Huckel)",itype,xyz,multip,charge,omp_get_max_threads());
 
         output.clear(); output.resize(1);
         cout << "Optimizing Structure at " << HOT << " level..." << endl;
@@ -114,10 +134,11 @@ void Trainingsetbuilder::optimizeStoredStructure() {
                 dnntsErrorcatch(string("Optimization Failed!!"));
             }
 
+            g09::ipcoordinateFinder(output[0],xyz,true);
             string conv(",Loose");
             cout << "Optimization Failed, switching to loose convergence and trying again..." << endl;
         } else {
-            g09::ipcoordinateFinder(output[0],xyz);
+            g09::ipcoordinateFinder(output[0],xyz,false);
             mini = true;
         }
     }

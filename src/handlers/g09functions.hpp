@@ -51,10 +51,15 @@ inline void forceFinder(const std::string &filename,std::vector<glm::vec3> &tfrc
  Output String
 
 ------------------------------------------*/
-inline void ipcoordinateFinder(const std::string &output,std::vector<glm::vec3> &tcart) {
+inline void ipcoordinateFinder(const std::string &output,std::vector<glm::vec3> &tcart,bool fail) {
     using namespace std;
 
-    regex pattern_opt("Optimization completed.\\n[\\s\\S]+Input orientation:([\\s\\S]+)\\s*Distance matrix");
+    regex pattern_opt;
+    if (!fail) {
+        pattern_opt = "Optimization completed\\.\\n[\\s\\S]+Input orientation:([\\s\\S]+)\\s*Distance matrix";
+    } else {
+        pattern_opt = "Optimization stopped\\.\\n[\\s\\S]+Input orientation:([\\s\\S]+)\\s*Distance matrix";
+    }
     regex pattern_crd("\\s+\\d+\\s+\\d+\\s+\\d+\\s+([+-]*\\d+\\.\\d+)\\s+([+-]*\\d+\\.\\d+)\\s+([+-]*\\d+\\.\\d+)");
 
     string coordstr;
