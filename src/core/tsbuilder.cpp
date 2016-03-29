@@ -115,8 +115,8 @@ void Trainingsetbuilder::optimizeStoredStructure() {
     unsigned cnt(0);
     string conv("");
     while (!mini) {
-        //string HOT(params.getParameter<string>("LOT"));
-        string HOT("B3LYP/6-31g*");
+        string HOT(params.getParameter<string>("LOT"));
+        //string HOT("B3LYP/6-31g*");
         g09::buildCartesianInputg09(1,input,HOT,"opt(cartesian"+conv+",MaxStep=500,MaxCycles=1000) Guess(Huckel)",itype,xyz,multip,charge,omp_get_max_threads());
 
         output.clear(); output.resize(1);
