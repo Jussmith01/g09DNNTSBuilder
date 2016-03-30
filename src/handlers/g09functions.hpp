@@ -51,6 +51,41 @@ inline void forceFinder(const std::string &filename,std::vector<glm::vec3> &tfrc
  Output String
 
 ------------------------------------------*/
+inline void admpcrdenergyFinder(const std::string &output,std::vector<glm::vec3> &totalcartesians,std::vector<float> &totalenergies) {
+    using namespace std;
+
+    regex pattern_energy( "\\s*SCF Done:\\s*E\\(.*\\)\\s*=\\s*([^\\s]+)\\s*A\\.U\\." );
+    regex pattern_crdblk( " Cartesian coordinates:([\\s\\S]+)\\s*MW Cartesian velocity:" );
+    regex pattern_crd(" I=\\s*\\d+\\s*X=\\s*([^\\s]+)\\s*Y=\\s*([^\\s]+)\\s*Z=\\s*([^\\s]+)");
+
+    string coordstr;
+    smatch sm;
+    if ( regex_search ( output, sm, pattern_opt ) ) {
+        coordstr = sm.str(1);
+    } else {
+        cout << "Coordinate Pattern Not Found in ipcoordinateFinder!" << endl;
+    }
+
+    unsigned atcnt(0);
+    if (regex_search(coordstr,pattern_crd)) {
+        sregex_iterator items(coordstr.begin(),coordstr.end(),pattern_crd);
+        sregex_iterator end;
+        for (; items != end; ++items) {
+            tcart[atcnt].x = atof(items->str(1).c_str());
+            tcart[atcnt].y = atof(items->str(2).c_str());
+            tcart[atcnt].z = atof(items->str(3).c_str());
+            //cout << "[" << tcart[atcnt].x << "," << tcart[atcnt].y << "," << tcart[atcnt].z << "]\n";
+            ++atcnt;
+        }
+    }
+};
+
+/*----------------------------------------
+
+ Get input coordinates from a Gaussian
+ Output String
+
+------------------------------------------*/
 inline void ipcoordinateFinder(const std::string &output,std::vector<glm::vec3> &tcart,bool fail) {
     using namespace std;
 

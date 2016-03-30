@@ -65,13 +65,13 @@ int main(int argc, char *argv[]) {
 
         // Calculate the training set
         mtimer.start_point();
-        tsb.calculateTrainingSet();
+        tsb.calculateRandomTrainingSet();
         mtimer.end_point();
         mtimer.print_generic_to_cout(std::string("Calculate training set time --\n"));
 
         // Calculate the validation set
         mtimer.start_point();
-        tsb.calculateValidationSet();
+        tsb.calculateRandomValidationSet();
         mtimer.end_point();
         mtimer.print_generic_to_cout(std::string("Calculate validation set time --\n"));
 

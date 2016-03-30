@@ -54,9 +54,13 @@ public:
     void optimizeStoredStructure();
 
     // This holds the main loop for calculating the training set
-    void calculateTrainingSet();
+    void calculateRandomTrainingSet();
 
-    void calculateValidationSet();
+    void calculateRandomValidationSet();
+
+    void calculateMDTrainingSet();
+
+    void calculateMDValidationSet();
 };
 
 #endif

@@ -190,12 +190,12 @@ void print_for_cout(int tid,int N,int i,int gcfail,int gdfail) {
 
 
 ----------------------------------------*/
-void Trainingsetbuilder::calculateValidationSet() {
+void Trainingsetbuilder::calculateRandomValidationSet() {
 
     iptData->setParameter("dfname",iptData->getParameter<std::string>("vdfname") );
     iptData->setParameter("TSS",iptData->getParameter<std::string>("VSS") );
 
-    calculateTrainingSet();
+    calculateRandomTrainingSet();
 }
 
 /*--------Calculate Training Set---------
@@ -203,7 +203,7 @@ void Trainingsetbuilder::calculateValidationSet() {
 This function contians the main loop for
 building the training set.
 ----------------------------------------*/
-void Trainingsetbuilder::calculateTrainingSet() {
+void Trainingsetbuilder::calculateRandomTrainingSet() {
     using namespace std;
     cout << "------------------------------" << endl;
     cout << "  Begin building training set " << endl;
@@ -390,7 +390,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 //std::cout << "Execg09" << std::endl;
                 g09::execg09(ngpr,input,outshl,chkoutshl);
 
-                /*std::stringstream sso;
+                std::stringstream sso;
                 sso << "g09output." << tid << "." << i << ".dat";
                 std::ofstream ostream(sso.str().c_str());
                 if (ostream) {
@@ -398,7 +398,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
                 } else {
                     std::cerr << "bad dustin" << std::endl;
                 }
-                ostream.close();*/
+                ostream.close();
 
                 mgtimer.end_point();
 
@@ -524,7 +524,7 @@ void Trainingsetbuilder::calculateTrainingSet() {
         // Remove old output once moved
         std::stringstream rm;
         rm << "rm " << (*nameit).str();
-        systls::exec(rm.str(),100);
+        //systls::exec(rm.str(),100);
     }
     fttimer.end_point();
     fttimer.print_generic_to_cout(std::string("File transfer"));
@@ -559,5 +559,214 @@ bool Trainingsetbuilder::m_checkRandomStructure(const std::vector<glm::vec3> &xy
     }
 
     return failchk;
+};
+
+/*--------Calculate Validation Set---------
+
+
+----------------------------------------*/
+void Trainingsetbuilder::calculateMDValidationSet() {
+
+    iptData->setParameter("dfname",iptData->getParameter<std::string>("vdfname") );
+    iptData->setParameter("TSS",iptData->getParameter<std::string>("VSS") );
+
+    calculateMDTrainingSet();
+}
+
+/*--------Calculate Training Set---------
+
+This function contians the main loop for
+building the training set.
+----------------------------------------*/
+void Trainingsetbuilder::calculateMDTrainingSet() {
+    using namespace std;
+    cout << "------------------------------" << endl;
+    cout << "  Begin building training set " << endl;
+    cout << "------------------------------\n" << endl;
+
+    ///std::cout << "CHECK: " << simtls::countUnique(10,4) << std::endl;
+
+    // Store working parameters
+    ipt::inputParameters params(*iptData);
+    //params.printdata();
+
+    // Local pointer to icrd for passing a private class to threads
+    //rcrd.printdata();
+
+    string typescsv( simtls::stringsToCSV(rcrd.getotype()) );
+    unsigned    atoms   ( rcrd.getNa() );
+
+    cout << "atoms: " << atoms << endl;
+
+    // Get the maximum number of threads
+    int MaxT = omp_get_max_threads();
+    // Setup loop output function
+    void (*loopPrinter)(int tid,int N,int i,int gcfail,int gdfail);
+    switch ((int)routecout) {
+    case 0: {
+        cout << "Output setup for terminal writing." << endl;
+        loopPrinter = &print_for_cout;
+        for (int i=0; i<MaxT; ++i) {
+            cout << endl;
+        }
+        break;
+    }
+    case 1: {
+        cout << "Output setup for file writing." << endl;
+        loopPrinter = &print_for_file;
+        break;
+    }
+    }
+
+    // Prepare private thread output filenames
+    vector<stringstream> outname(MaxT);
+    vector<stringstream>::iterator it;
+    for (it = outname.begin(); it != outname.end(); it++)
+        *it << iptData->getParameter<string>("dfname") << "_thread" << it - outname.begin();
+
+    // This is passed to each thread and contain unique seeds for each
+    ParallelSeedGenerator seedGen(MaxT);
+
+    // This is the termination string. If an error is caught it
+    // saves it here and the threads then exit.
+    string termstr("");
+
+    // Begin parallel region
+    #pragma omp parallel default(shared) firstprivate(params,MaxT)
+    {
+        // Thread safe copy of the internal coords calculator
+        itrnl::RandomCartesian licrd = rcrd;
+
+        // Thread ID
+        unsigned tid = omp_get_thread_num();
+
+        // Some local variables
+        unsigned ngpr = params.getParameter<unsigned>("ngpr");
+        unsigned tss = params.getParameter<unsigned>("TSS");
+
+        // Minimimum number of sets for this thread to calculate
+        int N = floor(tss/MaxT);
+        if (tid < tss % MaxT) {
+            ++N;
+        }
+
+        // Prepare the random number seeds
+        std::vector<int> seedarray;
+        seedGen.getThreadSeeds(tid,seedarray);
+
+        // Prepare the random number generator
+        RandomReal rnGen(seedarray,params.getParameter<std::string>("rdm"));
+
+        // Allocate space for new coordinates
+        unsigned na = licrd.getNa();//params.getCoordinatesStr().size();
+        std::vector<glm::vec3> wxyz(na*ngpr);
+
+        // Initialize counters
+        int i(0); // Loop counter
+        int gcf(0); // Gaussian Convergence Fail counter
+        int gdf(0); // Geometry distance failure
+
+        int charge (params.getParameter<int>("charge"));
+        int multip (params.getParameter<int>("multip"));
+
+        // Initialize some containers
+        std::string datapoint;
+        std::string input;
+        std::vector<std::string> outsll(ngpr);
+        std::vector<bool> chkoutsll(ngpr);
+        std::vector<std::string> outshl(ngpr);
+        std::vector<bool> chkoutshl(ngpr);
+
+        std::vector<std::string> itype(licrd.getitype());
+
+        std::string HOT(params.getParameter<std::string>("LOT"));
+
+        // Z-matrix Stuff
+        std::vector<std::string> zmat(ngpr);
+        //std::vector< itrnl::t_iCoords > icord(ngpr);
+        std::vector<std::string> cord(ngpr);
+
+        // Cartesian and force temp storage
+        std::vector< glm::vec3 > tcart(na);
+        std::vector< glm::vec3 > tfrce(na);
+
+        // Define and open thread output
+        std::ofstream tsoutt;
+        tsoutt.open(outname[tid].str());
+
+        // Thread timers
+        MicroTimer mttimer; // Time the whole loop
+        MicroTimer mrtimer; // Time the random structure generation
+        MicroTimer mgtimer; // Time the gaussian 09 runs
+        //MicroTimer mgtimer; // Time the gaussian 09 runs
+        MicroTimer mstimer; // Time the string generation
+
+        // Begin main loop
+        mttimer.start_point();
+
+        mttimer.end_point();
+
+        // Final print, shows 100%
+        #pragma omp critical
+        {
+            loopPrinter(tid,1,1,gcf,gdf);
+        }
+
+        // Close the threads output
+        tsoutt.close();
+
+        // Wait for the whole team to finish
+        #pragma omp barrier
+
+        // Print stats for each thread in the team
+        #pragma omp critical
+        {
+            std::cout << "\n|----Thread " << tid << " info----|" << std::endl;
+            mttimer.print_generic_to_cout(std::string("Total"));
+            mrtimer.print_generic_to_cout(std::string("Struc. Gen."));
+            mgtimer.print_generic_to_cout(std::string("Gau. 09."));
+            mstimer.print_generic_to_cout(std::string("CSV Gen."));
+            std::cout << "Number of gaussian convergence failures: " << gcf << std::endl;
+            std::cout << "Number of geometry distance check failures: " << gcf << std::endl;
+            std::cout << "|---------------------|\n" << std::endl;
+        }
+    }
+
+    std::cout << std::endl;
+
+    // Combine all threads output
+    MicroTimer fttimer;
+    std::ofstream tsout;
+    std::string dfname(iptData->getParameter<std::string>("dfname"));
+    tsout.open(dfname.c_str(),std::ios_base::binary);
+
+    tsout << params.getParameter<std::string>("LOT") << std::endl;
+    tsout << params.getParameter<std::string>("TSS") << std::endl;
+    tsout << atoms << ","<< typescsv << std::endl;
+
+    fttimer.start_point();
+    std::vector<std::stringstream>::iterator nameit;
+    for (nameit = outname.begin(); nameit != outname.end(); nameit++) {
+        // Move files individualy into the main output
+        std::ifstream infile((*nameit).str().c_str(),std::ios_base::binary);
+        std::cout << "Transferring file " << (*nameit).str() << " -> " << dfname << std::endl;
+        tsout << infile.rdbuf();
+
+        // Remove old output once moved
+        std::stringstream rm;
+        rm << "rm " << (*nameit).str();
+        //systls::exec(rm.str(),100);
+    }
+    fttimer.end_point();
+    fttimer.print_generic_to_cout(std::string("File transfer"));
+
+    tsout.close();
+
+    // Catch any errors from the threads
+    if (!termstr.empty()) dnntsErrorcatch(termstr);
+
+    std::cout << "\n------------------------------" << std::endl;
+    std::cout << "Finished building training set" << std::endl;
+    std::cout << "------------------------------" << std::endl;
 };
 
