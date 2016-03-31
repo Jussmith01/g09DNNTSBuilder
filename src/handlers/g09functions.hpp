@@ -1,5 +1,5 @@
 //
-// Created by fury on 8/4/15.
+//
 //
 
 #ifndef G09FUNCTIONS_H
@@ -66,7 +66,7 @@ inline std::string fftcf(const std::string& value) {
 inline void admpcrdenergyFinder(const std::string &output,std::vector<glm::vec3> &totalcartesians,std::vector<double> &totalenergies) {
     using namespace std;
 
-    regex pattern_energy( "\\s*SCF Done:\\s*E\\(.*\\)\\s*=\\s*([^\\s]+)\\s*A\\.U\\." );
+    regex pattern_energy( "\\s*SCF Done:\\s*E\\(.*\\)\\s*=\\s*([^\\s]+)\\s*[Aa]\\.[Uu]\\." );
     regex pattern_crdblk( " Cartesian coordinates:\\n((?:\\sI=\\s*\\d+\\s*X=\\s*[^\\s]+\\s*Y=\\s*[^\\s]+\\s*Z=\\s*[^\\s]+\\n)+)" );
     regex pattern_crd(" I=\\s*\\d+\\s*X=\\s*([^\\s]+)\\s*Y=\\s*([^\\s]+)\\s*Z=\\s*([^\\s]+)");
 
@@ -82,7 +82,7 @@ inline void admpcrdenergyFinder(const std::string &output,std::vector<glm::vec3>
         for (; items != end; ++items) {
             if (cnt != 0) {
                 totalenergies.push_back(atof(items->str(1).c_str()));
-                cout << setprecision(8) << "Total Energy: " << totalenergies.back() << endl;
+                //cout << setprecision(8) << "Total Energy: " << totalenergies.back() << endl;
             }
             ++cnt;
         }
@@ -110,7 +110,7 @@ inline void admpcrdenergyFinder(const std::string &output,std::vector<glm::vec3>
                         totalcartesians.push_back(glm::vec3(atof(fftcf( crds->str(1) ).c_str())
                                                            ,atof(fftcf( crds->str(2) ).c_str())
                                                            ,atof(fftcf( crds->str(3) ).c_str())));
-                        cout << " Coord: " << totalcartesians.back().x << " " << totalcartesians.back().y << " " << totalcartesians.back().z << " " << endl;
+                        //cout << " Coord: " << totalcartesians.back().x << " " << totalcartesians.back().y << " " << totalcartesians.back().z << " " << endl;
                     }
                 }
             }

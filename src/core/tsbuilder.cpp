@@ -12,6 +12,7 @@
 #include <cmath>
 #include <unordered_map>
 #include <time.h>
+#include <random>
 
 // GLM Mathematics
 //#define GLM_FORCE_RADIANS
@@ -306,6 +307,7 @@ void Trainingsetbuilder::calculateRandomTrainingSet() {
         std::vector<std::string> itype(licrd.getitype());
 
         std::string HOT(params.getParameter<std::string>("LOT"));
+        std::string SCF(params.getParameter<std::string>("SCF"));
 
         // Z-matrix Stuff
         std::vector<std::string> zmat(ngpr);
@@ -371,7 +373,7 @@ void Trainingsetbuilder::calculateRandomTrainingSet() {
                 // Build the g09 input file for the high level of theory
                 //g09::buildZmatInputg09(nrpg,input,params.hlt,"force",types,wxyz,0,1,1);
                 //std::cout << "Build Cartesian Input" << std::endl;
-                g09::buildCartesianInputg09(ngpr,input,HOT,"",itype,tcart,multip,charge,1);
+                g09::buildCartesianInputg09(ngpr,input,HOT,"SCF="+SCF,itype,tcart,multip,charge,1);
                 //g09::buildZmatInputg09(ngpr,input,params.getParameter<std::string>("HOT"),"force",zmat,1,0,1);
                 //g09::buildZmatInputg09(ngpr,input,params.getParameter<std::string>("HOT"),"SCF(QC,nosymm) force",zmat,1,0,1);
 
@@ -625,13 +627,7 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
     // This is passed to each thread and contain unique seeds for each
     ParallelSeedGenerator seedGen(MaxT);
 
-    /* initialize random seed: */
-    srand (time(NULL));
-
-    std::vector<unsigned> ike;
-    for (unsigned i = 0; i < unsigned(MaxT); ++i) {
-        ike.push_back( rand() % 150000 + 100000 );
-    }
+    vector<unsigned> counts(MaxT,0);
 
     // Begin parallel region
     #pragma omp parallel default(shared) firstprivate(params,MaxT,atoms)
@@ -652,10 +648,8 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
             ++N;
         }
 
-        #pragma omp critical
-        {
-            cout << "THREAD: " << tid << " NSTEPS= " << N << std::endl;
-        }
+        unsigned Nreq (N);
+
         // Prepare the random number seeds
         std::vector<int> seedarray;
         seedGen.getThreadSeeds(tid,seedarray);
@@ -674,6 +668,9 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
 
         int charge (params.getParameter<int>("charge"));
         int multip (params.getParameter<int>("multip"));
+        int stsize (params.getParameter<int>("stsize"));
+        int Ntraj (params.getParameter<int>("Ntraj"));
+        int MaxKE (params.getParameter<int>("MaxKE"));
 
         // Initialize some containers
         std::string datapoint;
@@ -685,6 +682,7 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
         std::vector<std::string> itype(licrd.getitype());
 
         std::string HOT(params.getParameter<std::string>("LOT"));
+        std::string SCF(params.getParameter<std::string>("SCF"));
 
         // Z-matrix Stuff
         std::vector<std::string> zmat(ngpr);
@@ -695,78 +693,132 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
         std::vector< glm::vec3 > tcart(na);
         std::vector< glm::vec3 > tfrce(na);
 
-        // Define and open thread output
-        //std::ofstream tsoutt;
-        //tsoutt.open(outname[tid].str());
+        // Setup random int generator for KE
+        std::default_random_engine generator;
+        generator.seed(seedarray[0]);
+        std::uniform_int_distribution<int> randomKE(50000,MaxKE);
+
+        // Setup random seed generator
+        std::seed_seq seed = {seedarray[0],seedarray[1],seedarray[3]};
+
+        // Data Store
+        std::ofstream tdout;
+        stringstream _dfnamet;
+        _dfnamet << iptData->getParameter<std::string>("dfname") << "_thread" << tid;
+        tdout.open(_dfnamet.str().c_str(),std::ios_base::binary);
+
+        // Terminator
+        bool terminate(false);
+        unsigned Nrun(0);
+        unsigned counter(0);
 
         // Thread timers
         MicroTimer mttimer; // Time the whole loop
-
-        stringstream _add;
-        _add << " ADMP(MaxPoints=" << N << ",StepSize=1000,Seed=" << seedarray[0] << ",NKE=" << ike[tid] << ",FullSCF)";
-
-        licrd.generateRandomCoordsSpherical(tcart,rnGen);
-
-        // Begin MD calculation
         mttimer.start_point();
-        g09::buildCartesianInputg09(ngpr,input,HOT,_add.str(),itype,tcart,multip,charge,1);
-        g09::execg09(ngpr,input,outshl,chkoutshl);
+
+        while (!terminate) {
+            std::array<unsigned,1> seq;
+            seed.generate(seq.begin(),seq.end());
+
+            unsigned steps;
+            if (Nreq > Ntraj)
+                steps = Ntraj;
+            else
+                steps = Nreq;
+
+            stringstream _add;
+            _add << "SCF=" << SCF << " ADMP(MaxPoints=" << steps+1 << ",StepSize=" << stsize << ",Seed=" << seq[0] << ",NKE=" << randomKE(generator) << ",FullSCF)";
+
+            licrd.generateRandomCoordsSpherical(tcart,rnGen);
+
+            // Begin MD calculation
+            ++Nrun;
+            g09::buildCartesianInputg09(ngpr,input,HOT,_add.str(),itype,tcart,multip,charge,1);
+            g09::execg09(ngpr,input,outshl,chkoutshl);
+
+            // Containers
+            std::vector<double>   energy;
+            std::vector<glm::vec3> coords;
+
+            energy.reserve(N);
+            coords.reserve(N*atoms);
+
+            // Get data from output
+            g09::admpcrdenergyFinder(outshl[0],coords,energy);
+
+            //stringstream outname;
+            //outname << "output-" << _dfnamet.str() << "-traj" << Nrun;
+            //ofstream ofile(outname.str().c_str());
+            //ofile << outshl[0];
+            //ofile.close();
+
+            if (chkoutshl[0]) {
+                if (!energy.empty())
+                    energy.pop_back();
+
+                if (!energy.empty())
+                    energy.pop_back();
+            }
+
+            // Save data in file
+            double bohr(0.529177249);
+            for (unsigned i = 1; i < energy.size(); ++i) {
+                std::stringstream _datap;
+                _datap.setf(ios::scientific,ios::floatfield);
+                for (unsigned j = 0; j < atoms; ++j) {
+                    _datap << setprecision(8) << bohr*coords[j + i * atoms].x << ","
+                                                << bohr*coords[j + i * atoms].y << ","
+                                                << bohr*coords[j + i * atoms].z << ",";
+                }
+                _datap << setprecision(11) << energy[i] << ",";
+
+                _datap << counter << ",";
+                _datap << tid << ",";
+                _datap << i-1 << ",";
+                _datap << setprecision(11) << abs(energy[i]-energy[i-1]) << ",";
+                tdout << _datap.str() << endl;
+                ++counter;
+            }
+
+            counts[tid] += energy.size()-1;
+
+            if ( Nreq - (energy.size()-1) != 0 ) {
+                Nreq = Nreq - (energy.size()-1);
+            } else {
+                terminate = true;
+            }
+
+            #pragma omp master
+            {
+                unsigned sum(0);
+                for (auto& i : counts)
+                    sum+=i;
+                cout << "Calculated Points: " << sum << endl;
+            }
+
+        }
+
         mttimer.end_point();
 
-        // Close the threads output
-        //tsoutt.close();
+        tdout.close();
 
         // Wait for the whole team to finish
-        #pragma omp barrier
-
         // Print stats for each thread in the team
         #pragma omp critical
         {
             std::cout << "\n|----Thread " << tid << " info----|" << std::endl;
-
-            //if (!chkoutshl[0]) {
-                std::vector<double>    energy;
-                std::vector<glm::vec3> coords;
-
-                energy.reserve(N);
-                coords.reserve(N*atoms);
-
-                g09::admpcrdenergyFinder(outshl[0],coords,energy);
-
-                std::ofstream tdout;
-                stringstream _dfnamet;
-                _dfnamet << iptData->getParameter<std::string>("dfname") << "_thread" << tid;
-                tdout.open(_dfnamet.str().c_str(),std::ios_base::binary);
-
-                double bohr(0.529177249);
-                for (unsigned i = 0; i < energy.size(); ++i) {
-                std::stringstream _datap;
-                _datap.setf(ios::scientific,ios::floatfield);
-                    for (unsigned j = 0; j < atoms; ++j) {
-                        _datap << setprecision(8) << bohr*coords[j + i * atoms].x << ","
-                                                  << bohr*coords[j + i * atoms].y << ","
-                                                  << bohr*coords[j + i * atoms].z << ",";
-                    }
-                    _datap << setprecision(11) << energy[i] << ",";
-                    tdout << _datap.str() << endl;
-                }
-
-                allenergy.insert(allenergy.end(),energy.begin(),energy.end());
-                allcoords.insert(allcoords.end(),coords.begin(),coords.end());
-
-                std::ofstream tsout;
-                stringstream _gauout;
-                _gauout << iptData->getParameter<std::string>("dfname") << "_output-" << tid << ".dat";
-                tsout.open(_gauout.str().c_str(),std::ios_base::binary);
-                tsout << outshl[0];
-                tsout.close();
-            //}
-
             mttimer.print_generic_to_cout(std::string("Total"));
-            std::cout << "Gaussian failure: " << chkoutshl[0] << std::endl;
+            std::cout << "Total Gaussian Traj: " << Nrun << std::endl;
             std::cout << "|---------------------|\n" << std::endl;
         }
+
+        #pragma omp barrier
     }
+
+    unsigned sum(0);
+    for (auto& i : counts)
+        sum+=i;
+    cout << "Calculated Points: " << sum << endl;
 
     std::cout << std::endl;
 
@@ -774,27 +826,28 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
     std::ofstream tsout;
     std::string dfname(iptData->getParameter<std::string>("dfname"));
     tsout.open(dfname.c_str(),std::ios_base::binary);
-    //tsout << params.getParameter<std::string>("LOT") << std::endl;
-    //tsout << params.getParameter<std::string>("TSS") << std::endl;
-    //tsout << atoms << ","<< typescsv << std::endl;
+    tsout << params.getParameter<std::string>("LOT") << std::endl;
+    tsout << params.getParameter<std::string>("TSS") << std::endl;
+    tsout << atoms << ","<< typescsv << std::endl;
 
-    double bohr(0.529177249);
-    for (unsigned i = 0; i < allenergy.size(); ++i) {
-        std::stringstream _datap;
-        _datap.setf(ios::scientific,ios::floatfield);
-        for (unsigned j = 0; j < atoms; ++j) {
-            _datap << setprecision(8) << bohr*allcoords[j + i * atoms].x << ","
-                                      << bohr*allcoords[j + i * atoms].y << ","
-                                      << bohr*allcoords[j + i * atoms].z << ",";
-        }
-        _datap << setprecision(11) << allenergy[i] << ",";
-        tsout << _datap.str() << endl;
+    MicroTimer fttimer;
+    fttimer.start_point();
+    for (unsigned i = 0; i < (unsigned)MaxT; ++i) {
+        stringstream _dfnamet;
+        _dfnamet << iptData->getParameter<std::string>("dfname") << "_thread" << i;
+        // Move files individualy into the main output
+        std::ifstream infile(_dfnamet.str().c_str(),std::ios_base::binary);
+        std::cout << "Transferring file " << _dfnamet.str() << " -> " << dfname << std::endl;
+        tsout << infile.rdbuf();
+
+        // Remove old output once moved
+        std::stringstream rm;
+        rm << "rm " << _dfnamet.str();
+        //systls::exec(rm.str(),100);
     }
-
+    fttimer.end_point();
+    fttimer.print_generic_to_cout(std::string("File transfer"));
     tsout.close();
-
-    // Catch any errors from the threads
-    //if (!termstr.empty()) dnntsErrorcatch(termstr);
 
     std::cout << "\n------------------------------" << std::endl;
     std::cout << "Finished building training set" << std::endl;

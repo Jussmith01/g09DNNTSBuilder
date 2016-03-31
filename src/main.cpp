@@ -65,6 +65,30 @@ int main(int argc, char *argv[]) {
 
         // Calculate the training set
         mtimer.start_point();
+        tsb.calculateRandomTrainingSet();
+        mtimer.end_point();
+        mtimer.print_generic_to_cout(std::string("Calculate training set time --\n"));
+
+        // Calculate the validation set
+        mtimer.start_point();
+        tsb.calculateRandomValidationSet();
+        mtimer.end_point();
+        mtimer.print_generic_to_cout(std::string("Calculate validation set time --\n"));
+    } else if (iptdata.getParameter<std::string>("type").compare("moldyn")==0) {
+
+        unsigned threads ( iptdata.getParameter<unsigned>("threads") );
+        if (threads != 0) {
+            omp_set_num_threads( threads );
+        }
+
+        // Construct/prepare the class
+        mtimer.start_point();
+        Trainingsetbuilder tsb(&args,&iptdata);
+        mtimer.end_point();
+        mtimer.print_generic_to_cout(std::string("Training set builder class preparation time --\n"));
+
+        // Calculate the training set
+        mtimer.start_point();
         tsb.calculateMDTrainingSet();
         mtimer.end_point();
         mtimer.print_generic_to_cout(std::string("Calculate training set time --\n"));
@@ -74,7 +98,6 @@ int main(int argc, char *argv[]) {
         //tsb.calculateRandomValidationSet();
         mtimer.end_point();
         mtimer.print_generic_to_cout(std::string("Calculate validation set time --\n"));
-
     /** Scan Testing Set Building **/
     } else if (iptdata.getParameter<std::string>("type").compare("scan")==0) {
         unsigned threads ( iptdata.getParameter<unsigned>("threads") );

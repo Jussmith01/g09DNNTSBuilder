@@ -174,6 +174,13 @@ class inputParameters {
             dnntsErrorcatch(std::string("ERROR: For type random, randrange must be set in input."));
         }
 
+        if (getParameter<std::string>("type").compare("moldyn")==0 && !m_rand.empty()) {
+            std::cout << "\nRandom Range: " << std::endl;
+            std::cout << m_rand << std::endl;
+        } else if (getParameter<std::string>("type").compare("random")==0 && m_rand.empty()) {
+            dnntsErrorcatch(std::string("ERROR: For type random, randrange must be set in input."));
+        }
+
         if (getParameter<std::string>("type").compare("scan")==0 && !m_scan.empty()) {
             std::cout << "\nScan Range: " << std::endl;
             std::cout << m_scan << std::endl;
