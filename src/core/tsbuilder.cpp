@@ -11,6 +11,7 @@
 #include <regex>
 #include <cmath>
 #include <unordered_map>
+#include <time.h>
 
 // GLM Mathematics
 //#define GLM_FORCE_RADIANS
@@ -601,7 +602,7 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
     // Get the maximum number of threads
     int MaxT = omp_get_max_threads();
     // Setup loop output function
-    void (*loopPrinter)(int tid,int N,int i,int gcfail,int gdfail);
+    /*void (*loopPrinter)(int tid,int N,int i,int gcfail,int gdfail);
     switch ((int)routecout) {
     case 0: {
         cout << "Output setup for terminal writing." << endl;
@@ -616,23 +617,24 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
         loopPrinter = &print_for_file;
         break;
     }
-    }
+    }*/
 
-    // Prepare private thread output filenames
-    vector<stringstream> outname(MaxT);
-    vector<stringstream>::iterator it;
-    for (it = outname.begin(); it != outname.end(); it++)
-        *it << iptData->getParameter<string>("dfname") << "_thread" << it - outname.begin();
+    std::vector<double>    allenergy;
+    std::vector<glm::vec3> allcoords;
 
     // This is passed to each thread and contain unique seeds for each
     ParallelSeedGenerator seedGen(MaxT);
 
-    // This is the termination string. If an error is caught it
-    // saves it here and the threads then exit.
-    string termstr("");
+    /* initialize random seed: */
+    srand (time(NULL));
+
+    std::vector<unsigned> ike;
+    for (unsigned i = 0; i < unsigned(MaxT); ++i) {
+        ike.push_back( rand() % 150000 + 100000 );
+    }
 
     // Begin parallel region
-    #pragma omp parallel default(shared) firstprivate(params,MaxT)
+    #pragma omp parallel default(shared) firstprivate(params,MaxT,atoms)
     {
         // Thread safe copy of the internal coords calculator
         itrnl::RandomCartesian licrd = rcrd;
@@ -650,6 +652,10 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
             ++N;
         }
 
+        #pragma omp critical
+        {
+            cout << "THREAD: " << tid << " NSTEPS= " << N << std::endl;
+        }
         // Prepare the random number seeds
         std::vector<int> seedarray;
         seedGen.getThreadSeeds(tid,seedarray);
@@ -662,9 +668,9 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
         std::vector<glm::vec3> wxyz(na*ngpr);
 
         // Initialize counters
-        int i(0); // Loop counter
-        int gcf(0); // Gaussian Convergence Fail counter
-        int gdf(0); // Geometry distance failure
+        //int i(0); // Loop counter
+        //int gcf(0); // Gaussian Convergence Fail counter
+        //int gdf(0); // Geometry distance failure
 
         int charge (params.getParameter<int>("charge"));
         int multip (params.getParameter<int>("multip"));
@@ -672,7 +678,6 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
         // Initialize some containers
         std::string datapoint;
         std::string input;
-        std::vector<std::string> outsll(ngpr);
         std::vector<bool> chkoutsll(ngpr);
         std::vector<std::string> outshl(ngpr);
         std::vector<bool> chkoutshl(ngpr);
@@ -691,29 +696,25 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
         std::vector< glm::vec3 > tfrce(na);
 
         // Define and open thread output
-        std::ofstream tsoutt;
-        tsoutt.open(outname[tid].str());
+        //std::ofstream tsoutt;
+        //tsoutt.open(outname[tid].str());
 
         // Thread timers
         MicroTimer mttimer; // Time the whole loop
-        MicroTimer mrtimer; // Time the random structure generation
-        MicroTimer mgtimer; // Time the gaussian 09 runs
-        //MicroTimer mgtimer; // Time the gaussian 09 runs
-        MicroTimer mstimer; // Time the string generation
 
-        // Begin main loop
+        stringstream _add;
+        _add << " ADMP(MaxPoints=" << N << ",StepSize=1000,Seed=" << seedarray[0] << ",NKE=" << ike[tid] << ",FullSCF)";
+
+        licrd.generateRandomCoordsSpherical(tcart,rnGen);
+
+        // Begin MD calculation
         mttimer.start_point();
-
+        g09::buildCartesianInputg09(ngpr,input,HOT,_add.str(),itype,tcart,multip,charge,1);
+        g09::execg09(ngpr,input,outshl,chkoutshl);
         mttimer.end_point();
 
-        // Final print, shows 100%
-        #pragma omp critical
-        {
-            loopPrinter(tid,1,1,gcf,gdf);
-        }
-
         // Close the threads output
-        tsoutt.close();
+        //tsoutt.close();
 
         // Wait for the whole team to finish
         #pragma omp barrier
@@ -722,12 +723,47 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
         #pragma omp critical
         {
             std::cout << "\n|----Thread " << tid << " info----|" << std::endl;
+
+            //if (!chkoutshl[0]) {
+                std::vector<double>    energy;
+                std::vector<glm::vec3> coords;
+
+                energy.reserve(N);
+                coords.reserve(N*atoms);
+
+                g09::admpcrdenergyFinder(outshl[0],coords,energy);
+
+                std::ofstream tdout;
+                stringstream _dfnamet;
+                _dfnamet << iptData->getParameter<std::string>("dfname") << "_thread" << tid;
+                tdout.open(_dfnamet.str().c_str(),std::ios_base::binary);
+
+                double bohr(0.529177249);
+                for (unsigned i = 0; i < energy.size(); ++i) {
+                std::stringstream _datap;
+                _datap.setf(ios::scientific,ios::floatfield);
+                    for (unsigned j = 0; j < atoms; ++j) {
+                        _datap << setprecision(8) << bohr*coords[j + i * atoms].x << ","
+                                                  << bohr*coords[j + i * atoms].y << ","
+                                                  << bohr*coords[j + i * atoms].z << ",";
+                    }
+                    _datap << setprecision(11) << energy[i] << ",";
+                    tdout << _datap.str() << endl;
+                }
+
+                allenergy.insert(allenergy.end(),energy.begin(),energy.end());
+                allcoords.insert(allcoords.end(),coords.begin(),coords.end());
+
+                std::ofstream tsout;
+                stringstream _gauout;
+                _gauout << iptData->getParameter<std::string>("dfname") << "_output-" << tid << ".dat";
+                tsout.open(_gauout.str().c_str(),std::ios_base::binary);
+                tsout << outshl[0];
+                tsout.close();
+            //}
+
             mttimer.print_generic_to_cout(std::string("Total"));
-            mrtimer.print_generic_to_cout(std::string("Struc. Gen."));
-            mgtimer.print_generic_to_cout(std::string("Gau. 09."));
-            mstimer.print_generic_to_cout(std::string("CSV Gen."));
-            std::cout << "Number of gaussian convergence failures: " << gcf << std::endl;
-            std::cout << "Number of geometry distance check failures: " << gcf << std::endl;
+            std::cout << "Gaussian failure: " << chkoutshl[0] << std::endl;
             std::cout << "|---------------------|\n" << std::endl;
         }
     }
@@ -735,35 +771,30 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
     std::cout << std::endl;
 
     // Combine all threads output
-    MicroTimer fttimer;
     std::ofstream tsout;
     std::string dfname(iptData->getParameter<std::string>("dfname"));
     tsout.open(dfname.c_str(),std::ios_base::binary);
+    //tsout << params.getParameter<std::string>("LOT") << std::endl;
+    //tsout << params.getParameter<std::string>("TSS") << std::endl;
+    //tsout << atoms << ","<< typescsv << std::endl;
 
-    tsout << params.getParameter<std::string>("LOT") << std::endl;
-    tsout << params.getParameter<std::string>("TSS") << std::endl;
-    tsout << atoms << ","<< typescsv << std::endl;
-
-    fttimer.start_point();
-    std::vector<std::stringstream>::iterator nameit;
-    for (nameit = outname.begin(); nameit != outname.end(); nameit++) {
-        // Move files individualy into the main output
-        std::ifstream infile((*nameit).str().c_str(),std::ios_base::binary);
-        std::cout << "Transferring file " << (*nameit).str() << " -> " << dfname << std::endl;
-        tsout << infile.rdbuf();
-
-        // Remove old output once moved
-        std::stringstream rm;
-        rm << "rm " << (*nameit).str();
-        //systls::exec(rm.str(),100);
+    double bohr(0.529177249);
+    for (unsigned i = 0; i < allenergy.size(); ++i) {
+        std::stringstream _datap;
+        _datap.setf(ios::scientific,ios::floatfield);
+        for (unsigned j = 0; j < atoms; ++j) {
+            _datap << setprecision(8) << bohr*allcoords[j + i * atoms].x << ","
+                                      << bohr*allcoords[j + i * atoms].y << ","
+                                      << bohr*allcoords[j + i * atoms].z << ",";
+        }
+        _datap << setprecision(11) << allenergy[i] << ",";
+        tsout << _datap.str() << endl;
     }
-    fttimer.end_point();
-    fttimer.print_generic_to_cout(std::string("File transfer"));
 
     tsout.close();
 
     // Catch any errors from the threads
-    if (!termstr.empty()) dnntsErrorcatch(termstr);
+    //if (!termstr.empty()) dnntsErrorcatch(termstr);
 
     std::cout << "\n------------------------------" << std::endl;
     std::cout << "Finished building training set" << std::endl;

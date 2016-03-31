@@ -45,38 +45,79 @@ inline void forceFinder(const std::string &filename,std::vector<glm::vec3> &tfrc
     ///return force_csv.str();
 };
 
+inline std::string fftcf(const std::string& value) {
+    using namespace std;
+    string tmp( value );
+    size_t pos( tmp.find("D") );
+
+    //cout << "POS: " << pos << endl;
+
+    tmp.replace(pos,1,"E");
+
+    return tmp;
+}
+
 /*----------------------------------------
 
  Get input coordinates from a Gaussian
  Output String
 
 ------------------------------------------*/
-inline void admpcrdenergyFinder(const std::string &output,std::vector<glm::vec3> &totalcartesians,std::vector<float> &totalenergies) {
+inline void admpcrdenergyFinder(const std::string &output,std::vector<glm::vec3> &totalcartesians,std::vector<double> &totalenergies) {
     using namespace std;
 
     regex pattern_energy( "\\s*SCF Done:\\s*E\\(.*\\)\\s*=\\s*([^\\s]+)\\s*A\\.U\\." );
-    regex pattern_crdblk( " Cartesian coordinates:([\\s\\S]+)\\s*MW Cartesian velocity:" );
+    regex pattern_crdblk( " Cartesian coordinates:\\n((?:\\sI=\\s*\\d+\\s*X=\\s*[^\\s]+\\s*Y=\\s*[^\\s]+\\s*Z=\\s*[^\\s]+\\n)+)" );
     regex pattern_crd(" I=\\s*\\d+\\s*X=\\s*([^\\s]+)\\s*Y=\\s*([^\\s]+)\\s*Z=\\s*([^\\s]+)");
 
-    string coordstr;
-    smatch sm;
-    if ( regex_search ( output, sm, pattern_opt ) ) {
-        coordstr = sm.str(1);
-    } else {
-        cout << "Coordinate Pattern Not Found in ipcoordinateFinder!" << endl;
-    }
+    /*if ( !regex_search ( output, sm, pattern_crdblk ) ) {
+        cout << "Coordinate Pattern Not Found in admpcrdenergyFinder!" << endl;
+    }*/
 
-    unsigned atcnt(0);
-    if (regex_search(coordstr,pattern_crd)) {
-        sregex_iterator items(coordstr.begin(),coordstr.end(),pattern_crd);
+    cout.setf(ios::scientific,ios::floatfield);
+    unsigned cnt(0);
+    if (regex_search(output,pattern_energy)) {
+        sregex_iterator items(output.begin(),output.end(),pattern_energy);
         sregex_iterator end;
         for (; items != end; ++items) {
-            tcart[atcnt].x = atof(items->str(1).c_str());
-            tcart[atcnt].y = atof(items->str(2).c_str());
-            tcart[atcnt].z = atof(items->str(3).c_str());
-            //cout << "[" << tcart[atcnt].x << "," << tcart[atcnt].y << "," << tcart[atcnt].z << "]\n";
-            ++atcnt;
+            if (cnt != 0) {
+                totalenergies.push_back(atof(items->str(1).c_str()));
+                cout << setprecision(8) << "Total Energy: " << totalenergies.back() << endl;
+            }
+            ++cnt;
         }
+    } else {
+        cout << "Energy Pattern Not Found in admpcrdenergyFinder!" << endl;
+    }
+
+    cnt = 0;
+    string wkstr;
+    if (regex_search(output,pattern_crdblk)) {
+        sregex_iterator items(output.begin(),output.end(),pattern_crdblk);
+        sregex_iterator end;
+
+        for (; items != end; ++items) {
+            if (cnt != 0) {
+                wkstr = items->str(1);
+                //cout << wkstr << endl;
+                if (regex_search(wkstr,pattern_crd)) {
+                    sregex_iterator crds(wkstr.begin(),wkstr.end(),pattern_crd);
+                    sregex_iterator end;
+                    for (; crds != end; ++crds) {
+                        //cout << "   " << fftcf( crds->str(1) ) << " " <<  fftcf( crds->str(2) ) << " " <<  fftcf( crds->str(3) ) << endl;
+
+                        //cout << "   " << atof(fftcf( crds->str(1) ).c_str()) << " " <<  atof(fftcf( crds->str(2) ).c_str()) << " " <<  atof(fftcf( crds->str(3) ).c_str()) << endl;
+                        totalcartesians.push_back(glm::vec3(atof(fftcf( crds->str(1) ).c_str())
+                                                           ,atof(fftcf( crds->str(2) ).c_str())
+                                                           ,atof(fftcf( crds->str(3) ).c_str())));
+                        cout << " Coord: " << totalcartesians.back().x << " " << totalcartesians.back().y << " " << totalcartesians.back().z << " " << endl;
+                    }
+                }
+            }
+            ++cnt;
+        }
+    } else {
+        cout << "Coordinate Pattern Not Found in admpcrdenergyFinder!" << endl;
     }
 };
 
@@ -274,7 +315,7 @@ inline void buildCartesianInputg09(int nrpg,std::string &input,std::string lot,s
         std::stringstream tmpipt;
         tmpipt.setf( std::ios::scientific, std::ios::floatfield );
         tmpipt << "\n%NProcShared=" << nproc << "\n";
-        tmpipt << "#p " << lot << " " << additional << "\n\n";
+        tmpipt << "# " << lot << " " << additional << "\n\n";
         tmpipt << "COMMENT LINE\n\n";
         tmpipt << charge << "  " << mult << "\n";
 
