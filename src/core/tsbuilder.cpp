@@ -751,11 +751,11 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
             // Get data from output
             g09::admpcrdenergyFinder(outshl[0],coords,energy);
 
-            //stringstream outname;
-            //outname << "output-" << _dfnamet.str() << "-traj" << Nrun;
-            //ofstream ofile(outname.str().c_str());
-            //ofile << outshl[0];
-            //ofile.close();
+            stringstream outname;
+            outname << "output-" << _dfnamet.str() << "-traj" << Nrun;
+            ofstream ofile(outname.str().c_str());
+            ofile << outshl[0];
+            ofile.close();
 
             if (chkoutshl[0]) {
                 if (!energy.empty())

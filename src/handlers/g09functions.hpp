@@ -67,6 +67,7 @@ inline void admpcrdenergyFinder(const std::string &output,std::vector<glm::vec3>
     using namespace std;
 
     regex pattern_energy( "\\s*SCF Done:\\s*E\\(.*\\)\\s*=\\s*([^\\s]+)\\s*[Aa]\\.[Uu]\\." );
+    //regex pattern_crdblk( "\\sOptimization completed\\.\\n[\\s\\S]+Input orientation:\\n[\\s\\S].+\\n.+\\n.+\\n.+\\n((?:\\s+\\d+\\s+\\d+\\s+\\d+\\s+[^\\s]+\\s+[^\\s]+\\s+[^\\s]+\\n)+)" );
     regex pattern_crdblk( " Cartesian coordinates:\\n((?:\\sI=\\s*\\d+\\s*X=\\s*[^\\s]+\\s*Y=\\s*[^\\s]+\\s*Z=\\s*[^\\s]+\\n)+)" );
     regex pattern_crd(" I=\\s*\\d+\\s*X=\\s*([^\\s]+)\\s*Y=\\s*([^\\s]+)\\s*Z=\\s*([^\\s]+)");
 
@@ -132,9 +133,9 @@ inline void ipcoordinateFinder(const std::string &output,std::vector<glm::vec3> 
 
     regex pattern_opt;
     if (!fail) {
-        pattern_opt = "Optimization completed\\.\\n[\\s\\S]+Input orientation:([\\s\\S]+)\\s*Distance matrix";
+        pattern_opt = "\\s(?:Optimization completed)\\.\\n[\\s\\S]+(?:Input orientation:)\\s+.+\\s+.+\\s+.+\\s+.+((?:\\s+\\d+\\s+\\d+\\s+\\d+\\s+[^\\s]+\\s+[^\\s]+\\s+[^\\s]+\\s)+)";
     } else {
-        pattern_opt = "Optimization stopped\\.\\n[\\s\\S]+Input orientation:([\\s\\S]+)\\s*Distance matrix";
+        pattern_opt = "\\s(?:Optimization stopped)\\.\\n[\\s\\S]+(?:Input orientation:)\\s+.+\\s+.+\\s+.+\\s+.+((?:\\s+\\d+\\s+\\d+\\s+\\d+\\s+[^\\s]+\\s+[^\\s]+\\s+[^\\s]+\\s)+)";
     }
     regex pattern_crd("\\s+\\d+\\s+\\d+\\s+\\d+\\s+([+-]*\\d+\\.\\d+)\\s+([+-]*\\d+\\.\\d+)\\s+([+-]*\\d+\\.\\d+)");
 
