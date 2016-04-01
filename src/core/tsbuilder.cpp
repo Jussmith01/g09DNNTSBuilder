@@ -527,7 +527,7 @@ void Trainingsetbuilder::calculateRandomTrainingSet() {
         // Remove old output once moved
         std::stringstream rm;
         rm << "rm " << (*nameit).str();
-        //systls::exec(rm.str(),100);
+        systls::exec(rm.str(),100);
     }
     fttimer.end_point();
     fttimer.print_generic_to_cout(std::string("File transfer"));
@@ -690,23 +690,29 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
         std::vector<std::string> cord(ngpr);
 
         // Cartesian and force temp storage
-        std::vector< glm::vec3 > tcart(na);
-        std::vector< glm::vec3 > tfrce(na);
+        vector< glm::vec3 > tcart(na);
+        vector< glm::vec3 > tfrce(na);
 
         // Setup random int generator for KE
-        std::default_random_engine generator;
+        default_random_engine generator;
         generator.seed(seedarray[0]);
-        std::uniform_int_distribution<int> randomKE(50000,MaxKE);
-        std::uniform_int_distribution<int> seedgen(1000000000,0);
+        uniform_int_distribution<int> randomKE(50000,MaxKE);
+        uniform_int_distribution<int> seedgen(1000000000,0);
 
         // Setup random seed generator
-        std::seed_seq seed = {seedarray[0],seedarray[1],seedarray[3]};
+        seed_seq seed = {seedarray[0],seedarray[1],seedarray[3]};
 
         // Data Store
-        std::ofstream tdout;
         stringstream _dfnamet;
         _dfnamet << iptData->getParameter<std::string>("dfname") << "_thread" << tid;
+        ofstream tdout;
         tdout.open(_dfnamet.str().c_str(),std::ios_base::binary);
+
+        // Traj Visual Store
+        stringstream _trname;
+        _trname << iptData->getParameter<std::string>("dfname") << "_trajdata" << tid;
+        ofstream trout;
+        trout.open(_trname.str().c_str(),std::ios_base::binary);
 
         // Terminator
         bool terminate(false);
@@ -762,6 +768,7 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
             // Save data in file
             double bohr(0.529177249);
             for (unsigned i = 1; i < energy.size(); ++i) {
+                // Save Datapoint information
                 std::stringstream _datap;
                 _datap.setf(ios::scientific,ios::floatfield);
                 for (unsigned j = 0; j < atoms; ++j) {
@@ -770,12 +777,16 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
                                                 << bohr*coords[j + i * atoms].z << ",";
                 }
                 _datap << setprecision(11) << energy[i] << ",";
-
-                _datap << counter << ",";
-                _datap << tid << ",";
-                _datap << i-1 << ",";
-                _datap << setprecision(11) << abs(energy[i]-energy[i-1]) << ",";
                 tdout << _datap.str() << endl;
+
+                // Save Trajector visualtion data
+                std::stringstream _datat;
+                _datat << counter << ",";
+                _datat << tid << ",";
+                _datat << i-1 << ",";
+                _datat << setprecision(11) << energy[i] << ",";
+                _datat << setprecision(11) << abs(energy[i]-energy[i-1]) << ",";
+                trout << _datat.str() << endl;
                 ++counter;
             }
 
@@ -800,6 +811,7 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
         mttimer.end_point();
 
         tdout.close();
+        trout.close();
 
         // Wait for the whole team to finish
         // Print stats for each thread in the team
@@ -842,7 +854,7 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
         // Remove old output once moved
         std::stringstream rm;
         rm << "rm " << _dfnamet.str();
-        //systls::exec(rm.str(),100);
+        systls::exec(rm.str(),100);
     }
     fttimer.end_point();
     fttimer.print_generic_to_cout(std::string("File transfer"));
