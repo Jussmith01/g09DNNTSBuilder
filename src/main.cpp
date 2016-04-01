@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
 
         // Calculate the validation set
         mtimer.start_point();
-        //tsb.calculateRandomValidationSet();
+        tsb.calculateMDValidationSet();
         mtimer.end_point();
         mtimer.print_generic_to_cout(std::string("Calculate validation set time --\n"));
     /** Scan Testing Set Building **/

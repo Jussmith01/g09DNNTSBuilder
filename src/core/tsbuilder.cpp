@@ -697,6 +697,7 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
         std::default_random_engine generator;
         generator.seed(seedarray[0]);
         std::uniform_int_distribution<int> randomKE(50000,MaxKE);
+        std::uniform_int_distribution<int> seedgen(1000000000,0);
 
         // Setup random seed generator
         std::seed_seq seed = {seedarray[0],seedarray[1],seedarray[3]};
@@ -717,17 +718,15 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
         mttimer.start_point();
 
         while (!terminate) {
-            std::array<unsigned,1> seq;
-            seed.generate(seq.begin(),seq.end());
 
             unsigned steps;
-            if (Nreq > Ntraj)
+            if (Nreq > (unsigned)Ntraj)
                 steps = Ntraj;
             else
                 steps = Nreq;
 
             stringstream _add;
-            _add << "SCF=" << SCF << " ADMP(MaxPoints=" << steps+1 << ",StepSize=" << stsize << ",Seed=" << seq[0] << ",NKE=" << randomKE(generator) << ",FullSCF)";
+            _add << "SCF=" << SCF << " ADMP(MaxPoints=" << steps+1 << ",StepSize=" << stsize << ",Seed=" << seedgen(generator) << ",NKE=" << randomKE(generator) << ",FullSCF)";
 
             licrd.generateRandomCoordsSpherical(tcart,rnGen);
 
