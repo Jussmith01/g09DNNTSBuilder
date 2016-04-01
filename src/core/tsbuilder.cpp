@@ -781,6 +781,7 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
 
                 // Save Trajector visualtion data
                 std::stringstream _datat;
+                _datat.setf(ios::scientific,ios::floatfield);
                 _datat << counter << ",";
                 _datat << tid << ",";
                 _datat << i-1 << ",";
