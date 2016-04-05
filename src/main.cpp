@@ -64,7 +64,11 @@ int main(int argc, char *argv[]) {
         mtimer.print_generic_to_cout(std::string("Training set builder class preparation time --\n"));
 
         if (iptdata.getParameter<unsigned>("optimize") == 1) {
+            MicroTimer opttimer;
+            opttimer.start_point();
             tsb.optimizeStoredStructure();
+            opttimer.end_point();
+            opttimer.print_generic_to_cout(std::string("Optimization time --\n"));
         } else {
             std::cout << "Optimization Turned Off." << std::endl;
 
@@ -94,7 +98,11 @@ int main(int argc, char *argv[]) {
         mtimer.print_generic_to_cout(std::string("Training set builder class preparation time --\n"));
 
         if (iptdata.getParameter<unsigned>("optimize") == 1) {
+            MicroTimer opttimer;
+            opttimer.start_point();
             tsb.optimizeStoredStructure();
+            opttimer.end_point();
+            opttimer.print_generic_to_cout(std::string("Optimization time --\n"));
         } else {
             std::cout << "Optimization Turned Off." << std::endl;
 
