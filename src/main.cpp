@@ -63,17 +63,23 @@ int main(int argc, char *argv[]) {
         mtimer.end_point();
         mtimer.print_generic_to_cout(std::string("Training set builder class preparation time --\n"));
 
-        // Calculate the training set
-        mtimer.start_point();
-        tsb.calculateRandomTrainingSet();
-        mtimer.end_point();
-        mtimer.print_generic_to_cout(std::string("Calculate training set time --\n"));
+        if (iptdata.getParameter<unsigned>("optimize") == 1) {
+            tsb.optimizeStoredStructure();
+        } else {
+            std::cout << "Optimization Turned Off." << std::endl;
 
-        // Calculate the validation set
-        mtimer.start_point();
-        tsb.calculateRandomValidationSet();
-        mtimer.end_point();
-        mtimer.print_generic_to_cout(std::string("Calculate validation set time --\n"));
+            // Calculate the training set
+            mtimer.start_point();
+            tsb.calculateRandomTrainingSet();
+            mtimer.end_point();
+            mtimer.print_generic_to_cout(std::string("Calculate training set time --\n"));
+
+            // Calculate the validation set
+            mtimer.start_point();
+            tsb.calculateRandomValidationSet();
+            mtimer.end_point();
+            mtimer.print_generic_to_cout(std::string("Calculate validation set time --\n"));
+        }
     } else if (iptdata.getParameter<std::string>("type").compare("moldyn")==0) {
 
         unsigned threads ( iptdata.getParameter<unsigned>("threads") );
@@ -87,17 +93,23 @@ int main(int argc, char *argv[]) {
         mtimer.end_point();
         mtimer.print_generic_to_cout(std::string("Training set builder class preparation time --\n"));
 
-        // Calculate the training set
-        mtimer.start_point();
-        tsb.calculateMDTrainingSet();
-        mtimer.end_point();
-        mtimer.print_generic_to_cout(std::string("Calculate training set time --\n"));
+        if (iptdata.getParameter<unsigned>("optimize") == 1) {
+            tsb.optimizeStoredStructure();
+        } else {
+            std::cout << "Optimization Turned Off." << std::endl;
 
-        // Calculate the validation set
-        mtimer.start_point();
-        tsb.calculateMDValidationSet();
-        mtimer.end_point();
-        mtimer.print_generic_to_cout(std::string("Calculate validation set time --\n"));
+            // Calculate the training set
+            mtimer.start_point();
+            tsb.calculateMDTrainingSet();
+            mtimer.end_point();
+            mtimer.print_generic_to_cout(std::string("Calculate training set time --\n"));
+
+            // Calculate the validation set
+            mtimer.start_point();
+            tsb.calculateMDValidationSet();
+            mtimer.end_point();
+            mtimer.print_generic_to_cout(std::string("Calculate validation set time --\n"));
+        }
     /** Scan Testing Set Building **/
     } else if (iptdata.getParameter<std::string>("type").compare("scan")==0) {
         unsigned threads ( iptdata.getParameter<unsigned>("threads") );

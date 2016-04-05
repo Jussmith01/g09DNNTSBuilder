@@ -157,6 +157,8 @@ void Trainingsetbuilder::optimizeStoredStructure() {
     rcrd.setixyz(xyz);
     cout << "------------------------------------" << endl;
     cout << "Optimization Complete.\n" << endl;
+    iptData->storeInputWithOptCoords(xyz,true);
+    cout << "Updated coordinates saved to the input file.\n" << endl;
 }
 
 /*--------Loop Printer Functions---------

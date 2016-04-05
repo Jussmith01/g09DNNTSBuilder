@@ -97,7 +97,7 @@ class inputParameters {
         string instr( (istreambuf_iterator<char>(ipt)), istreambuf_iterator<char>() );
         ipt.close();
 
-        regex pattern_parametr("([^\\s]+)\\s*=\\s*([^\\s]+)\\s*\\#*",regex_constants::optimize);
+        regex pattern_parametr("([^\\s]+)\\s*=\\s*([^\\s^#^!]+)\\s*",regex_constants::optimize);
         if (regex_search(instr,pattern_parametr)) {
             sregex_iterator items(instr.begin(),instr.end(),pattern_parametr);
             sregex_iterator end;
@@ -306,6 +306,49 @@ public:
         }
 
         return true;
+    };
+
+    //------------------------------------
+    //      Get coordinates String
+    //------------------------------------
+    void storeInputWithOptCoords(const std::vector<glm::vec3> &coords, bool disableopt) {
+        using namespace std;
+
+        regex pattern_crds("(\\s*[A-Z][a-z]*\\s+[A-Z][a-z]*\\d*\\s+)([-,+]*\\d+\\.\\d+\\s+[-,+]*\\d+\\.\\d+\\s+[-,+]*\\d+\\.\\d+)(\\s+[-,+]*\\d+\\.\\d+)");
+        regex pattern_opt("(optimize=)\\s*(\\d)(\\s*)");
+
+        stringstream newfile;
+        ifstream iptfile(getParameter<string>("ifname").c_str());
+
+        string line;
+        unsigned cidx(0);
+        while (getline(iptfile,line)) {
+
+            if (regex_match(line,pattern_crds)) {
+                stringstream ss;
+                ss.setf( ios::fixed, ios::floatfield );
+                ss << "$1" << setprecision(7) << setw(10) << coords[cidx].x << " " << coords[cidx].y << " " << coords[cidx].z << " $3";
+                line = regex_replace (line,pattern_crds,ss.str().c_str());
+                ++cidx;
+            }
+
+            if (disableopt && regex_match(line,pattern_opt)) {
+                newfile << regex_replace (line,pattern_opt,"$1 0 !Coordinates pre-opt") << endl;
+            } else {
+                newfile << line << endl;
+            }
+        }
+
+        iptfile.close();
+
+        //cout << newfile.str();
+
+        ofstream newiptfile (getParameter<string>("ifname").c_str());
+
+        newiptfile << newfile.str();
+
+        newiptfile.close();
+
     };
 
     //------------------------------------

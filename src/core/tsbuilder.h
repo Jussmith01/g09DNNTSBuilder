@@ -39,13 +39,6 @@ public:
         cout << "-----Beginning Data Set Computation-----\n" << endl;
 
         cout << "Using " << omp_get_max_threads() << " threads.\n" << endl;
-
-        if (iptData->getParameter<unsigned>("optimize") == 1) {
-            optimizeStoredStructure();
-        } else {
-            cout << "Optimization Turned Off." << endl;
-        }
-
     };
 
     // Destructor
