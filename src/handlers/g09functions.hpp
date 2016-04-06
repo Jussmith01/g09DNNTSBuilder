@@ -144,6 +144,9 @@ inline void ipcoordinateFinder(const std::string &output,std::vector<glm::vec3> 
     if ( regex_search ( output, sm, pattern_opt ) ) {
         coordstr = sm.str(1);
     } else {
+        ofstream _failout("cannotfindcrds.log");
+        _failout << output;
+        _failout.close();
         cout << "Coordinate Pattern Not Found in ipcoordinateFinder!" << endl;
     }
 

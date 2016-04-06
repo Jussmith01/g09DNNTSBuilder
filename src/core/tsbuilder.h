@@ -44,6 +44,13 @@ public:
     // Destructor
     ~Trainingsetbuilder() {};
 
+    bool optimizer(std::string LOT
+                  ,std::string g09Args
+                  ,const std::vector<std::string> &itype
+                  ,std::vector<glm::vec3> &xyz
+                  ,unsigned charge
+                  ,unsigned multip);
+
     void optimizeStoredStructure();
 
     // This holds the main loop for calculating the training set

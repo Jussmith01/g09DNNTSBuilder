@@ -38,26 +38,22 @@
 // Class Definition
 #include "tsbuilder.h"
 
+/*      Optimizer
 
-void Trainingsetbuilder::optimizeStoredStructure() {
+    Returns true if opt succeeded
+
+*/
+bool Trainingsetbuilder::optimizer(std::string LOT
+                                   ,std::string g09Args
+                                   ,const std::vector<std::string> &itype
+                                   ,std::vector<glm::vec3> &xyz
+                                   ,unsigned charge
+                                   ,unsigned multip) {
+
     using namespace std;
 
-    vector<  glm::vec3 > xyz  (rcrd.getixyz());
-    vector<string> itype(rcrd.getitype());
-
-    // Store working parameters
-    ipt::inputParameters params(*iptData);
-
-    // Some local variables
-    int charge (params.getParameter<int>("charge"));
-    int multip (params.getParameter<int>("multip"));
-    string LOT("AM1");
     string input;
-
-    //-----------------------------
-    // Low level minimization
-    //-----------------------------
-    g09::buildCartesianInputg09(1,input,LOT,"opt(cartesian,Loose,MaxStep=100,MaxCycles=1000) Guess(Huckel)",itype,xyz,multip,charge,omp_get_max_threads());
+    g09::buildCartesianInputg09(1,input,LOT,g09Args,itype,xyz,multip,charge,omp_get_max_threads());
 
     vector<string>    output(1);
     vector< bool > chkoutshl(1);
@@ -69,88 +65,90 @@ void Trainingsetbuilder::optimizeStoredStructure() {
         cout << LOT << " optimization complete... continuing." << endl;
         g09::ipcoordinateFinder(output[0],xyz,false);
     } else {
-        cout << "Low level optimization failed... continuing." << endl;
+        cout << LOT << " optimization failed... continuing." << endl;
+        g09::ipcoordinateFinder(output[0],xyz,true);
     }
 
-    //-----------------------------
-    // Medium level minimization
-    //-----------------------------
+    return !chkoutshl[0];
+}
 
-    string MOT("HF/6-31g*");
+void Trainingsetbuilder::optimizeStoredStructure() {
+    using namespace std;
 
-    g09::buildCartesianInputg09(1,input,MOT,"opt(cartesian,MaxStep=100,MaxCycles=1000) Guess(Huckel)",itype,xyz,multip,charge,omp_get_max_threads());
+    // Store working parameters
+    ipt::inputParameters params(*iptData);
 
-    output.clear(); output.resize(1);
-    cout << "Optimizing Structure at " << MOT << " level..." << endl;
-    g09::execg09(1,input,output,chkoutshl);
+    vector<  glm::vec3 > xyz  (rcrd.getixyz());
+    vector<string> itype(rcrd.getitype());
+    string HOT(params.getParameter<string>("LOT"));
+    stringstream _args;
 
-    if ( !chkoutshl[0] ) {
-        cout << MOT << " optimization complete... continuing." << endl;
-        g09::ipcoordinateFinder(output[0],xyz,false);
-    } else {
-        cout << "Mid level optimization failed... continuing." << endl;
-    }
+    // Some local variables
+    int charge (params.getParameter<int>("charge"));
+    int multip (params.getParameter<int>("multip"));
 
-    //-----------------------------
-    // Medium-High level minimization
-    //-----------------------------
+    _args.clear();
+    _args << "opt";
+    if ( !optimizer(HOT,_args.str(),itype,xyz,charge,multip) ) {
 
-    string MHOT("MP2/6-31g*");
+        string iguess("Huckel");
 
-    g09::buildCartesianInputg09(1,input,MHOT,"opt(cartesian,MaxStep=100,MaxCycles=1000) Guess(Huckel)",itype,xyz,multip,charge,omp_get_max_threads());
+        //-----------------------------
+        // Low level minimization
+        //-----------------------------
+        _args.clear();
+        _args << "opt(cartesian,MaxStep=100,MaxCycles=1000) Guess(" << iguess << ")";
+        optimizer("AM1",_args.str(),itype,xyz,charge,multip);
 
-    output.clear(); output.resize(1);
-    cout << "Optimizing Structure at " << MHOT << " level..." << endl;
-    g09::execg09(1,input,output,chkoutshl);
+        //-----------------------------
+        // Medium level minimization
+        //-----------------------------
+        _args.clear();
+        _args << "opt(cartesian,MaxStep=100,MaxCycles=1000) Guess(" << iguess << ")";
+        optimizer("HF/6-31g*",_args.str(),itype,xyz,charge,multip);
 
-    if ( !chkoutshl[0] ) {
-        cout << MHOT << " optimization complete... continuing." << endl;
-        g09::ipcoordinateFinder(output[0],xyz,false);
-    } else {
-        cout << "Mid-High level optimization failed... continuing." << endl;
-    }
+        //-----------------------------
+        // Medium-High level minimization
+        //-----------------------------
+        _args.clear();
+        _args << "opt(cartesian,MaxStep=100,MaxCycles=1000) Guess(" << iguess << ")";
+        optimizer("MP2/6-31g*",_args.str(),itype,xyz,charge,multip);
 
-    //-----------------------------
-    // High level minimization
-    //-----------------------------
-    bool mini(false);
-    unsigned cnt(0);
-    string conv("");
-    while (!mini) {
-        string HOT(params.getParameter<string>("LOT"));
-        //string HOT("B3LYP/6-31g*");
-        g09::buildCartesianInputg09(1,input,HOT,"opt(cartesian"+conv+",MaxStep=500,MaxCycles=1000) Guess(Huckel)",itype,xyz,multip,charge,omp_get_max_threads());
+        //-----------------------------
+        // High level minimization
+        //-----------------------------
 
-        output.clear(); output.resize(1);
-        cout << "Optimizing Structure at " << HOT << " level..." << endl;
-        g09::execg09(1,input,output,chkoutshl);
 
-        if ( chkoutshl[0] ) {
-            ++cnt;
+        bool mini(false);
+        unsigned cnt(0);
+        string conv("");
+        while (!mini) {
 
-            if (cnt == 2) {
-                cout << "Optimization Fail!! -- Aborting\n";
-                ofstream optfailout("optfailout.log");
-                optfailout << output[0];
-                optfailout.close();
-                dnntsErrorcatch(string("Optimization Failed!!"));
+            _args.clear();
+            _args << "opt(cartesian" << conv << ",MaxStep=500,MaxCycles=1000) Guess(Huckel)";
+
+            if ( !optimizer(HOT,_args.str(),itype,xyz,charge,multip) ) {
+                ++cnt;
+
+                if (cnt == 2) {
+                    cout << "Optimization Failed!! -- Aborting\n";
+                    dnntsErrorcatch(string("Optimization Failed!!"));
+                }
+
+                string conv(",Loose");
+                cout << "Optimization Failed, switching to loose convergence and trying again..." << endl;
+            } else {
+                mini = true;
             }
-
-            g09::ipcoordinateFinder(output[0],xyz,true);
-            string conv(",Loose");
-            cout << "Optimization Failed, switching to loose convergence and trying again..." << endl;
-        } else {
-            g09::ipcoordinateFinder(output[0],xyz,false);
-            mini = true;
         }
-    }
 
+    };
 
     // Print Results
     cout << "------------------------------------" << endl;
     cout << " Optimized Coordinates:\n" << endl;
     cout.setf( ios::fixed, ios::floatfield );
-    for (unsigned i=0;i<xyz.size();++i) {
+    for (unsigned i=0; i<xyz.size(); ++i) {
         cout << " " << itype[i] << setprecision(7) << " " << setw(10) << xyz[i].x << " " << setw(10) << xyz[i].y << " " << setw(10) << xyz[i].z << endl;
     }
 
@@ -415,7 +413,7 @@ void Trainingsetbuilder::calculateRandomTrainingSet() {
                 //std::cout << "Store Data" << std::endl;
                 for (unsigned j=0; j<ngpr; ++j) {
                     //if (!chkoutshl[j] && !chkoutsll[j]) {
-                        //std::cout << "|***************************************|" << std::endl;
+                    //std::cout << "|***************************************|" << std::endl;
                     if (!chkoutshl[j]) {
                         //std::vector<glm::vec3> xyzind(ixyz.size());
                         //std::memcpy(&xyzind[0],&wxyz[j*ixyz.size()],ixyz.size()*sizeof(glm::vec3));
@@ -436,7 +434,9 @@ void Trainingsetbuilder::calculateRandomTrainingSet() {
                         //itrnl::iCoordToXYZ(icord[j],tcart);
                         //icord[j] = simtls::xyzToCSV(tcart);
 
-                        if (m_checkRandomStructure(tcart)) {++gdf;}
+                        if (m_checkRandomStructure(tcart)) {
+                            ++gdf;
+                        }
                         //datapoint.append( simtls::calculateDistMatrixCSV(tcart) );
                         //std::stringstream ss;
                         //ss << tcart.size();
@@ -775,8 +775,8 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
                 _datap.setf(ios::scientific,ios::floatfield);
                 for (unsigned j = 0; j < atoms; ++j) {
                     _datap << setprecision(8) << bohr*coords[j + i * atoms].x << ","
-                                                << bohr*coords[j + i * atoms].y << ","
-                                                << bohr*coords[j + i * atoms].z << ",";
+                           << bohr*coords[j + i * atoms].y << ","
+                           << bohr*coords[j + i * atoms].z << ",";
                 }
                 _datap << setprecision(11) << energy[i] << ",";
                 tdout << _datap.str() << endl;

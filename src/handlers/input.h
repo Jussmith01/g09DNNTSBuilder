@@ -327,7 +327,7 @@ public:
             if (regex_match(line,pattern_crds)) {
                 stringstream ss;
                 ss.setf( ios::fixed, ios::floatfield );
-                ss << "$1" << setprecision(7) << setw(10) << coords[cidx].x << " " << coords[cidx].y << " " << coords[cidx].z << " $3";
+                ss << "$1 " << setprecision(7) << coords[cidx].x << " " << coords[cidx].y << " " << coords[cidx].z << " $3";
                 line = regex_replace (line,pattern_crds,ss.str().c_str());
                 ++cidx;
             }
