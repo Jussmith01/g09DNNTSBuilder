@@ -356,6 +356,7 @@ void Trainingsetbuilder::calculateRandomTrainingSet() {
 
                     itrnl::iCoordToZMat(icord[j],zmat[j]); // Convert ICoord to Zmat
                 }*/
+
                 mrtimer.end_point();
 
                 /*------Gaussian 09 Running-------
@@ -393,7 +394,7 @@ void Trainingsetbuilder::calculateRandomTrainingSet() {
                 //std::cout << "Execg09" << std::endl;
                 g09::execg09(ngpr,input,outshl,chkoutshl);
 
-                std::stringstream sso;
+                /*std::stringstream sso;
                 sso << "g09output." << tid << "." << i << ".dat";
                 std::ofstream ostream(sso.str().c_str());
                 if (ostream) {
@@ -401,7 +402,7 @@ void Trainingsetbuilder::calculateRandomTrainingSet() {
                 } else {
                     std::cerr << "bad dustin" << std::endl;
                 }
-                ostream.close();
+                ostream.close();*/
 
                 mgtimer.end_point();
 
@@ -593,10 +594,6 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
 
     // Store working parameters
     ipt::inputParameters params(*iptData);
-    //params.printdata();
-
-    // Local pointer to icrd for passing a private class to threads
-    //rcrd.printdata();
 
     string typescsv( simtls::stringsToCSV(rcrd.getotype()) );
     unsigned    atoms   ( rcrd.getNa() );
@@ -605,23 +602,6 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
 
     // Get the maximum number of threads
     int MaxT = omp_get_max_threads();
-    // Setup loop output function
-    /*void (*loopPrinter)(int tid,int N,int i,int gcfail,int gdfail);
-    switch ((int)routecout) {
-    case 0: {
-        cout << "Output setup for terminal writing." << endl;
-        loopPrinter = &print_for_cout;
-        for (int i=0; i<MaxT; ++i) {
-            cout << endl;
-        }
-        break;
-    }
-    case 1: {
-        cout << "Output setup for file writing." << endl;
-        loopPrinter = &print_for_file;
-        break;
-    }
-    }*/
 
     std::vector<double>    allenergy;
     std::vector<glm::vec3> allcoords;
