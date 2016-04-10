@@ -12,6 +12,7 @@
 #include <cmath>
 #include <unordered_map>
 #include <time.h>
+#include <chrono>
 #include <random>
 
 // GLM Mathematics
@@ -252,7 +253,20 @@ void Trainingsetbuilder::calculateRandomTrainingSet() {
         *it << iptData->getParameter<string>("dfname") << "_thread" << it - outname.begin();
 
     // This is passed to each thread and contain unique seeds for each
-    ParallelSeedGenerator seedGen(MaxT);
+    //ParallelSeedGenerator seedGen(MaxT);
+
+    /* Setup thread seeds */
+    unsigned seed1 ( std::chrono::system_clock::now().time_since_epoch().count() );
+    unsigned seed2 ( clock() );
+
+    std::seed_seq seedgen = {seed1,seed2};
+    std::vector<unsigned> sequence (MaxT);
+
+    seedgen.generate(sequence.begin(),sequence.end());
+
+    for (unsigned i = 0; i < sequence.size(); ++i) {
+        cout << "Random Seed for thread (" << i << "): " << sequence[i] << endl;
+    }
 
     // This is the termination string. If an error is caught it
     // saves it here and the threads then exit.
@@ -277,12 +291,16 @@ void Trainingsetbuilder::calculateRandomTrainingSet() {
             ++N;
         }
 
+        std::mt19937 rgenerator (sequence[tid]);
+
         // Prepare the random number seeds
-        std::vector<int> seedarray;
-        seedGen.getThreadSeeds(tid,seedarray);
+        //std::vector<int> seedarray;
+        //seedGen.getThreadSeeds(tid,seedarray);
 
         // Prepare the random number generator
-        RandomReal rnGen(seedarray,params.getParameter<std::string>("rdm"));
+
+
+        //RandomReal rnGen(seedarray,params.getParameter<std::string>("rdm"));
 
         // Allocate space for new coordinates
         unsigned na = licrd.getNa();//params.getCoordinatesStr().size();
@@ -342,20 +360,9 @@ void Trainingsetbuilder::calculateRandomTrainingSet() {
                 mrtimer.start_point();
 
                 //std::cout << "Generate Random Coords" << std::endl;
-                licrd.generateRandomCoordsSpherical(tcart,rnGen);
+                licrd.generateRandomCoordsSpherical(tcart,rgenerator);
                 //licrd.generateRandomCoordsBox(tcart,rnGen);
                 //licrd.generateRandomCoordsDistmat(tcart,rnGen);
-
-                /*for (unsigned j=0;j<ngpr;++j) {
-                    if (licrd.getRandRng().isset()) {
-                        icord[j] = licrd.generateRandomICoords(rnGen); // Generate Random Structure
-                        //icord[j] = licrd.getInitialICoords();
-                    } else if (licrd.getScanRng().isset()) {
-                        icord[j] = licrd.generateScanICoords(); // Generate Random Structure
-                    } else {termstr = std::string("Random or scan range is not set!");}
-
-                    itrnl::iCoordToZMat(icord[j],zmat[j]); // Convert ICoord to Zmat
-                }*/
 
                 mrtimer.end_point();
 
@@ -364,45 +371,11 @@ void Trainingsetbuilder::calculateRandomTrainingSet() {
                 ---------------------------------*/
                 mgtimer.start_point();
 
-                // Build the g09 input file for the low level of theory
-                //g09::buildZmatInputg09(nrpg,input,params.llt,"force",types,wxyz,0,1,1);
-                //g09::buildZmatInputg09(nrpg,input,params.llt,"force",zmat,0,1,1);
-
-                // Execute the g09 run, if failure occures we restart the loop
-                //g09::execg09(nrpg,input,outsll,chkoutsll);
-
                 // Build the g09 input file for the high level of theory
-                //g09::buildZmatInputg09(nrpg,input,params.hlt,"force",types,wxyz,0,1,1);
-                //std::cout << "Build Cartesian Input" << std::endl;
                 g09::buildCartesianInputg09(ngpr,input,HOT,"SCF="+SCF,itype,tcart,multip,charge,1);
-                //g09::buildZmatInputg09(ngpr,input,params.getParameter<std::string>("HOT"),"force",zmat,1,0,1);
-                //g09::buildZmatInputg09(ngpr,input,params.getParameter<std::string>("HOT"),"SCF(QC,nosymm) force",zmat,1,0,1);
-
-                /*std::stringstream ssi;
-                ssi << "g09input." << tid << "." << i << ".dat";
-
-                std::ofstream instream(ssi.str().c_str());
-                if (instream) {
-                    instream << input;
-                } else {
-                    std::cerr << "bad justin" << std::endl;
-                }
-                instream.close();*/
 
                 // Execute the g09 run, if failure occures we restart the loop
-                //std::cout << input << std::endl;
-                //std::cout << "Execg09" << std::endl;
                 g09::execg09(ngpr,input,outshl,chkoutshl);
-
-                /*std::stringstream sso;
-                sso << "g09output." << tid << "." << i << ".dat";
-                std::ofstream ostream(sso.str().c_str());
-                if (ostream) {
-                    ostream << outshl[0];
-                } else {
-                    std::cerr << "bad dustin" << std::endl;
-                }
-                ostream.close();*/
 
                 mgtimer.end_point();
 
@@ -716,7 +689,8 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
             stringstream _add;
             _add << "SCF=" << SCF << " ADMP(MaxPoints=" << steps+1 << ",StepSize=" << stsize << ",Seed=" << seedgen(generator) << ",NKE=" << randomKE(generator) << ",FullSCF)";
 
-            licrd.generateRandomCoordsSpherical(tcart,rnGen);
+            std::cout << "THIS CLASS IS CURRENTLY NOT WORKING!!!!" << std::endl;
+            //licrd.generateRandomCoordsSpherical(tcart,rnGen);
 
             // Begin MD calculation
             ++Nrun;
