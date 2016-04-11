@@ -319,6 +319,7 @@ inline void buildCartesianInputg09(int nrpg,std::string &input,std::string lot,s
         std::stringstream tmpipt;
         tmpipt.setf( std::ios::scientific, std::ios::floatfield );
         tmpipt << "\n%NProcShared=" << nproc << "\n";
+        tmpipt << "%Mem=" << 500 << "mb" << "\n";
         tmpipt << "# " << lot << " " << additional << "\n\n";
         tmpipt << "COMMENT LINE\n\n";
         tmpipt << charge << "  " << mult << "\n";

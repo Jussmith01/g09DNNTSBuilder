@@ -431,6 +431,10 @@ void Trainingsetbuilder::calculateRandomTrainingSet() {
                         datapoint.clear();
                         ++i;
                     } else {
+                        #pragma omp master
+                        {
+                            std::cout << input << std::endl;
+                        }
                         ++gcf;
                     }
                     //std::cout << "COMPLETE" << std::endl;
