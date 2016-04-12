@@ -82,67 +82,68 @@ void Trainingsetbuilder::optimizeStoredStructure() {
     vector<  glm::vec3 > xyz  (rcrd.getixyz());
     vector<string> itype(rcrd.getitype());
     string HOT(params.getParameter<string>("LOT"));
-    stringstream _args;
 
     // Some local variables
     int charge (params.getParameter<int>("charge"));
     int multip (params.getParameter<int>("multip"));
 
-    _args.clear();
+    stringstream _args;
     _args << "opt";
+    cout << " ARGUMENT1: " << _args.str() << endl;
     if ( !optimizer(HOT,_args.str(),itype,xyz,charge,multip) ) {
+        if ( !optimizer(HOT,_args.str(),itype,xyz,charge,multip) ) {
+            string iguess("Huckel");
 
-        string iguess("Huckel");
+            //-----------------------------
+            // Low level minimization
+            //-----------------------------
+            stringstream _args2;
+            cout << " ARGUMENT2: " << _args2.str() << endl;
+            _args2 << "opt(cartesian,MaxStep=100,MaxCycles=1000) Guess(" << iguess << ")";
+            optimizer("AM1",_args2.str(),itype,xyz,charge,multip);
 
-        //-----------------------------
-        // Low level minimization
-        //-----------------------------
-        _args.clear();
-        _args << "opt(cartesian,MaxStep=100,MaxCycles=1000) Guess(" << iguess << ")";
-        optimizer("AM1",_args.str(),itype,xyz,charge,multip);
+            //-----------------------------
+            // Medium level minimization
+            //-----------------------------
+            stringstream _args3;
+            _args3 << "opt(cartesian,MaxStep=100,MaxCycles=1000) Guess(" << iguess << ")";
+            optimizer("HF/6-31g*",_args3.str(),itype,xyz,charge,multip);
 
-        //-----------------------------
-        // Medium level minimization
-        //-----------------------------
-        _args.clear();
-        _args << "opt(cartesian,MaxStep=100,MaxCycles=1000) Guess(" << iguess << ")";
-        optimizer("HF/6-31g*",_args.str(),itype,xyz,charge,multip);
+            //-----------------------------
+            // Medium-High level minimization
+            //-----------------------------
+            stringstream _args4;
+            _args4 << "opt(cartesian,MaxStep=100,MaxCycles=1000) Guess(" << iguess << ")";
+            optimizer("MP2/6-31g*",_args4.str(),itype,xyz,charge,multip);
 
-        //-----------------------------
-        // Medium-High level minimization
-        //-----------------------------
-        _args.clear();
-        _args << "opt(cartesian,MaxStep=100,MaxCycles=1000) Guess(" << iguess << ")";
-        optimizer("MP2/6-31g*",_args.str(),itype,xyz,charge,multip);
-
-        //-----------------------------
-        // High level minimization
-        //-----------------------------
+            //-----------------------------
+            // High level minimization
+            //-----------------------------
 
 
-        bool mini(false);
-        unsigned cnt(0);
-        string conv("");
-        while (!mini) {
+            bool mini(false);
+            unsigned cnt(0);
+            string conv("");
+            while (!mini) {
 
-            _args.clear();
-            _args << "opt(cartesian" << conv << ",MaxStep=500,MaxCycles=1000) Guess(Huckel)";
+                stringstream _args5;
+                _args5 << "opt(cartesian" << conv << ",MaxStep=500,MaxCycles=1000) Guess(Huckel)";
 
-            if ( !optimizer(HOT,_args.str(),itype,xyz,charge,multip) ) {
-                ++cnt;
+                if ( !optimizer(HOT,_args5.str(),itype,xyz,charge,multip) ) {
+                    ++cnt;
 
-                if (cnt == 2) {
-                    cout << "Optimization Failed!! -- Aborting\n";
-                    dnntsErrorcatch(string("Optimization Failed!!"));
+                    if (cnt == 2) {
+                        cout << "Optimization Failed!! -- Aborting\n";
+                        dnntsErrorcatch(string("Optimization Failed!!"));
+                    }
+
+                    string conv(",Loose");
+                    cout << "Optimization Failed, switching to loose convergence and trying again..." << endl;
+                } else {
+                    mini = true;
                 }
-
-                string conv(",Loose");
-                cout << "Optimization Failed, switching to loose convergence and trying again..." << endl;
-            } else {
-                mini = true;
             }
         }
-
     };
 
     // Print Results
