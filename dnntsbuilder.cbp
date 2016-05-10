@@ -71,6 +71,8 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
+		<Unit filename="src/core/tsnmbuilder.cpp" />
+		<Unit filename="src/core/tsnmbuilder.h" />
 		<Unit filename="src/errorhandlers.h">
 			<Option target="Debug" />
 			<Option target="Release" />
