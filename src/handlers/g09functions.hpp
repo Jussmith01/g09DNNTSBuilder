@@ -57,6 +57,40 @@ inline std::string fftcf(const std::string& value) {
     return tmp;
 }
 
+/*-----------------------------------------------
+
+ Get Normal Coords from a Gaussian Output String
+
+------------------------------------------------*/
+inline void normalcoordinateFinder(const std::string &output,std::vector<glm::vec3> &nc,std::vector<float> &fc) {
+    using namespace std;
+
+    regex pattern_nc("normal coordinates:\\s*\\n([^(?:T)]+)");
+    smatch sm;
+    regex_match(output,sm,pattern_nc);
+
+    cout << sm.size() << endl;
+
+    /*while (getline(stream, line)) {
+        if (regex_search(line, pattern_force)) {
+            string line2;
+            int ln(-2);
+            while (getline(stream, line2) && !regex_search(line2, pattern_cart)) {
+                sregex_iterator pos(line2.begin(), line2.end(), pattern_value);
+                sregex_iterator end;
+                int ax(0);
+                for (; pos != end; ++pos) {
+                    tfrce[ln][ax] = atof(pos->str(0).c_str());
+                    //std::cout << tfrce[ln][ax] << ",";
+                    ++ax;
+                }
+                //std::cout << ln << std::endl;
+                ++ln;
+            }
+        }
+    }*/
+};
+
 /*----------------------------------------
 
  Get input coordinates from a Gaussian

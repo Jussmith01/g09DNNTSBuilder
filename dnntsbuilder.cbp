@@ -52,8 +52,8 @@
 		<Linker>
 			<Add library="gomp" />
 			<Add library="InternalCoordinateAPI" />
-			<Add directory="../InternalCoordinatesAPI/bin/lib" />
-			<Add directory="../InternalCoordinateAPI/bin/lib" />
+			<Add directory="../InternalCoordinatesAPI/lib" />
+			<Add directory="../InternalCoordinateAPI/lib" />
 		</Linker>
 		<Unit filename="src/core/ssbuilder.cpp">
 			<Option target="Debug" />
