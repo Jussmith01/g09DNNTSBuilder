@@ -1,13 +1,14 @@
-#ifndef __TSBUILDER_INCLUDE__
-#define __TSBUILDER_INCLUDE__
+#ifndef __TSNMBUILDER_INCLUDE__
+#define __TSNMBUILDER_INCLUDE__
 
 /*------------Training Set Builder-------------
 
 ----------------------------------------------*/
-class Trainingsetbuilder {
+class TrainingsetNormModebuilder {
     // Class for calculating input coordinates
     ipt::inputParameters *iptData;
-    itrnl::RandomCartesian rcrd;
+    itrnl::RandomStructureNormalMode rnmcrd;
+    //itrnl::RandomNormalMode nmcrd;
     FlagHandler *args;
 
     bool routecout;
@@ -17,9 +18,9 @@ class Trainingsetbuilder {
 
 public:
     // Constructor
-    Trainingsetbuilder (FlagHandler *args,ipt::inputParameters *iptData) :
+    TrainingsetNormModebuilder (FlagHandler *args,ipt::inputParameters *iptData) :
         iptData(iptData),
-        rcrd(iptData->getCoordinatesStr(),iptData->getConnStr(),iptData->getRandStr()),
+        rnmcrd(iptData->getCoordinatesStr(),iptData->getNormModeStr()),
         args(args),
         routecout(false) {
         using namespace std;
@@ -42,7 +43,7 @@ public:
     };
 
     // Destructor
-    ~Trainingsetbuilder() {};
+    ~TrainingsetNormModebuilder() {};
 
     bool optimizer(std::string LOT
                   ,std::string g09Args
@@ -51,16 +52,24 @@ public:
                   ,unsigned charge
                   ,unsigned multip);
 
+    bool normalmodecalc(std::string LOT
+                        ,std::string g09Args
+                        ,const std::vector<std::string> &itype
+                        ,const std::vector<glm::vec3> &xyz
+                        ,std::vector<std::vector<glm::vec3>> &nc
+                        ,std::vector<float> &fc
+                        ,unsigned charge
+                        ,unsigned multip);
+
     void optimizeStoredStructure();
 
+    void calculateNormalModes();
+
     // This holds the main loop for calculating the training set
-    void calculateRandomTrainingSet();
+    void calculateTrainingSet();
 
-    void calculateRandomValidationSet();
+    void calculateValidationSet();
 
-    void calculateMDTrainingSet();
-
-    void calculateMDValidationSet();
 };
 
 

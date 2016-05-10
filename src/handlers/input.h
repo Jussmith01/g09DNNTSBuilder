@@ -55,6 +55,7 @@ class inputParameters {
     std::string m_conn;
     std::string m_rand;
     std::string m_scan;
+    std::string m_norm;
 
     //------------------------------------
     //  Hash map to hold flags and values
@@ -127,6 +128,12 @@ class inputParameters {
             m_scan = sm.str(1);
         }
 
+        regex pattern_ncblock("\\$normalmodes.*\\n([^&]*)",regex_constants::optimize);
+        smatch nm;
+        if (regex_search(instr,sm,pattern_ncblock)) {
+            m_norm = sm.str(1);
+        }
+
         if ((m_rand.size() > 0 || m_rand.size() > 0) && m_conn.size() == 0 ) {
             dnntsErrorcatch(std::string("ERROR: If randrange or scanrange is set then connectivity must also be set."));
         }
@@ -186,6 +193,13 @@ class inputParameters {
             std::cout << m_scan << std::endl;
         } else if (getParameter<std::string>("type").compare("scan")==0 && m_scan.empty()) {
             dnntsErrorcatch(std::string("ERROR: For type scan, scanrange must be set in input."));
+        }
+
+        if (getParameter<std::string>("type").compare("nmrandom")==0 && !m_norm.empty()) {
+            std::cout << "\nScan Range: " << std::endl;
+            std::cout << m_norm << std::endl;
+        } else if (getParameter<std::string>("type").compare("nmrandom")==0 && m_norm.empty()) {
+            dnntsErrorcatch(std::string("ERROR: For type nmrandom, normalcoords must be set in input."));
         }
 
         std::cout << "|-------------------------------|" << std::endl;
@@ -314,8 +328,8 @@ public:
     void storeInputWithOptCoords(const std::vector<glm::vec3> &coords, bool disableopt) {
         using namespace std;
 
-        regex pattern_crds("(\\s*[A-Z][a-z]*\\s+[A-Z][a-z]*\\d*\\s+)([-,+]*\\d+\\.\\d+\\s+[-,+]*\\d+\\.\\d+\\s+[-,+]*\\d+\\.\\d+)(\\s+[-,+]*\\d+\\.\\d+)");
-        regex pattern_opt("(optimize=)\\s*(\\d)(\\s*)");
+        regex pattern_crds("(\\s*[A-Z][a-z]*\\s+[A-Z][a-z]*\\d*\\s+)([-,+]*\\d+\\.\\d+\\s+[-,+]*\\d+\\.\\d+\\s+[-,+]*\\d+\\.\\d+)(.*)");
+        regex pattern_opt("(optimize=)(.*)");
 
         stringstream newfile;
         ifstream iptfile(getParameter<string>("ifname").c_str());
@@ -332,7 +346,7 @@ public:
                 ++cidx;
             }
 
-            if (disableopt && regex_match(line,pattern_opt)) {
+            if (disableopt && regex_search(line,pattern_opt)) {
                 newfile << regex_replace (line,pattern_opt,"$1 0 !Coordinates pre-opt") << endl;
             } else {
                 newfile << line << endl;
@@ -344,9 +358,62 @@ public:
         //cout << newfile.str();
 
         ofstream newiptfile (getParameter<string>("ifname").c_str());
-
         newiptfile << newfile.str();
+        newiptfile.close();
+    };
 
+    //------------------------------------
+    //      Get coordinates String
+    //------------------------------------
+    void storeInputWithNormModes(const std::vector<std::vector<glm::vec3>> &nc,const std::vector<float> &fc, unsigned Na, bool disablefreq) {
+
+        using namespace std;
+
+        regex pattern_freq("(frequency=)(.*\\n)");
+        regex pattern_ncblock("(\\$normalmodes.*\\n)([^&]*)",regex_constants::optimize);
+
+        // Open File
+        string msfile(getParameter<std::string>("ifname"));
+        ifstream ipt(msfile.c_str(), ios::in | ios::binary);
+
+        if (!ipt) {
+            cout << "NO FILE!" << endl;
+            std::string __err(string("Cannot open file ") + msfile);
+            dnntsErrorcatch(__err);
+        }
+
+        // Load entire file into a string on memory
+        string instr( (istreambuf_iterator<char>(ipt)), istreambuf_iterator<char>() );
+        ipt.close();
+
+        string addnc;
+
+        if (regex_search(instr,pattern_ncblock)) {
+            stringstream ss;
+            ss.setf( ios::fixed, ios::floatfield );
+
+            ss << "$1";
+            for (unsigned i = 0; i < fc.size(); ++i) {
+                ss << "FRCCNST=" << fc[i] << " {\n";
+                for (unsigned j = 0; j < Na; ++j) {
+                    ss << setprecision(5) << " " << nc[j][i].x << " " << nc[j][i].y << " " << nc[j][i].z << endl;
+                }
+                ss << "}\n";
+            }
+            addnc = regex_replace (instr,pattern_ncblock,ss.str().c_str());
+        }
+
+        stringstream newfile;
+        if (disablefreq && regex_search(addnc,pattern_freq)) {
+            newfile << regex_replace (addnc,pattern_freq,"$1 0 !Freq pre-calc\n") << endl;
+        } else {
+            newfile << addnc << endl;
+        }
+
+        //cout << newfile.str() << endl;
+
+        ofstream newiptfile (getParameter<string>("ifname").c_str());
+        newiptfile << newfile.str();
         newiptfile.close();
 
     };
@@ -378,6 +445,13 @@ public:
     //------------------------------------
     const std::string& getScanStr() {
         return m_scan;
+    };
+
+    //------------------------------------
+    //     Get Scan Tranform String
+    //------------------------------------
+    const std::string& getNormModeStr() {
+        return m_norm;
     };
 };
 

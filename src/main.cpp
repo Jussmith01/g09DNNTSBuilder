@@ -30,6 +30,7 @@
 
 // Core
 #include "core/tsbuilder.h"
+#include "core/tsnmbuilder.h"
 #include "core/ssbuilder.h"
 
 int main(int argc, char *argv[]) {
@@ -115,6 +116,46 @@ int main(int argc, char *argv[]) {
             // Calculate the validation set
             mtimer.start_point();
             tsb.calculateMDValidationSet();
+            mtimer.end_point();
+            mtimer.print_generic_to_cout(std::string("Calculate validation set time --\n"));
+        }
+    } else if (iptdata.getParameter<std::string>("type").compare("nmrandom")==0) {
+
+        unsigned threads ( iptdata.getParameter<unsigned>("threads") );
+        if (threads != 0) {
+            omp_set_num_threads( threads );
+        }
+
+        // Construct/prepare the class
+        mtimer.start_point();
+        TrainingsetNormModebuilder tsnmb(&args,&iptdata);
+        mtimer.end_point();
+        mtimer.print_generic_to_cout(std::string("Training set builder class preparation time --\n"));
+
+        if (iptdata.getParameter<unsigned>("optimize") == 1 && iptdata.getParameter<unsigned>("frequency") == 1) {
+            MicroTimer opttimer;
+            opttimer.start_point();
+            tsnmb.optimizeStoredStructure();
+            opttimer.end_point();
+            opttimer.print_generic_to_cout(std::string("Optimization time --\n"));
+
+            MicroTimer frqtimer;
+            frqtimer.start_point();
+            tsnmb.calculateNormalModes();
+            frqtimer.end_point();
+            frqtimer.print_generic_to_cout(std::string("Normal Mode time --\n"));
+        } else {
+            std::cout << "Optimization Turned Off." << std::endl;
+
+            // Calculate the training set
+            mtimer.start_point();
+            tsnmb.calculateTrainingSet();
+            mtimer.end_point();
+            mtimer.print_generic_to_cout(std::string("Calculate training set time --\n"));
+
+            // Calculate the validation set
+            mtimer.start_point();
+            tsnmb.calculateValidationSet();
             mtimer.end_point();
             mtimer.print_generic_to_cout(std::string("Calculate validation set time --\n"));
         }

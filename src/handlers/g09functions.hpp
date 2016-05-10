@@ -62,33 +62,60 @@ inline std::string fftcf(const std::string& value) {
  Get Normal Coords from a Gaussian Output String
 
 ------------------------------------------------*/
-inline void normalcoordinateFinder(const std::string &output,std::vector<glm::vec3> &nc,std::vector<float> &fc) {
+inline void normalmodeFinder(const std::string &output,std::vector<std::vector<glm::vec3>> &nc,std::vector<float> &fc,unsigned Na) {
     using namespace std;
 
     regex pattern_nc("normal coordinates:\\s*\\n([^(?:T)]+)");
     smatch sm;
-    regex_match(output,sm,pattern_nc);
+    regex_search(output,sm,pattern_nc);
 
-    cout << sm.size() << endl;
+    //cout << "Match Found: " <<  sm.size() << endl;
+    //cout << sm[1] << endl;
 
-    /*while (getline(stream, line)) {
-        if (regex_search(line, pattern_force)) {
-            string line2;
-            int ln(-2);
-            while (getline(stream, line2) && !regex_search(line2, pattern_cart)) {
-                sregex_iterator pos(line2.begin(), line2.end(), pattern_value);
-                sregex_iterator end;
-                int ax(0);
-                for (; pos != end; ++pos) {
-                    tfrce[ln][ax] = atof(pos->str(0).c_str());
-                    //std::cout << tfrce[ln][ax] << ",";
-                    ++ax;
-                }
-                //std::cout << ln << std::endl;
-                ++ln;
+    string line;
+    stringstream data (sm[1]);
+
+    regex pattern_ncline("\\W+\\d+\\s+\\d+\\s+[-]?\\d+\\.\\d+");
+    regex pattern_fcline("\\WFrc consts\\W+--\\W+");
+    regex pattern_float("[-]?\\d+\\.\\d+");
+
+    nc.resize(Na);
+
+    unsigned aidx(0);
+    while (getline(data, line)) {
+        if (regex_search(line, pattern_ncline)) {
+            sregex_iterator pos(line.begin(), line.end(), pattern_float);
+            sregex_iterator end;
+            for (; pos != end; ++pos) {
+
+                float x = atof(pos->str(0).c_str());
+                ++pos;
+                float y = atof(pos->str(0).c_str());
+                ++pos;
+                float z = atof(pos->str(0).c_str());
+
+                nc[aidx].push_back( glm::vec3(x,y,z) );
+
+                //cout << "[" << x << "," << y << "," << z << "]" << endl;
+            }
+
+            ++aidx;
+        }
+
+        if (regex_search(line, pattern_fcline)) {
+            sregex_iterator pos(line.begin(), line.end(), pattern_float);
+            sregex_iterator end;
+            for (; pos != end; ++pos) {
+
+                float k = atof(pos->str(0).c_str());
+
+                fc.push_back( k );
+                aidx = 0;
+
+                //cout << "FRC = [" << k << "]" << endl;
             }
         }
-    }*/
+    }
 };
 
 /*----------------------------------------
@@ -143,8 +170,8 @@ inline void admpcrdenergyFinder(const std::string &output,std::vector<glm::vec3>
 
                         //cout << "   " << atof(fftcf( crds->str(1) ).c_str()) << " " <<  atof(fftcf( crds->str(2) ).c_str()) << " " <<  atof(fftcf( crds->str(3) ).c_str()) << endl;
                         totalcartesians.push_back(glm::vec3(atof(fftcf( crds->str(1) ).c_str())
-                                                           ,atof(fftcf( crds->str(2) ).c_str())
-                                                           ,atof(fftcf( crds->str(3) ).c_str())));
+                                                            ,atof(fftcf( crds->str(2) ).c_str())
+                                                            ,atof(fftcf( crds->str(3) ).c_str())));
                         //cout << " Coord: " << totalcartesians.back().x << " " << totalcartesians.back().y << " " << totalcartesians.back().z << " " << endl;
                     }
                 }
@@ -339,6 +366,7 @@ inline void execg09(int nrpg,const std::string &input,std::vector<std::string> &
     Note: type and xyz must be of same size
 ------------------------------------------*/
 inline void buildCartesianInputg09(int nrpg,std::string &input,std::string lot,std::string additional,const std::vector<std::string> &type,const std::vector<glm::vec3> &xyz,int mult,int charge,int nproc) {
+    using namespace std;
     // Number of coords per molecule
     int N = xyz.size()/nrpg;
 
