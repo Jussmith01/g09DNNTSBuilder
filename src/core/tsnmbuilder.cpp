@@ -266,6 +266,18 @@ void TrainingsetNormModebuilder::calculateValidationSet() {
     calculateTrainingSet();
 }
 
+/*--------Calculate Validation Set---------
+
+
+----------------------------------------*/
+void TrainingsetNormModebuilder::calculateTestSet() {
+
+    iptData->setParameter("dfname",iptData->getParameter<std::string>("edfname") );
+    iptData->setParameter("TSS",iptData->getParameter<std::string>("ESS") );
+
+    calculateTrainingSet();
+}
+
 /*--------Calculate Training Set---------
 
 This function contians the main loop for
@@ -282,6 +294,22 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
     ipt::inputParameters params(*iptData);
     //params.printdata();
 
+    // Get the maximum number of threads
+    int MaxT = omp_get_max_threads();
+
+    /* Setup thread seeds */
+    unsigned seed1 ( std::chrono::system_clock::now().time_since_epoch().count() );
+    unsigned seed2 ( clock() );
+
+    std::seed_seq seedgen = {seed1,seed2};
+    std::vector<unsigned> sequence (MaxT);
+
+    seedgen.generate(sequence.begin(),sequence.end());
+
+    for (unsigned i = 0; i < sequence.size(); ++i) {
+        cout << "Random Seed for thread (" << i << "): " << sequence[i] << endl;
+    }
+
     // Local pointer to icrd for passing a private class to threads
     //rnmcrd.printdata();
 
@@ -290,8 +318,6 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
 
     cout << "atoms: " << atoms << endl;
 
-    // Get the maximum number of threads
-    int MaxT = omp_get_max_threads();
     // Setup loop output function
     void (*loopPrinter)(int tid,int N,int i,int gcfail,int gdfail);
     switch ((int)routecout) {
@@ -318,19 +344,6 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
 
     // This is passed to each thread and contain unique seeds for each
     //ParallelSeedGenerator seedGen(MaxT);
-
-    /* Setup thread seeds */
-    unsigned seed1 ( std::chrono::system_clock::now().time_since_epoch().count() );
-    unsigned seed2 ( clock() );
-
-    std::seed_seq seedgen = {seed1,seed2};
-    std::vector<unsigned> sequence (MaxT);
-
-    seedgen.generate(sequence.begin(),sequence.end());
-
-    for (unsigned i = 0; i < sequence.size(); ++i) {
-        cout << "Random Seed for thread (" << i << "): " << sequence[i] << endl;
-    }
 
     // This is the termination string. If an error is caught it
     // saves it here and the threads then exit.
@@ -415,10 +428,7 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
                 // Generate the random structures
                 mrtimer.start_point();
 
-                //std::cout << "Generate Random Coords" << std::endl;
                 licrd.generateRandomCoords(tcart,temp,rgenerator);
-                //licrd.generateRandomCoordsBox(tcart,rnGen);
-                //licrd.generateRandomCoordsDistmat(tcart,rnGen);
 
                 mrtimer.end_point();
 
@@ -440,50 +450,20 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
                 ---------------------------------*/
                 mstimer.start_point();
                 // Append the data to the datapoint string
-                //std::cout << "Store Data" << std::endl;
                 for (unsigned j=0; j<ngpr; ++j) {
                     //if (!chkoutshl[j] && !chkoutsll[j]) {
                     //std::cout << "|***************************************|" << std::endl;
                     if (!chkoutshl[j]) {
-                        //std::vector<glm::vec3> xyzind(ixyz.size());
-                        //std::memcpy(&xyzind[0],&wxyz[j*ixyz.size()],ixyz.size()*sizeof(glm::vec3));
-
-                        //datapoint.append(licrd.getCSVStringWithIC(icord[j]));
-
-                        //datapoint.append(licrd.calculateCSVInternalCoordinates(xyzind));
-                        //datapoint.append(g09::ipcoordinateFinder(outsll[j],tcart));
-                        //datapoint.append(g09::ipcoordinateFinder(outsll[j],tcart));
-
-                        //g09::ipcoordinateFinder(outsll[j],tcart);
-                        //g09::forceFinder(outsll[j],tfrce);
-                        //datapoint.append(simtls::cartesianToStandardSpherical(0,1,2,tfrce,tcart));
-
-                        //g09::ipcoordinateFinder(outshl[j],tcart);
-                        //g09::forceFinder(outshl[j],tfrce);
-                        //g09::ipcoordinateFinder(outshl[j],tcart);
-                        //itrnl::iCoordToXYZ(icord[j],tcart);
-                        //icord[j] = simtls::xyzToCSV(tcart);
 
                         if (m_checkRandomStructure(tcart)) {
                             ++gdf;
                         }
-                        //datapoint.append( simtls::calculateDistMatrixCSV(tcart) );
-                        //std::stringstream ss;
-                        //ss << tcart.size();
 
-                        //datapoint.append( ss.str().c_str() );
-                        //datapoint.append( "," );
-                        //datapoint.append( typescsv );
                         datapoint.append( simtls::xyzToCSV(tcart) );
-                        //datapoint.append( itrnl::getCsvICoordStr(icord[j],"radians") );
-                        //datapoint.append( simtls::cartesianToStandardSpherical(0,1,2,tfrce,tcart) );
                         datapoint.append( g09::energyFinder(outshl[j]) );
-                        //datapoint.append(g09::forceFinder(outsll[j]));
-                        //datapoint.append(g09::forceFinder(outshl[j]));
 
                         // Save the data point to the threads private output file output
                         tsoutt << datapoint << std::endl;
-                        //std::cout << "DATAPOINT(" << i << "," << j << ")" << std::endl;
                         datapoint.clear();
                         ++i;
                     } else {

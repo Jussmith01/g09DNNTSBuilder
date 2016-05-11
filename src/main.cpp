@@ -84,6 +84,7 @@ int main(int argc, char *argv[]) {
             tsb.calculateRandomValidationSet();
             mtimer.end_point();
             mtimer.print_generic_to_cout(std::string("Calculate validation set time --\n"));
+
         }
     } else if (iptdata.getParameter<std::string>("type").compare("moldyn")==0) {
 
@@ -158,6 +159,12 @@ int main(int argc, char *argv[]) {
             tsnmb.calculateValidationSet();
             mtimer.end_point();
             mtimer.print_generic_to_cout(std::string("Calculate validation set time --\n"));
+
+            // Calculate the test set
+            mtimer.start_point();
+            tsnmb.calculateTestSet();
+            mtimer.end_point();
+            mtimer.print_generic_to_cout(std::string("Calculate test set time --\n"));
         }
     /** Scan Testing Set Building **/
     } else if (iptdata.getParameter<std::string>("type").compare("scan")==0) {

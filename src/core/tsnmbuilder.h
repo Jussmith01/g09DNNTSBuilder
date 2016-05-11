@@ -70,6 +70,7 @@ public:
 
     void calculateValidationSet();
 
+    void calculateTestSet();
 };
 
 
