@@ -1,12 +1,14 @@
-TSS=1000
+TSS=150
 VSS=0 
+ESS=0 
 LOT=UB3LYP/6-31g* 
 rdm=uniform
 type=nmrandom
 SCF=Tight
-Temp=10000.0
+Temp=1500.0
 dfname=gdb11_s01-0_train.dat 
 vdfname=gdb11_s01-0_valid.dat 
+edfname=gdb11_s01-0_test.dat 
 optimize= 0 !Coordinates pre-opt
 frequency= 0 !Freq pre-calc
 
