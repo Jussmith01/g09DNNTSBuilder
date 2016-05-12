@@ -187,6 +187,5 @@ int main(int argc, char *argv[]) {
         dnntsErrorcatch(std::string("ERROR: type parameter does not match any known instances."));
     }
 
-
     return 0;
 };
