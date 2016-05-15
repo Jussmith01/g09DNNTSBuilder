@@ -349,6 +349,8 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
     // saves it here and the threads then exit.
     string termstr("");
 
+    unsigned convfail(0);
+
     // Begin parallel region
     #pragma omp parallel default(shared) firstprivate(params,MaxT)
     {
@@ -428,7 +430,16 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
                 // Generate the random structures
                 mrtimer.start_point();
 
-                licrd.generateRandomCoords(tcart,temp,rgenerator);
+                bool gs(true);
+                while (gs) {
+                    licrd.generateRandomCoords(tcart,temp,rgenerator);
+
+                    if (m_checkRandomStructure(tcart)) {
+                        ++gdf;
+                    } else {
+                        gs = false;
+                    }
+                }
 
                 mrtimer.end_point();
 
@@ -454,10 +465,6 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
                     //if (!chkoutshl[j] && !chkoutsll[j]) {
                     //std::cout << "|***************************************|" << std::endl;
                     if (!chkoutshl[j]) {
-
-                        if (m_checkRandomStructure(tcart)) {
-                            ++gdf;
-                        }
 
                         datapoint.append( simtls::xyzToCSV(tcart) );
                         datapoint.append( g09::energyFinder(outshl[j]) );
@@ -509,18 +516,22 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
         // Print stats for each thread in the team
         #pragma omp critical
         {
+            convfail += gcf;
+
             std::cout << "\n|----Thread " << tid << " info----|" << std::endl;
             mttimer.print_generic_to_cout(std::string("Total"));
             mrtimer.print_generic_to_cout(std::string("Struc. Gen."));
             mgtimer.print_generic_to_cout(std::string("Gau. 09."));
             mstimer.print_generic_to_cout(std::string("CSV Gen."));
             std::cout << "Number of gaussian convergence failures: " << gcf << std::endl;
-            std::cout << "Number of geometry distance check failures: " << gcf << std::endl;
+            std::cout << "Number of geometry distance check failures: " << gdf << std::endl;
             std::cout << "|---------------------|\n" << std::endl;
         }
     }
 
     std::cout << std::endl;
+
+    std::cout << "\nTotal Convergence Fails: " << convfail << std::endl;
 
     // Combine all threads output
     MicroTimer fttimer;
