@@ -9,6 +9,7 @@ $c++:
 	files:
 		tsbuilder
 		ssbuilder
+		tsnmbuilder
 	dir:
 		utils/
 	files:

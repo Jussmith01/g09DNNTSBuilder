@@ -179,7 +179,7 @@ bool TrainingsetNormModebuilder::normalmodecalc(std::string LOT
 
     string input;
 
-    g09Args = " freq(noraman) " + g09Args;
+    g09Args = " freq(noraman) NoSymmetry" + g09Args;
 
     g09::buildCartesianInputg09(1,input,LOT,g09Args,itype,xyz,multip,charge,omp_get_max_threads());
 
