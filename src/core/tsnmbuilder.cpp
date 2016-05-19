@@ -351,6 +351,9 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
 
     unsigned convfail(0);
 
+    // vector of energies
+    std::vector<double> energies;
+
     // Begin parallel region
     #pragma omp parallel default(shared) firstprivate(params,MaxT)
     {
@@ -467,7 +470,13 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
                     if (!chkoutshl[j]) {
 
                         datapoint.append( simtls::xyzToCSV(tcart) );
-                        datapoint.append( g09::energyFinder(outshl[j]) );
+                        std::string energy( g09::energyFinder(outshl[j]) );
+                        datapoint.append( energy );
+
+                        #pragma omp critical
+                        {
+                            energies.push_back( atof(energy.c_str()) );
+                        }
 
                         // Save the data point to the threads private output file output
                         tsoutt << datapoint << std::endl;
@@ -531,7 +540,14 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
 
     std::cout << std::endl;
 
-    std::cout << "\nTotal Convergence Fails: " << convfail << std::endl;
+    if (!energies.empty()) {
+        double mini (std::min( *energies.begin(),*energies.end() ));
+        double maxi (*std::max_element( energies.begin(),energies.end() ));
+
+        std::cout << "\nEnergy Data: " << std::setprecision(16) << " MIN: " << mini << " " << maxi << " dE: " << abs( maxi - mini ) << std::endl << std::endl;
+    }
+
+    std::cout << "\nTotal Convergence Fails: " << convfail << std::endl << std::endl;
 
     // Combine all threads output
     MicroTimer fttimer;
