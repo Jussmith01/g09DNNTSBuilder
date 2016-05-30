@@ -3,7 +3,7 @@ $c++:
 	compiler:
 		g++-4.9
 	flags:
-		-std=c++11 -O3 -I../include -I../../InternalCoordinatesAPI/src -fopenmp
+		-std=c++11 -D_FORCE_INLINES -O3 -I../include -I../../InternalCoordinatesAPI/src -fopenmp
 	dir:
 		core/
 	files:

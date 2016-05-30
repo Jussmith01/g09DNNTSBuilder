@@ -108,11 +108,6 @@ inline void frcsphereConvert(glm::vec3 &sphr,const glm::vec3 &cart) {
 };
 
 inline void vec3nanchk(glm::vec3 &vec) {
-    if (isnan(vec.x) || isnan(vec.y) || isnan(vec.z)) {
-        vec.x=1.0f;
-        vec.y=0.0f;
-        vec.z=0.0f;
-    }
 };
 
 inline void setZero(glm::vec3 &vec) {
