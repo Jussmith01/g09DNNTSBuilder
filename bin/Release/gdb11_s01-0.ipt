@@ -1,10 +1,10 @@
-TSS=100 
+TSS=20 
 VSS=0 
 ESS=0 
 LOT=UWB97XD/6-31g* 
 rdm=uniform
 type=nmrandom
-Temp=4000.0
+Temp=2000.0
 SCF=Tight
 dfname=gdb11_s01-0_train.dat 
 vdfname=gdb11_s01-0_valid.dat 
