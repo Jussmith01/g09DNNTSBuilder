@@ -95,8 +95,6 @@ inline void normalmodeFinder(const std::string &output,std::vector<std::vector<g
                 float z = atof(pos->str(0).c_str());
 
                 nc[aidx].push_back( glm::vec3(x,y,z) );
-
-                //cout << "[" << x << "," << y << "," << z << "]" << endl;
             }
 
             ++aidx;
@@ -111,8 +109,6 @@ inline void normalmodeFinder(const std::string &output,std::vector<std::vector<g
 
                 fc.push_back( k );
                 aidx = 0;
-
-                //cout << "FRC = [" << k << "]" << endl;
             }
         }
     }
