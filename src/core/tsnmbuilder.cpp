@@ -14,6 +14,8 @@
 #include <time.h>
 #include <chrono>
 #include <random>
+#include <numeric>
+#include <functional>
 
 // GLM Mathematics
 //#define GLM_FORCE_RADIANS
@@ -39,17 +41,22 @@
 // Class Definition
 #include "tsnmbuilder.h"
 
+#define JH 4.3597482e-18
+#define Kb 1.38064852e-23
+
+#define EC (3.0 * Kb) / (2.0 * JH)
+
 /*      Optimizer
 
     Returns true if opt succeeded
 
 */
 bool TrainingsetNormModebuilder::optimizer(std::string LOT
-                                   ,std::string g09Args
-                                   ,const std::vector<std::string> &itype
-                                   ,std::vector<glm::vec3> &xyz
-                                   ,unsigned charge
-                                   ,unsigned multip) {
+        ,std::string g09Args
+        ,const std::vector<std::string> &itype
+        ,std::vector<glm::vec3> &xyz
+        ,unsigned charge
+        ,unsigned multip) {
 
     using namespace std;
 
@@ -167,13 +174,13 @@ void TrainingsetNormModebuilder::optimizeStoredStructure() {
 
 */
 bool TrainingsetNormModebuilder::normalmodecalc(std::string LOT
-                                        ,std::string g09Args
-                                        ,const std::vector<std::string> &itype
-                                        ,const std::vector<glm::vec3> &xyz
-                                        ,std::vector<std::vector<glm::vec3>> &nc
-                                        ,std::vector<float> &fc
-                                        ,unsigned charge
-                                        ,unsigned multip) {
+        ,std::string g09Args
+        ,const std::vector<std::string> &itype
+        ,const std::vector<glm::vec3> &xyz
+        ,std::vector<std::vector<glm::vec3>> &nc
+        ,std::vector<float> &fc
+        ,unsigned charge
+        ,unsigned multip) {
 
     using namespace std;
 
@@ -242,17 +249,17 @@ TrainingsetNormModebuilder::calculateTrainingSet
 is set before the loop and used to point
 whcih of these functions is requested.
 ----------------------------------------*/
-void print_for_file2(int tid,int N,int i,int gcfail,int gdfail) {
-    int trdcomp = static_cast<int>(round((i/float(N))*100.0));
+//void print_for_file2(int tid,int N,int i,int gcfail,int gdfail) {
+//    int trdcomp = static_cast<int>(round((i/float(N))*100.0));
 
-    if (trdcomp % 5 == 0) {
-        std::cout << "Thread " << tid << " is " << trdcomp << "% complete. G09 Convergence Fails " << gcfail << " Distance Fails: " << gdfail << "\n";
-    }
-};
+//    if (trdcomp % 5 == 0) {
+//        std::cout << "Thread " << tid << " is " << trdcomp << "% complete. G09 Convergence Fails " << gcfail << " Distance Fails: " << gdfail << "\n";
+//    }
+//};
 
-void print_for_cout2(int tid,int N,int i,int gcfail,int gdfail) {
-    std::cout << "\033["<< tid+1 <<"A\033[K\033[1;30mThread " << tid << " is " << static_cast<int>(round((i/float(N))*100.0)) << "% complete. G09 Convergence Fails " << gcfail << " Distance Fails: " << gdfail << "\033["<< tid+1 <<"B\033[100D\033[0m";
-};
+//void print_for_cout2(int tid,int N,int i,int gcfail,int gdfail) {
+//    std::cout << "\033["<< tid+1 <<"A\033[K\033[1;30mThread " << tid << " is " << static_cast<int>(round((i/float(N))*100.0)) << "% complete. G09 Convergence Fails " << gcfail << " Distance Fails: " << gdfail << "\033["<< tid+1 <<"B\033[100D\033[0m";
+//};
 
 /*--------Calculate Validation Set---------
 
@@ -306,9 +313,9 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
 
     seedgen.generate(sequence.begin(),sequence.end());
 
-    for (unsigned i = 0; i < sequence.size(); ++i) {
-        cout << "Random Seed for thread (" << i << "): " << sequence[i] << endl;
-    }
+    //for (unsigned i = 0; i < sequence.size(); ++i) {
+    //    cout << "Random Seed for thread (" << i << "): " << sequence[i] << endl;
+    //}
 
     // Local pointer to icrd for passing a private class to threads
     //rnmcrd.printdata();
@@ -316,10 +323,10 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
     string typescsv( simtls::stringsToCSV(rnmcrd.getotype()) );
     unsigned    atoms   ( rnmcrd.getNa() );
 
-    cout << "atoms: " << atoms << endl;
+    cout << "Number of atoms: " << atoms << endl;
 
     // Setup loop output function
-    void (*loopPrinter)(int tid,int N,int i,int gcfail,int gdfail);
+    /*void (*loopPrinter)(int tid,int N,int i,int gcfail,int gdfail);
     switch ((int)routecout) {
     case 0: {
         cout << "Output setup for terminal writing." << endl;
@@ -334,7 +341,7 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
         loopPrinter = &print_for_file2;
         break;
     }
-    }
+    }*/
 
     // Prepare private thread output filenames
     vector<stringstream> outname(MaxT);
@@ -354,6 +361,12 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
     // vector of energies
     std::vector<double> energies;
 
+    vector<unsigned> tcn (MaxT,0);
+    vector<unsigned> gcf (MaxT,0);
+    vector<unsigned> gdf (MaxT,0);
+
+    unsigned last_perc (100);
+
     // Begin parallel region
     #pragma omp parallel default(shared) firstprivate(params,MaxT)
     {
@@ -369,7 +382,7 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
         float temp = params.getParameter<float>("Temp");
 
         // Minimimum number of sets for this thread to calculate
-        int N = floor(tss/MaxT);
+        unsigned N = floor(tss/MaxT);
         if (tid < tss % MaxT) {
             ++N;
         }
@@ -381,9 +394,9 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
         std::vector<glm::vec3> wxyz(na*ngpr);
 
         // Initialize counters
-        int i(0); // Loop counter
-        int gcf(0); // Gaussian Convergence Fail counter
-        int gdf(0); // Geometry distance failure
+        //int i(0); // Loop counter
+        //int gcf(0); // Gaussian Convergence Fail counter
+        //int gdf(0); // Geometry distance failure
 
         int charge (params.getParameter<int>("charge"));
         int multip (params.getParameter<int>("multip"));
@@ -423,7 +436,7 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
 
         // Begin main loop
         mttimer.start_point();
-        while (i<N && termstr.empty()) {
+        while (tcn[tid]<N && termstr.empty()) {
             try {
                 //std::cout << i << std::endl;
 
@@ -438,7 +451,7 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
                     licrd.generateRandomCoords(tcart,temp,rgenerator);
 
                     if (m_checkRandomStructure(tcart)) {
-                        ++gdf;
+                        ++gdf[tid];
                     } else {
                         gs = false;
                     }
@@ -481,22 +494,36 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
                         // Save the data point to the threads private output file output
                         tsoutt << datapoint << std::endl;
                         datapoint.clear();
-                        ++i;
+                        ++tcn[tid];
                     } else {
-                        #pragma omp master
-                        {
-                            std::cout << input << std::endl;
-                        }
-                        ++gcf;
+                        //#pragma omp master
+                        //{
+                        //    std::cout << input << std::endl;
+                        //}
+                        ++gcf[tid];
                     }
                     //std::cout << "COMPLETE" << std::endl;
                 }
                 mstimer.end_point();
 
                 // Loop printer.
-                #pragma omp critical
+                //#pragma omp critical
+                //{
+                ///loopPrinter(tid,N,i,gcf,gdf);
+                //}
+
+                #pragma omp master
                 {
-                    loopPrinter(tid,N,i,gcf,gdf);
+                    unsigned Ntcn = std::accumulate(tcn.begin(),tcn.end(),0);
+                    unsigned Ngcf = std::accumulate(gcf.begin(),gcf.end(),0);
+                    unsigned Ngdf = std::accumulate(gdf.begin(),gdf.end(),0);
+
+                    unsigned curr_perc = static_cast<unsigned>(100.0f * (Ntcn/static_cast<float>(tss)));
+
+                    if (last_perc != curr_perc) {
+                        last_perc = curr_perc;
+                        cout << "Complete: " << curr_perc << "% CF: " << Ngcf << " DF: " << Ngdf << endl;
+                    }
                 }
 
             } catch (std::string error) {
@@ -511,71 +538,87 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
         mttimer.end_point();
 
         // Final print, shows 100%
-        #pragma omp critical
-        {
-            loopPrinter(tid,1,1,gcf,gdf);
-        }
+        //#pragma omp critical
+        //{
+        ///loopPrinter(tid,1,1,gcf,gdf);
+        //}
 
+        // Wait for the whole team to finish
+        #pragma omp barrier
+
+        #pragma omp master
+        {
+            unsigned Ntcn = std::accumulate(tcn.begin(),tcn.end(),0);
+            unsigned Ngcf = std::accumulate(gcf.begin(),gcf.end(),0);
+            unsigned Ngdf = std::accumulate(gdf.begin(),gdf.end(),0);
+
+            cout << "Complete: " << static_cast<unsigned>(100.0f * (Ntcn/static_cast<float>(tss))) << "% CF: " << Ngcf << " DF: " << Ngdf << endl;
+        }
         // Close the threads output
         tsoutt.close();
 
-        // Wait for the whole team to finish
         #pragma omp barrier
 
         // Print stats for each thread in the team
         #pragma omp critical
         {
-            convfail += gcf;
+            if (tcn[tid] > 0) {
+                convfail += gcf[tid];
 
-            std::cout << "\n|----Thread " << tid << " info----|" << std::endl;
-            mttimer.print_generic_to_cout(std::string("Total"));
-            mrtimer.print_generic_to_cout(std::string("Struc. Gen."));
-            mgtimer.print_generic_to_cout(std::string("Gau. 09."));
-            mstimer.print_generic_to_cout(std::string("CSV Gen."));
-            std::cout << "Number of gaussian convergence failures: " << gcf << std::endl;
-            std::cout << "Number of geometry distance check failures: " << gdf << std::endl;
-            std::cout << "|---------------------|\n" << std::endl;
+                std::cout << "\n|----Thread " << tid << " info----|" << std::endl;
+                mttimer.print_generic_to_cout(std::string("Total"));
+                mrtimer.print_generic_to_cout(std::string("Struc. Gen."));
+                mgtimer.print_generic_to_cout(std::string("Gau. 09."));
+                mstimer.print_generic_to_cout(std::string("CSV Gen."));
+                std::cout << "Number of gaussian convergence failures: " << gcf[tid] << std::endl;
+                std::cout << "Number of geometry distance check failures: " << gdf[tid] << std::endl;
+                std::cout << "|---------------------|" << std::endl;
+            }
         }
     }
 
     std::cout << std::endl;
 
     if (!energies.empty()) {
-        double mini (std::min( *energies.begin(),*energies.end() ));
+        double mini (*std::min_element( energies.begin(),energies.end() ));
         double maxi (*std::max_element( energies.begin(),energies.end() ));
 
-        std::cout << "\nEnergy Data: " << std::setprecision(16) << " MIN: " << mini << " " << maxi << " dE: " << abs( maxi - mini ) << std::endl << std::endl;
+        std::cout << "Energy Data:\n" << std::setprecision(10) << "   E Min: " << mini
+                  << " Max: " << maxi
+                  << "\n  dE Act: " << abs( maxi - mini )
+                  << " Tho: " << atoms * params.getParameter<float>("Temp") * EC
+                  << std::endl << std::endl;
+
+        std::cout << "Total Convergence Fails: " << convfail << std::endl << std::endl;
+
+        // Combine all threads output
+        MicroTimer fttimer;
+        std::ofstream tsout;
+        std::string dfname(iptData->getParameter<std::string>("dfname"));
+        tsout.open(dfname.c_str(),std::ios_base::binary);
+
+        tsout << params.getParameter<std::string>("LOT") << std::endl;
+        tsout << params.getParameter<std::string>("TSS") << std::endl;
+        tsout << atoms << ","<< typescsv << std::endl;
+
+        fttimer.start_point();
+        std::vector<std::stringstream>::iterator nameit;
+        for (nameit = outname.begin(); nameit != outname.end(); nameit++) {
+            // Move files individualy into the main output
+            std::ifstream infile((*nameit).str().c_str(),std::ios_base::binary);
+            std::cout << "Transferring file " << (*nameit).str() << " -> " << dfname << std::endl;
+            tsout << infile.rdbuf();
+
+            // Remove old output once moved
+            std::stringstream rm;
+            rm << "rm " << (*nameit).str();
+            systls::exec(rm.str(),100);
+        }
+        fttimer.end_point();
+        fttimer.print_generic_to_cout(std::string("File transfer"));
+
+        tsout.close();
     }
-
-    std::cout << "\nTotal Convergence Fails: " << convfail << std::endl << std::endl;
-
-    // Combine all threads output
-    MicroTimer fttimer;
-    std::ofstream tsout;
-    std::string dfname(iptData->getParameter<std::string>("dfname"));
-    tsout.open(dfname.c_str(),std::ios_base::binary);
-
-    tsout << params.getParameter<std::string>("LOT") << std::endl;
-    tsout << params.getParameter<std::string>("TSS") << std::endl;
-    tsout << atoms << ","<< typescsv << std::endl;
-
-    fttimer.start_point();
-    std::vector<std::stringstream>::iterator nameit;
-    for (nameit = outname.begin(); nameit != outname.end(); nameit++) {
-        // Move files individualy into the main output
-        std::ifstream infile((*nameit).str().c_str(),std::ios_base::binary);
-        std::cout << "Transferring file " << (*nameit).str() << " -> " << dfname << std::endl;
-        tsout << infile.rdbuf();
-
-        // Remove old output once moved
-        std::stringstream rm;
-        rm << "rm " << (*nameit).str();
-        systls::exec(rm.str(),100);
-    }
-    fttimer.end_point();
-    fttimer.print_generic_to_cout(std::string("File transfer"));
-
-    tsout.close();
 
     // Catch any errors from the threads
     if (!termstr.empty()) dnntsErrorcatch(termstr);
