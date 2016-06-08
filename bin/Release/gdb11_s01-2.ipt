@@ -1,10 +1,10 @@
-TSS=200 
+TSS=500 
 VSS=0 
 ESS=0 
 LOT=UWB97XD/6-31g* 
 rdm=uniform
 type=nmrandom
-Temp=8000.0
+Temp=500.0
 SCF=Tight
 dfname=gdb11_s01-2_train.dat 
 vdfname=gdb11_s01-2_valid.dat 
@@ -15,9 +15,9 @@ frequency= 0 !Freq pre-calc
 #Smiles: [H]O[H]
 
 $coordinates
- O O   -0.0027230 0.3944120 0.0000000  
- H H   0.7612430 -0.1919600 0.0000000  
- H H   -0.7585200 -0.2024510 0.0000000  
+ O O    -0.0027230 0.3944120 0.0000000   
+ H H    0.7612430 -0.1919600 0.0000000   
+ H H    -0.7585200 -0.2024510 0.0000000   
 &
 
 $connectivity
@@ -42,6 +42,7 @@ FRCCNST=9.98080 {
  -0.55000 -0.44000 0.00000
 }
 &
+
 
 
 

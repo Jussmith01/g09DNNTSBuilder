@@ -588,37 +588,38 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
                   << "\n  dE Act: " << abs( maxi - mini )
                   << " Tho: " << atoms * params.getParameter<float>("Temp") * EC
                   << std::endl << std::endl;
-
-        std::cout << "Total Convergence Fails: " << convfail << std::endl << std::endl;
-
-        // Combine all threads output
-        MicroTimer fttimer;
-        std::ofstream tsout;
-        std::string dfname(iptData->getParameter<std::string>("dfname"));
-        tsout.open(dfname.c_str(),std::ios_base::binary);
-
-        tsout << params.getParameter<std::string>("LOT") << std::endl;
-        tsout << params.getParameter<std::string>("TSS") << std::endl;
-        tsout << atoms << ","<< typescsv << std::endl;
-
-        fttimer.start_point();
-        std::vector<std::stringstream>::iterator nameit;
-        for (nameit = outname.begin(); nameit != outname.end(); nameit++) {
-            // Move files individualy into the main output
-            std::ifstream infile((*nameit).str().c_str(),std::ios_base::binary);
-            std::cout << "Transferring file " << (*nameit).str() << " -> " << dfname << std::endl;
-            tsout << infile.rdbuf();
-
-            // Remove old output once moved
-            std::stringstream rm;
-            rm << "rm " << (*nameit).str();
-            systls::exec(rm.str(),100);
-        }
-        fttimer.end_point();
-        fttimer.print_generic_to_cout(std::string("File transfer"));
-
-        tsout.close();
     }
+
+    std::cout << "Total Convergence Fails: " << convfail << std::endl << std::endl;
+
+    // Combine all threads output
+    MicroTimer fttimer;
+    std::ofstream tsout;
+    std::string dfname(iptData->getParameter<std::string>("dfname"));
+    tsout.open(dfname.c_str(),std::ios_base::binary);
+
+    tsout << params.getParameter<std::string>("LOT") << std::endl;
+    tsout << params.getParameter<std::string>("TSS") << std::endl;
+    tsout << atoms << ","<< typescsv << std::endl;
+
+    fttimer.start_point();
+    std::vector<std::stringstream>::iterator nameit;
+    for (nameit = outname.begin(); nameit != outname.end(); nameit++) {
+        // Move files individualy into the main output
+        std::ifstream infile((*nameit).str().c_str(),std::ios_base::binary);
+        std::cout << "Transferring file " << (*nameit).str() << " -> " << dfname << std::endl;
+        tsout << infile.rdbuf();
+
+        // Remove old output once moved
+        std::stringstream rm;
+        rm << "rm " << (*nameit).str();
+        systls::exec(rm.str(),100);
+    }
+    fttimer.end_point();
+    fttimer.print_generic_to_cout(std::string("File transfer"));
+
+    tsout.close();
+
 
     // Catch any errors from the threads
     if (!termstr.empty()) dnntsErrorcatch(termstr);
