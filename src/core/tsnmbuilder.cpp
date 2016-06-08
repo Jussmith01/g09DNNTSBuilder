@@ -371,7 +371,7 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
     #pragma omp parallel default(shared) firstprivate(params,MaxT)
     {
         // Thread safe copy of the internal coords calculator
-        itrnl::RandomStructureNormalMode licrd = rnmcrd;
+        //itrnl::RandomStructureNormalMode licrd = rnmcrd;
 
         // Thread ID
         unsigned tid = omp_get_thread_num();
@@ -390,7 +390,7 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
         std::mt19937 rgenerator (sequence[tid]);
 
         // Allocate space for new coordinates
-        unsigned na = licrd.getNa();//params.getCoordinatesStr().size();
+        unsigned na = rnmcrd.getNa();//params.getCoordinatesStr().size();
         std::vector<glm::vec3> wxyz(na*ngpr);
 
         // Initialize counters
@@ -409,7 +409,7 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
         std::vector<std::string> outshl(ngpr);
         std::vector<bool> chkoutshl(ngpr);
 
-        std::vector<std::string> itype(licrd.getitype());
+        std::vector<std::string> itype(rnmcrd.getitype());
 
         std::string HOT(params.getParameter<std::string>("LOT"));
         std::string SCF(params.getParameter<std::string>("SCF"));
@@ -448,7 +448,7 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
 
                 bool gs(true);
                 while (gs) {
-                    licrd.generateRandomCoords(tcart,temp,rgenerator);
+                    rnmcrd.generateRandomCoords(tcart,temp,rgenerator);
 
                     if (m_checkRandomStructure(tcart)) {
                         ++gdf[tid];
