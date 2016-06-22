@@ -129,7 +129,7 @@ void Scansetbuilder::calculateScanSet() {
             ---------------------------------*/
             mgtimer.start_point();
 
-            g09::buildCartesianInputg09(ngpr,input,HOT,"",itype,tcart,multip,charge,MaxT);
+            g09::buildCartesianInputg09(ngpr,input,"",HOT,"",itype,tcart,multip,charge,MaxT);
 
             //std::cout << input << std::endl;
 

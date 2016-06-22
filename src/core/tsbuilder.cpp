@@ -54,7 +54,7 @@ bool Trainingsetbuilder::optimizer(std::string LOT
     using namespace std;
 
     string input;
-    g09::buildCartesianInputg09(1,input,LOT,g09Args,itype,xyz,multip,charge,omp_get_max_threads());
+    g09::buildCartesianInputg09(1,input,"",LOT,g09Args,itype,xyz,multip,charge,omp_get_max_threads());
 
     vector<string>    output(1);
     vector< bool > chkoutshl(1);
@@ -373,7 +373,7 @@ void Trainingsetbuilder::calculateRandomTrainingSet() {
                 mgtimer.start_point();
 
                 // Build the g09 input file for the high level of theory
-                g09::buildCartesianInputg09(ngpr,input,HOT,"SCF="+SCF,itype,tcart,multip,charge,1);
+                g09::buildCartesianInputg09(ngpr,input,"",HOT,"SCF="+SCF,itype,tcart,multip,charge,1);
 
                 // Execute the g09 run, if failure occures we restart the loop
                 g09::execg09(ngpr,input,outshl,chkoutshl);
@@ -699,7 +699,7 @@ void Trainingsetbuilder::calculateMDTrainingSet() {
 
             // Begin MD calculation
             ++Nrun;
-            g09::buildCartesianInputg09(ngpr,input,HOT,_add.str(),itype,tcart,multip,charge,1);
+            g09::buildCartesianInputg09(ngpr,input,"",HOT,_add.str(),itype,tcart,multip,charge,1);
             g09::execg09(ngpr,input,outshl,chkoutshl);
 
             // Containers

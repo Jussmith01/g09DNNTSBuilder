@@ -1,0 +1,57 @@
+TSS=2000 
+VSS=0
+ESS=0
+LOT=AM1
+rdm=uniform
+type=nmrandom
+Temp=600.0
+SCF=Tight
+dfname=gdb11_s01-3_train.dat 
+vdfname=gdb11_s01-3_valid.dat 
+edfname=gdb11_s01-3_test.dat 
+optimize= 0 !Coordinates pre-opt
+frequency= 1 !Freq pre-calc
+
+#Smiles: HH
+
+$coordinates
+ H H 0.0000000 0.0000000 0.3382990                     
+ H H 0.0000000 0.0000000 -0.3382990                      
+&
+
+$connectivity
+ 1 2
+&
+
+$normalmodes
+&
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

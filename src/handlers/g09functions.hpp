@@ -5,6 +5,8 @@
 #ifndef G09FUNCTIONS_H
 #define G09FUNCTIONS_H
 
+#define BtoA 0.529177249
+
 namespace g09 {
 
 /*----------------------------------------
@@ -184,16 +186,32 @@ inline void admpcrdenergyFinder(const std::string &output,std::vector<glm::vec3>
  Get input coordinates from a Gaussian
  Output String
 
+Energy Data:
+   E Min: -0.01163425921 Max: 0.192903628
+  dE Act: 0.2045378872 Tho: 0.03325148333
+
+Energy Data:
+   E Min: -0.0115557854 Max: 0.108778197
+  dE Act: 0.1203339824 Tho: 0.03325148333
+
+
 ------------------------------------------*/
 inline void ipcoordinateFinder(const std::string &output,std::vector<glm::vec3> &tcart,bool fail) {
     using namespace std;
 
     regex pattern_opt;
     if (!fail) {
+        pattern_opt = "\\s(?:Optimization completed)\\.\\n[\\s\\S]+(?:Standard orientation:)\\s+.+\\s+.+\\s+.+\\s+.+((?:\\s+\\d+\\s+\\d+\\s+\\d+\\s+[^\\s]+\\s+[^\\s]+\\s+[^\\s]+\\s)+)";
+    } else {
+        pattern_opt = "\\s(?:Optimization stopped)\\.\\n[\\s\\S]+(?:Standard orientation:)\\s+.+\\s+.+\\s+.+\\s+.+((?:\\s+\\d+\\s+\\d+\\s+\\d+\\s+[^\\s]+\\s+[^\\s]+\\s+[^\\s]+\\s)+)";
+    }
+
+    /*if (!fail) {
         pattern_opt = "\\s(?:Optimization completed)\\.\\n[\\s\\S]+(?:Input orientation:)\\s+.+\\s+.+\\s+.+\\s+.+((?:\\s+\\d+\\s+\\d+\\s+\\d+\\s+[^\\s]+\\s+[^\\s]+\\s+[^\\s]+\\s)+)";
     } else {
         pattern_opt = "\\s(?:Optimization stopped)\\.\\n[\\s\\S]+(?:Input orientation:)\\s+.+\\s+.+\\s+.+\\s+.+((?:\\s+\\d+\\s+\\d+\\s+\\d+\\s+[^\\s]+\\s+[^\\s]+\\s+[^\\s]+\\s)+)";
-    }
+    }*/
+
     regex pattern_crd("\\s+\\d+\\s+\\d+\\s+\\d+\\s+([+-]*\\d+\\.\\d+)\\s+([+-]*\\d+\\.\\d+)\\s+([+-]*\\d+\\.\\d+)");
 
     string coordstr;
@@ -349,6 +367,176 @@ inline void execg09(int nrpg,const std::string &input,std::vector<std::string> &
 };
 
 /*----------------------------------------
+  Execute Gaussian Command on the System
+
+  Function returns true if cerr returns
+  a segmentation violation. This occurs
+  most notably when the SCF fails to
+  converge.
+------------------------------------------*/
+inline void getcrdsandnmchkpoint(const std::string& chkpoint
+                                 ,std::vector<glm::vec3> &xyz
+                                 ,std::vector<std::vector<glm::vec3>> &nc
+                                 ,std::vector<float> &fc) {
+    using namespace std;
+
+    cout << "       |getcrdsandnmchkpoint|       \n";
+
+    // Build bash command for launching g09
+    stringstream sscmd;
+    sscmd << "formchk  " << chkpoint << " " << chkpoint << ".fchk"; // Redirect cerr to cout
+
+    // Open a pipe and run g09 command -- output saved in string 'out'.
+    string mout(systls::exec(sscmd.str(),10000));
+
+    cout << "|--------Formchk output---------|\n";
+    cout << mout;
+    cout << "|-------------------------------|\n";
+
+    // Load up converted file
+    ifstream cpfilebuf( (chkpoint + string(".fchk")).c_str() );
+
+    // Check if file buffer opened properly
+    if (!cpfilebuf) {
+        stringstream _error;
+        _error << "Error opening file: " << chkpoint + string(".fchk");
+        exit(1);
+    }
+
+    // Load entire file into a string on memory
+    string instr( (istreambuf_iterator<char>(cpfilebuf)), istreambuf_iterator<char>() );
+    cpfilebuf.close();
+
+    // Build bash command for launching g09
+    stringstream rmcmd;
+    rmcmd << "rm " << chkpoint << " " << chkpoint << ".fchk"; // Redirect cerr to cout
+
+    // Open a pipe and remove the used checkpoint files
+    string rout(systls::exec(rmcmd.str(),100));
+
+    //cout << "|------CHECKPOINT OUTPUT--------|\n";
+    //cout << instr << endl;
+    //cout << "|-------------------------------|\n";
+
+    regex patt_geom ("Opt point\\W*1\\WGeometries.*N=\\W*(\\d+)\\s*([^S]*)Opt point");
+    regex patt_freq ("Number of Normal Modes.*(\\d+)[^S]+Vib-E2.*N=\\W+\\d+\\s*([^S]+)Vib-Modes.*N=\\W*(\\d+)\\s*([^S]+)NSEScI");
+    regex patt_sflt ("(-?\\d+\\.\\d+E[+-]\\d+)");
+
+    // Get the coordinates and store them in xyz
+    smatch smcrd;
+    if (regex_search(instr,smcrd,patt_geom)) {
+
+        xyz.clear();
+        xyz.reserve(atoi( smcrd.str(1).c_str() ) / 3);
+
+        const string data (smcrd.str(2));
+
+        auto flts_begin =
+            sregex_iterator(data.begin(), data.end(), patt_sflt);
+        auto flts_end = sregex_iterator();
+
+        for ( sregex_iterator i = flts_begin; i != flts_end; ) {
+
+            std::smatch x = *i;
+            advance(i,1);
+
+            std::smatch y = *i;
+            advance(i,1);
+
+            std::smatch z = *i;
+            advance(i,1);
+
+            glm::vec3 ac (BtoA * atof(x.str().c_str())
+                         ,BtoA * atof(y.str().c_str())
+                         ,BtoA * atof(z.str().c_str()));
+
+            xyz.push_back(ac);
+
+            cout << "Atomic Coords: [" << xyz.back().x << "," << xyz.back().y << "," << xyz.back().z << "]" << endl;
+        }
+
+    } else {
+        cerr << "Error: Cannot find coordinates in checkpoint file!" << endl;
+        exit(1);
+    }
+
+    smatch smnm;
+    if (regex_search(instr,smnm,patt_freq)) {
+
+        // Get the data needed
+        const unsigned Ndim (atoi(smnm.str(1).c_str())); // Number of dimensions
+        const unsigned Nnmc (atoi(smnm.str(3).c_str())); // Number of normal mode coords
+        const unsigned Natm (Nnmc / (3 * Ndim)); // Number of atoms
+
+        const string freqs (smnm.str(2)); // Freqs,Red Masses,Frc cnsts, IR Inten, other
+        const string nmods (smnm.str(4)); // Normal mode coods (Natm * Ndim * 3 = Nnmc)
+
+        cout << " DATA: " << Ndim << " : " << freqs << " : " << Nnmc << " : " << nmods << endl;
+
+        // Get the force constants
+        auto flts_begin = sregex_iterator(freqs.begin(), freqs.end(), patt_sflt);
+        auto flts_end = flts_begin;
+
+        advance(flts_begin,2*Ndim);
+        advance(flts_end,3*Ndim);
+
+        fc.clear();
+        fc.reserve(Ndim);
+
+        for ( sregex_iterator i = flts_begin; i != flts_end; advance(i,1)) {
+
+            std::smatch v_fc = *i;
+
+            fc.push_back( atof(v_fc.str().c_str()) );
+
+            cout << "Force Constant: " << fc.back() << endl;
+        }
+
+        // Get the force constants
+        flts_begin = sregex_iterator(nmods.begin(), nmods.end(), patt_sflt);
+        flts_end = sregex_iterator();
+
+        nc.clear();
+        nc.reserve(Nnmc);
+
+        auto flts_na = flts_begin;
+
+        for ( sregex_iterator i = flts_begin; flts_na != flts_end; ) {
+
+            advance (flts_na,3*Natm);
+
+            vector<glm::vec3> mode;
+            mode.reserve(Natm);
+
+            for ( ;i != flts_na; ) {
+
+                std::smatch x = *i;
+                advance(i,1);
+
+                std::smatch y = *i;
+                advance(i,1);
+
+                std::smatch z = *i;
+                advance(i,1);
+
+                mode.push_back(glm::vec3 (atof(x.str().c_str())
+                                          ,atof(y.str().c_str())
+                                          ,atof(z.str().c_str())));
+
+                cout << "Normal Modes: [" << mode.back().x << "," << mode.back().y << "," << mode.back().z << "]" << endl;
+            }
+
+            nc.push_back(mode);
+        }
+
+    } else {
+        cerr << "Error: Cannot find frequency block in checkpoint file!" << endl;
+        exit(1);
+    }
+
+};
+
+/*----------------------------------------
           Build G09 Input String
     lot = level of theory
     additional = more g09 parameters...
@@ -361,7 +549,7 @@ inline void execg09(int nrpg,const std::string &input,std::vector<std::string> &
 
     Note: type and xyz must be of same size
 ------------------------------------------*/
-inline void buildCartesianInputg09(int nrpg,std::string &input,std::string lot,std::string additional,const std::vector<std::string> &type,const std::vector<glm::vec3> &xyz,int mult,int charge,int nproc) {
+inline void buildCartesianInputg09(int nrpg,std::string &input,const std::string &chkpoint,const std::string lot,const std::string additional,const std::vector<std::string> &type,const std::vector<glm::vec3> &xyz,int mult,int charge,int nproc) {
     using namespace std;
     // Number of coords per molecule
     int N = xyz.size()/nrpg;
@@ -374,17 +562,20 @@ inline void buildCartesianInputg09(int nrpg,std::string &input,std::string lot,s
 
     for (int j=0; j<nrpg; ++j) {
         // Build gaussian 09 input
-        std::stringstream tmpipt;
-        tmpipt.setf( std::ios::scientific, std::ios::floatfield );
+        stringstream tmpipt;
+        tmpipt.setf( ios::scientific,ios::floatfield );
         tmpipt << "\n%NProcShared=" << nproc << "\n";
         tmpipt << "%Mem=" << 500 << "mb" << "\n";
+        if (!chkpoint.empty()) {
+            tmpipt << "%chk=" << chkpoint << "\n";
+        }
         tmpipt << "# " << lot << " " << additional << "\n\n";
         tmpipt << "COMMENT LINE\n\n";
         tmpipt << charge << "  " << mult << "\n";
 
         for (uint32_t i = 0; i<type.size(); ++i) {
             if ( type[i].compare("X") != 0 ) {
-                tmpipt << type[i] << std::setprecision(7) << " " << xyz[j*N+i].x << " " << xyz[j*N+i].y << " " << xyz[j*N+i].z << "\n";
+                tmpipt << type[i] << setprecision(7) << " " << xyz[j*N+i].x << " " << xyz[j*N+i].y << " " << xyz[j*N+i].z << "\n";
             }
         }
 

@@ -328,7 +328,7 @@ public:
     void storeInputWithOptCoords(const std::vector<glm::vec3> &coords, bool disableopt) {
         using namespace std;
 
-        regex pattern_crds("(\\s*[A-Z][a-z]*\\s+[A-Z][a-z]*\\d*\\s+)([-,+]*\\d+\\.\\d+\\s+[-,+]*\\d+\\.\\d+\\s+[-,+]*\\d+\\.\\d+)(.*)");
+        regex pattern_crds("(\\s*[A-Z][a-z]*\\s+[A-Z][a-z]*\\d*)\\s+([-,+]*\\d+\\.\\d+\\s+[-,+]*\\d+\\.\\d+\\s+[-,+]*\\d+\\.\\d+)(.*)");
         regex pattern_opt("(optimize=)(.*)");
 
         stringstream newfile;
@@ -390,13 +390,13 @@ public:
 
         if (regex_search(instr,pattern_ncblock)) {
             stringstream ss;
-            ss.setf( ios::fixed, ios::floatfield );
+            ss.setf( ios::scientific, ios::floatfield );
 
             ss << "$1";
             for (unsigned i = 0; i < fc.size(); ++i) {
                 ss << "FRCCNST=" << fc[i] << " {\n";
                 for (unsigned j = 0; j < Na; ++j) {
-                    ss << setprecision(5) << " " << nc[j][i].x << " " << nc[j][i].y << " " << nc[j][i].z << endl;
+                    ss << setprecision(7) << " " << nc[j][i].x << " " << nc[j][i].y << " " << nc[j][i].z << endl;
                 }
                 ss << "}\n";
             }
