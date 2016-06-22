@@ -52,10 +52,11 @@ public:
                   ,unsigned charge
                   ,unsigned multip);
 
-    bool normalmodecalc(std::string LOT
-                        ,std::string g09Args
+    bool normalmodecalc(const std::string &LOT
+                        ,const std::string &cpfile
+                        ,const std::string &g09Args
                         ,const std::vector<std::string> &itype
-                        ,const std::vector<glm::vec3> &xyz
+                        ,std::vector<glm::vec3> &xyz
                         ,std::vector<std::vector<glm::vec3>> &nc
                         ,std::vector<float> &fc
                         ,unsigned charge

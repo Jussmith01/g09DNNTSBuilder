@@ -61,7 +61,7 @@ bool TrainingsetNormModebuilder::optimizer(std::string LOT
     using namespace std;
 
     string input;
-    g09::buildCartesianInputg09(1,input,LOT,g09Args,itype,xyz,multip,charge,omp_get_max_threads());
+    g09::buildCartesianInputg09(1,input,"",LOT,g09Args,itype,xyz,multip,charge,omp_get_max_threads());
 
     vector<string>    output(1);
     vector< bool > chkoutshl(1);
@@ -80,6 +80,12 @@ bool TrainingsetNormModebuilder::optimizer(std::string LOT
     return !chkoutshl[0];
 }
 
+/*      Call to optimize the stored struct
+
+    Saves new opt structures standard orientation to
+    the input file used.
+
+*/
 void TrainingsetNormModebuilder::optimizeStoredStructure() {
     using namespace std;
 
@@ -95,7 +101,7 @@ void TrainingsetNormModebuilder::optimizeStoredStructure() {
     int multip (params.getParameter<int>("multip"));
 
     stringstream _args;
-    _args << "opt";
+    _args << "opt(VeryTight)";
     cout << " ARGUMENT1: " << _args.str() << endl;
     if ( !optimizer(HOT,_args.str(),itype,xyz,charge,multip) ) {
         if ( !optimizer(HOT,_args.str(),itype,xyz,charge,multip) ) {
@@ -126,8 +132,6 @@ void TrainingsetNormModebuilder::optimizeStoredStructure() {
             //-----------------------------
             // High level minimization
             //-----------------------------
-
-
             bool mini(false);
             unsigned cnt(0);
             string conv("");
@@ -173,36 +177,46 @@ void TrainingsetNormModebuilder::optimizeStoredStructure() {
     Returns true if freq succeeded
 
 */
-bool TrainingsetNormModebuilder::normalmodecalc(std::string LOT
-        ,std::string g09Args
-        ,const std::vector<std::string> &itype
-        ,const std::vector<glm::vec3> &xyz
-        ,std::vector<std::vector<glm::vec3>> &nc
-        ,std::vector<float> &fc
-        ,unsigned charge
-        ,unsigned multip) {
+bool TrainingsetNormModebuilder::normalmodecalc(const std::string &LOT
+                                               ,const std::string &cpfile
+                                               ,const std::string &g09Args
+                                               ,const std::vector<std::string> &itype
+                                               ,std::vector<glm::vec3> &xyz
+                                               ,std::vector<std::vector<glm::vec3>> &nc
+                                               ,std::vector<float> &fc
+                                               ,unsigned charge
+                                               ,unsigned multip) {
 
     using namespace std;
 
     string input;
 
-    g09Args = " freq(noraman) NoSymmetry" + g09Args;
+    string tmpArgs = " opt(VeryTight) freq(NoRaman,SaveNormalModes) " + g09Args;
 
-    g09::buildCartesianInputg09(1,input,LOT,g09Args,itype,xyz,multip,charge,omp_get_max_threads());
+    g09::buildCartesianInputg09(1,input,cpfile,LOT,tmpArgs,itype,xyz,multip,charge,omp_get_max_threads());
 
     vector<string>    output(1);
     vector< bool > chkoutshl(1);
 
     cout << "Freq Calculation at " << LOT << " level..." << endl;
     g09::execg09(1,input,output,chkoutshl);
+    output[0].clear();
 
     //cout << "FREQ:---------------------\n" << output[0] << endl;
 
-    g09::normalmodeFinder(output[0],nc,fc,itype.size());
+    //g09::normalmodeFinder(output[0],nc,fc,itype.size());
+
+    g09::getcrdsandnmchkpoint(cpfile,xyz,nc,fc);
 
     return !chkoutshl[0];
 }
 
+/*      Call to Compute normal modes
+
+    Saves calculated normal moes to the input
+    file used.
+
+*/
 void TrainingsetNormModebuilder::calculateNormalModes() {
     using namespace std;
 
@@ -217,18 +231,24 @@ void TrainingsetNormModebuilder::calculateNormalModes() {
     int charge (params.getParameter<int>("charge"));
     int multip (params.getParameter<int>("multip"));
 
-    std::vector<std::vector<glm::vec3>> nc; // Normal mode vectors
-    vector<  float > fc;
+    string cpfile ("temp.chk");
 
-    string args;
-    if ( !normalmodecalc(HOT,args,itype,xyz,nc,fc,charge,multip) ) {
+    std::vector<std::vector<glm::vec3>> nc; // Normal mode vectors
+    vector< float > fc;
+
+    string args("");
+    if ( !normalmodecalc(HOT,cpfile,args,itype,xyz,nc,fc,charge,multip) ) {
         throwException(string("ERROR: Normal mode calculation failed."));
     };
 
     rnmcrd.setixyz(xyz);
     cout << "------------------------------------" << endl;
     cout << "Normal Mode Calculation Complete.\n" << endl;
+
+    iptData->storeInputWithOptCoords(xyz,true);
+
     iptData->storeInputWithNormModes(nc,fc,itype.size(),true);
+
     cout << "Updated normal modes and saved to the input file.\n" << endl;
 }
 
@@ -263,6 +283,9 @@ whcih of these functions is requested.
 
 /*--------Calculate Validation Set---------
 
+    Resets the class for computing
+    validation sets and starts the
+    computation
 
 ----------------------------------------*/
 void TrainingsetNormModebuilder::calculateValidationSet() {
@@ -275,6 +298,9 @@ void TrainingsetNormModebuilder::calculateValidationSet() {
 
 /*--------Calculate Validation Set---------
 
+    Resets the class for computing
+    validation sets and starts the
+    computation
 
 ----------------------------------------*/
 void TrainingsetNormModebuilder::calculateTestSet() {
@@ -289,6 +315,7 @@ void TrainingsetNormModebuilder::calculateTestSet() {
 
 This function contians the main loop for
 building the training set.
+
 ----------------------------------------*/
 void TrainingsetNormModebuilder::calculateTrainingSet() {
     using namespace std;
@@ -465,7 +492,7 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
                 mgtimer.start_point();
 
                 // Build the g09 input file for the high level of theory
-                g09::buildCartesianInputg09(ngpr,input,HOT,"SCF="+SCF,itype,tcart,multip,charge,1);
+                g09::buildCartesianInputg09(ngpr,input,"",HOT,"SCF="+SCF,itype,tcart,multip,charge,1);
 
                 // Execute the g09 run, if failure occures we restart the loop
                 g09::execg09(ngpr,input,outshl,chkoutshl);
@@ -481,9 +508,11 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
                     //if (!chkoutshl[j] && !chkoutsll[j]) {
                     //std::cout << "|***************************************|" << std::endl;
                     if (!chkoutshl[j]) {
+                    //if (true) {
 
                         datapoint.append( simtls::xyzToCSV(tcart) );
                         std::string energy( g09::energyFinder(outshl[j]) );
+                        //std::string energy( "0.0" );
                         datapoint.append( energy );
 
                         #pragma omp critical
