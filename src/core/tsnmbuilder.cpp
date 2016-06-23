@@ -191,7 +191,7 @@ bool TrainingsetNormModebuilder::normalmodecalc(const std::string &LOT
 
     string input;
 
-    string tmpArgs = " opt(VeryTight) Int=UltraFine freq(NoRaman,SaveNormalModes) " + g09Args;
+    string tmpArgs = " opt(Tight,MaxCycles=100) Int=UltraFine freq(NoRaman,SaveNormalModes) " + g09Args;
 
     g09::buildCartesianInputg09(1,input,cpfile,LOT,tmpArgs,itype,xyz,multip,charge,omp_get_max_threads());
 
