@@ -101,7 +101,7 @@ void TrainingsetNormModebuilder::optimizeStoredStructure() {
     int multip (params.getParameter<int>("multip"));
 
     stringstream _args;
-    _args << "opt(VeryTight)";
+    _args << "opt";
     cout << " ARGUMENT1: " << _args.str() << endl;
     if ( !optimizer(HOT,_args.str(),itype,xyz,charge,multip) ) {
         if ( !optimizer(HOT,_args.str(),itype,xyz,charge,multip) ) {
@@ -191,7 +191,7 @@ bool TrainingsetNormModebuilder::normalmodecalc(const std::string &LOT
 
     string input;
 
-    string tmpArgs = " opt(VeryTight) freq(NoRaman,SaveNormalModes) " + g09Args;
+    string tmpArgs = " opt(VeryTight) Int=UltraFine freq(NoRaman,SaveNormalModes) " + g09Args;
 
     g09::buildCartesianInputg09(1,input,cpfile,LOT,tmpArgs,itype,xyz,multip,charge,omp_get_max_threads());
 
@@ -201,6 +201,11 @@ bool TrainingsetNormModebuilder::normalmodecalc(const std::string &LOT
     cout << "Freq Calculation at " << LOT << " level..." << endl;
     g09::execg09(1,input,output,chkoutshl);
     output[0].clear();
+
+    if ( chkoutshl[0] ) {
+        cerr << "Error: Gaussian convergence failure!" << endl;
+        exit(1);
+    }
 
     //cout << "FREQ:---------------------\n" << output[0] << endl;
 
@@ -245,8 +250,10 @@ void TrainingsetNormModebuilder::calculateNormalModes() {
     cout << "------------------------------------" << endl;
     cout << "Normal Mode Calculation Complete.\n" << endl;
 
+    cout << "  Storing coords..." << endl;
     iptData->storeInputWithOptCoords(xyz,true);
 
+    cout << "  Storing normal modes..." << endl;
     iptData->storeInputWithNormModes(nc,fc,itype.size(),true);
 
     cout << "Updated normal modes and saved to the input file.\n" << endl;
@@ -438,7 +445,7 @@ void TrainingsetNormModebuilder::calculateTrainingSet() {
 
         std::vector<std::string> itype(rnmcrd.getitype());
 
-        std::string HOT(params.getParameter<std::string>("LOT"));
+        std::string HOT(string("U")+params.getParameter<std::string>("LOT"));
         std::string SCF(params.getParameter<std::string>("SCF"));
 
         // Z-matrix Stuff

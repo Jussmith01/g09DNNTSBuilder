@@ -10,13 +10,13 @@ dfname=gdb11_s01-3_train.dat
 vdfname=gdb11_s01-3_valid.dat 
 edfname=gdb11_s01-3_test.dat 
 optimize= 0 !Coordinates pre-opt
-frequency= 1 !Freq pre-calc
+frequency= 0 !Freq pre-calc
 
 #Smiles: HH
 
 $coordinates
- H H 0.0000000 0.0000000 0.3382990                     
- H H 0.0000000 0.0000000 -0.3382990                      
+ H H 0.0000000 0.0000000 0.3382990                                   
+ H H 0.0000000 0.0000000 -0.3382990                                    
 &
 
 $connectivity
@@ -24,7 +24,12 @@ $connectivity
 &
 
 $normalmodes
+FRCCNST=1.118966e+01 {
+ -4.3297803e-17 0.0000000e+00 7.0710677e-01
+ 4.3297803e-17 0.0000000e+00 -7.0710677e-01
+}
 &
+
 
 
 

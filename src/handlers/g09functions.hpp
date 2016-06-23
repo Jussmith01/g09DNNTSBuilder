@@ -419,7 +419,8 @@ inline void getcrdsandnmchkpoint(const std::string& chkpoint
     //cout << "|-------------------------------|\n";
 
     regex patt_geom ("Opt point\\W*1\\WGeometries.*N=\\W*(\\d+)\\s*([^S]*)Opt point");
-    regex patt_freq ("Number of Normal Modes.*(\\d+)[^S]+Vib-E2.*N=\\W+\\d+\\s*([^S]+)Vib-Modes.*N=\\W*(\\d+)\\s*([^S]+)NSEScI");
+    //regex patt_freq ("Number of Normal Modes\\s+I\\s+(\\d+)[^S]+Vib-E2.*N=\\W+\\d+\\s*([^S]+)Vib-Modes.*N=\\W*(\\d+)\\s*([^S]+)");
+    regex patt_freq ("Number of Normal Modes\\s+I\\s+(\\d+)[^S]+Vib-E2\\s+R\\s+N=\\s+\\d+([0-9\\W\\.E]+)Vib-Modes\\s+R\\s+N=\\s+(\\d+)\\s+([0-9\\W\\.E]+)");
     regex patt_sflt ("(-?\\d+\\.\\d+E[+-]\\d+)");
 
     // Get the coordinates and store them in xyz
@@ -452,13 +453,15 @@ inline void getcrdsandnmchkpoint(const std::string& chkpoint
 
             xyz.push_back(ac);
 
-            cout << "Atomic Coords: [" << xyz.back().x << "," << xyz.back().y << "," << xyz.back().z << "]" << endl;
+            //cout << "Atomic Coords: [" << xyz.back().x << "," << xyz.back().y << "," << xyz.back().z << "]" << endl;
         }
 
     } else {
         cerr << "Error: Cannot find coordinates in checkpoint file!" << endl;
         exit(1);
     }
+
+    ///cout << "START NORM MODES!!!!!" << endl;
 
     smatch smnm;
     if (regex_search(instr,smnm,patt_freq)) {
@@ -471,7 +474,7 @@ inline void getcrdsandnmchkpoint(const std::string& chkpoint
         const string freqs (smnm.str(2)); // Freqs,Red Masses,Frc cnsts, IR Inten, other
         const string nmods (smnm.str(4)); // Normal mode coods (Natm * Ndim * 3 = Nnmc)
 
-        cout << " DATA: " << Ndim << " : " << freqs << " : " << Nnmc << " : " << nmods << endl;
+        ///cout << " DATA: " << Ndim << " : " << freqs << " : " << Nnmc << " : " << nmods << endl;
 
         // Get the force constants
         auto flts_begin = sregex_iterator(freqs.begin(), freqs.end(), patt_sflt);
@@ -489,7 +492,7 @@ inline void getcrdsandnmchkpoint(const std::string& chkpoint
 
             fc.push_back( atof(v_fc.str().c_str()) );
 
-            cout << "Force Constant: " << fc.back() << endl;
+            //cout << "Force Constant: " << fc.back() << endl;
         }
 
         // Get the force constants
@@ -523,7 +526,7 @@ inline void getcrdsandnmchkpoint(const std::string& chkpoint
                                           ,atof(y.str().c_str())
                                           ,atof(z.str().c_str())));
 
-                cout << "Normal Modes: [" << mode.back().x << "," << mode.back().y << "," << mode.back().z << "]" << endl;
+                //cout << "Normal Modes: [" << mode.back().x << "," << mode.back().y << "," << mode.back().z << "]" << endl;
             }
 
             nc.push_back(mode);

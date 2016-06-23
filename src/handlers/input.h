@@ -388,17 +388,20 @@ public:
 
         string addnc;
 
+        //cout << "TEST!!" << endl;
         if (regex_search(instr,pattern_ncblock)) {
             stringstream ss;
             ss.setf( ios::scientific, ios::floatfield );
 
+            //cout << "TEST2!! Na: " << Na << endl;
             ss << "$1";
             for (unsigned i = 0; i < fc.size(); ++i) {
                 ss << "FRCCNST=" << fc[i] << " {\n";
                 for (unsigned j = 0; j < Na; ++j) {
-                    ss << setprecision(7) << " " << nc[j][i].x << " " << nc[j][i].y << " " << nc[j][i].z << endl;
+                    ss << setprecision(7) << " " << nc[i][j].x << " " << nc[i][j].y << " " << nc[i][j].z << endl;
                 }
                 ss << "}\n";
+                //cout << ss.str() << endl;
             }
             addnc = regex_replace (instr,pattern_ncblock,ss.str().c_str());
         }
