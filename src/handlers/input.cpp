@@ -80,6 +80,7 @@ void ipt::input::readinput() {
             //  Find Coordinates
             if (regex_search(line, pattern_coords)) {
                 while (getline(ifile, line) && !std::regex_search(line, pattern_end)) {
+                    cout << "LINE: " << line << endl;
                     sregex_iterator typ(line.begin(), line.end(), pattern_atom);
 
                     // Save types

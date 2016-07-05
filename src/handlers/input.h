@@ -98,6 +98,8 @@ class inputParameters {
         string instr( (istreambuf_iterator<char>(ipt)), istreambuf_iterator<char>() );
         ipt.close();
 
+        unsigned cntr = 0;
+        ++cntr; cout << "TEST " << cntr << endl;
         regex pattern_parametr("([^\\s]+)\\s*=\\s*([^\\s^#^!]+)\\s*",regex_constants::optimize);
         if (regex_search(instr,pattern_parametr)) {
             sregex_iterator items(instr.begin(),instr.end(),pattern_parametr);
@@ -107,32 +109,39 @@ class inputParameters {
             }
         }
 
+        ++cntr; cout << "TEST " << cntr << endl;
         regex pattern_crdblock("\\$coordinates.*\\n([^&]*)",regex_constants::optimize);
         smatch cm;
         if (regex_search(instr,cm,pattern_crdblock))
             m_crds = cm.str(1);
 
+        ++cntr; cout << "TEST " << cntr << endl;
         regex pattern_conblock("\\$connectivity.*\\n([^&]*)",regex_constants::optimize);
         smatch cn;
         if (regex_search(instr,cn,pattern_conblock))
             m_conn = cn.str(1);
 
+        ++cntr; cout << "TEST " << cntr << endl;
         regex pattern_rndblock("\\$randrange.*\\n([^&]*)",regex_constants::optimize);
         smatch rm;
         if (regex_search(instr,rm,pattern_rndblock))
             m_rand = rm.str(1);
 
+        ++cntr; cout << "TEST " << cntr << endl;
         regex pattern_scnblock("\\$scanrange.*\\n([^&]*)",regex_constants::optimize);
         smatch sm;
         if (regex_search(instr,sm,pattern_scnblock)) {
             m_scan = sm.str(1);
         }
 
+        ++cntr; cout << "TEST " << cntr << endl;
         regex pattern_ncblock("\\$normalmodes.*\\n([^&]*)",regex_constants::optimize);
         smatch nm;
         if (regex_search(instr,sm,pattern_ncblock)) {
             m_norm = sm.str(1);
         }
+
+        ++cntr; cout << "TEST " << cntr << endl;
 
         if ((m_rand.size() > 0 || m_rand.size() > 0) && m_conn.size() == 0 ) {
             dnntsErrorcatch(std::string("ERROR: If randrange or scanrange is set then connectivity must also be set."));
@@ -159,17 +168,18 @@ class inputParameters {
     //   Print the parameters from Input
     //------------------------------------
     void m_printInputParameters() {
+        using namespace std;
         if (checkParameter("tss") && checkParameter("tbatchsz")) {
             if (int(getParameter<unsigned>("tss"))%int(getParameter<unsigned>("tbatchsz"))!=0)
-                dnntsErrorcatch(std::string("Batch size must evenly divide training set size!"));
+                dnntsErrorcatch(string("Batch size must evenly divide training set size!"));
         }
 
-        std::cout << "|--------Input Parameters-------|" << std::endl;
+        cout << "|--------Input Parameters-------|" << endl;
         for (auto& x : m_params)
-            std::cout << " " << x.first << " = " << x.second << std::endl;
+            cout << " " << x.first << " = " << x.second << endl;
 
-        std::cout << "\nCoordinates: " << std::endl;
-        std::cout << m_crds << std::endl;
+        cout << "\nCoordinates: " << endl;
+        cout << m_crds << endl;
 
         std::cout << "\nConnectivity: " << std::endl;
         std::cout << m_conn << std::endl;
@@ -222,9 +232,11 @@ public:
     //          Constructor
     //-----------------------------------
     inputParameters(std::string inputfname,std::string datafname) {
+        using namespace std;
+
         m_setDefaults();
-        std::pair<std::string,std::string> iset("ifname",inputfname);
-        std::pair<std::string,std::string> dset("dfname",datafname);
+        pair<string,string> iset("ifname",inputfname);
+        pair<string,string> dset("dfname",datafname);
         m_params.insert(iset);
         m_params.insert(dset);
         m_readInput();
