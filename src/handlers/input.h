@@ -390,7 +390,7 @@ public:
 
         if (!ipt) {
             cout << "NO FILE!" << endl;
-            std::string __err(string("Cannot open file ") + msfile);
+            string __err(string("Cannot open file ") + msfile);
             dnntsErrorcatch(__err);
         }
 
