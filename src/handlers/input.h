@@ -107,6 +107,8 @@ class inputParameters {
             for (; items != end; ++items) {
                 m_setParameter(items->str(1),items->str(2));
             }
+        } else {
+            dnntsErrorcatch(std::string("ERROR: No parameters detected in the input file."));
         }
 
         ++cntr; cout << "TEST " << cntr << endl;
