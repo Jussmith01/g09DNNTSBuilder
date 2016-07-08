@@ -479,6 +479,7 @@ inline void getcrdsandnmchkpoint(const std::string& chkpoint
         ///cout << " DATA: " << Ndim << " : " << freqs << " : " << Nnmc << " : " << nmods << endl;
 
         // Get the force constants
+        cout << "Get FrcCnst ... " << endl;
         auto flts_begin = sregex_iterator(freqs.begin(), freqs.end(), patt_sflt);
         auto flts_end = flts_begin;
 
@@ -497,7 +498,8 @@ inline void getcrdsandnmchkpoint(const std::string& chkpoint
             //cout << "Force Constant: " << fc.back() << endl;
         }
 
-        // Get the force constants
+        // Get the Normal modes
+        cout << "Get NrmModes ... " << endl;
         flts_begin = sregex_iterator(nmods.begin(), nmods.end(), patt_sflt);
         flts_end = sregex_iterator();
 
