@@ -414,9 +414,9 @@ inline void getcrdsandnmchkpoint(const std::string& chkpoint
     // Open a pipe and remove the used checkpoint files
     string rout(systls::exec(rmcmd.str(),100));
 
-    //cout << "|------CHECKPOINT OUTPUT--------|\n";
-    //cout << instr << endl;
-    //cout << "|-------------------------------|\n";
+    cout << "|------CHECKPOINT OUTPUT--------|\n";
+    cout << instr << endl;
+    cout << "|-------------------------------|\n";
 
     regex patt_geom ("Opt point\\W*1\\WGeometries.*N=\\W*(\\d+)\\s*([^S]*)Opt point");
     //regex patt_freq ("Number of Normal Modes\\s+I\\s+(\\d+)[^S]+Vib-E2.*N=\\W+\\d+\\s*([^S]+)Vib-Modes.*N=\\W*(\\d+)\\s*([^S]+)");
@@ -425,6 +425,7 @@ inline void getcrdsandnmchkpoint(const std::string& chkpoint
 
     // Get the coordinates and store them in xyz
     smatch smcrd;
+    cout << "Search Geom ... " << endl;
     if (regex_search(instr,smcrd,patt_geom)) {
 
         xyz.clear();
@@ -464,6 +465,7 @@ inline void getcrdsandnmchkpoint(const std::string& chkpoint
     ///cout << "START NORM MODES!!!!!" << endl;
 
     smatch smnm;
+    cout << "Search Freq ... " << endl;
     if (regex_search(instr,smnm,patt_freq)) {
 
         // Get the data needed
