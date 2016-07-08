@@ -9,7 +9,7 @@ SCF=Tight
 dfname=gdb11_s01-0_train.dat 
 vdfname=gdb11_s01-0_valid.dat 
 edfname=gdb11_s01-0_test.dat 
-optimize= 0 !Coordinates pre-opt
+optimize= 1 !Coordinates pre-opt
 frequency= 1 !Freq pre-calc
 
 #Smiles: [H]C([H])([H])[H]
