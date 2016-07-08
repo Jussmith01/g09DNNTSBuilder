@@ -1,4 +1,4 @@
-TSS=1000 
+TSS=10 
 VSS=0 
 ESS=0 
 LOT=AM1
@@ -10,16 +10,16 @@ dfname=gdb11_s01-0_train.dat
 vdfname=gdb11_s01-0_valid.dat 
 edfname=gdb11_s01-0_test.dat 
 optimize= 0 !Coordinates pre-opt
-frequency= 0 !Freq pre-calc
+frequency= 1 !Freq pre-calc
 
 #Smiles: [H]C([H])([H])[H]
 
 $coordinates
- C C     0.0000050 0.0000030 0.0000090    
- H H     0.8089450 0.5398880 0.5383810    
- H H     0.4371700 -0.8459800 -0.5735200    
- H H     -0.5094470 0.6978360 -0.6994410    
- H H     -0.7366980 -0.3917590 0.7345250    
+ C C -0.0001210 -0.0000050 -0.0000100        
+ H H -1.0482920 0.3695350 -0.0166600        
+ H H 0.0037910 -1.1078590 -0.0878810        
+ H H 0.4828900 0.2973490 0.9559790        
+ H H 0.5623390 0.4410050 -0.8513790        
 &
 
 $connectivity
