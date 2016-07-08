@@ -200,8 +200,11 @@ bool TrainingsetNormModebuilder::normalmodecalc(const std::string &LOT
 
     cout << "Freq Calculation at " << LOT << " level..." << endl;
     g09::execg09(1,input,output,chkoutshl);
+    cout << "Test 1 ... " << endl;
+
     output[0].clear();
 
+    cout << "Test 2 ... " << endl;
     if ( chkoutshl[0] ) {
         cerr << "Error: Gaussian convergence failure!" << endl;
         exit(1);
@@ -211,8 +214,10 @@ bool TrainingsetNormModebuilder::normalmodecalc(const std::string &LOT
 
     //g09::normalmodeFinder(output[0],nc,fc,itype.size());
 
+    cout << "Test 3 ... " << endl;
     g09::getcrdsandnmchkpoint(cpfile,xyz,nc,fc);
 
+    cout << "Test 4 ... " << endl;
     return !chkoutshl[0];
 }
 

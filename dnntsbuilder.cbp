@@ -77,18 +77,9 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="src/handlers/atom_masses.h">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="src/handlers/g09functions.hpp">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="src/handlers/input.h">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
+		<Unit filename="src/handlers/atom_masses.h" />
+		<Unit filename="src/handlers/g09functions.hpp" />
+		<Unit filename="src/handlers/input.h" />
 		<Unit filename="src/main.cpp">
 			<Option target="Debug" />
 			<Option target="Release" />
@@ -97,26 +88,14 @@
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="src/utils/micro_timer.cpp">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="src/utils/micro_timer.h">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
+		<Unit filename="src/utils/micro_timer.cpp" />
+		<Unit filename="src/utils/micro_timer.h" />
 		<Unit filename="src/utils/randnormflt.h">
 			<Option target="Debug" />
 			<Option target="Release" />
 		</Unit>
-		<Unit filename="src/utils/simpletools.hpp">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
-		<Unit filename="src/utils/systools.hpp">
-			<Option target="Debug" />
-			<Option target="Release" />
-		</Unit>
+		<Unit filename="src/utils/simpletools.hpp" />
+		<Unit filename="src/utils/systools.hpp" />
 		<Unit filename="src/validatedata.cpp">
 			<Option target="vd-Release" />
 			<Option target="vd-Debug" />

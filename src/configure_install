@@ -3,7 +3,7 @@ $c++:
 	compiler:
 		g++
 	flags:
-		-std=c++11 -D_FORCE_INLINES -O3 -I../include -I../../InternalCoordinatesAPI/src -fopenmp
+		-std=c++11 -g -I../include -I../../InternalCoordinatesAPI/src -fopenmp
 	dir:
 		core/
 	files:
@@ -29,9 +29,9 @@ $cuda:
 $ENDcuda
 $linkerflags:
 	compiler:
-		g++ -L../lib -L../../InternalCoordinatesAPI/lib
+		g++ -g -L../lib -L../../InternalCoordinatesAPI/lib
 	flags:
-		-s -lInternalCoordinateAPI -fopenmp
+		-lInternalCoordinateAPI -fopenmp
 	DONE
 $ENDlinkerflags
 $END OF FILE$
