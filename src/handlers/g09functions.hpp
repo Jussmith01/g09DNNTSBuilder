@@ -414,9 +414,9 @@ inline void getcrdsandnmchkpoint(const std::string& chkpoint
     // Open a pipe and remove the used checkpoint files
     string rout(systls::exec(rmcmd.str(),100));
 
-    cout << "|------CHECKPOINT OUTPUT--------|\n";
-    cout << instr << endl;
-    cout << "|-------------------------------|\n";
+    //cout << "|------CHECKPOINT OUTPUT--------|\n";
+    //cout << instr << endl;
+    //cout << "|-------------------------------|\n";
 
     regex patt_geom ("Opt point\\W*1\\WGeometries.*N=\\W*(\\d+)\\s*([^S]*)Opt point");
     //regex patt_freq ("Number of Normal Modes\\s+I\\s+(\\d+)[^S]+Vib-E2.*N=\\W+\\d+\\s*([^S]+)Vib-Modes.*N=\\W*(\\d+)\\s*([^S]+)");
@@ -425,7 +425,6 @@ inline void getcrdsandnmchkpoint(const std::string& chkpoint
 
     // Get the coordinates and store them in xyz
     smatch smcrd;
-    cout << "Search Geom ... " << endl;
     if (regex_search(instr,smcrd,patt_geom)) {
 
         xyz.clear();
@@ -465,7 +464,6 @@ inline void getcrdsandnmchkpoint(const std::string& chkpoint
     ///cout << "START NORM MODES!!!!!" << endl;
 
     smatch smnm;
-    cout << "Search Freq ... " << endl;
     if (regex_search(instr,smnm,patt_freq)) {
 
         // Get the data needed
@@ -476,10 +474,9 @@ inline void getcrdsandnmchkpoint(const std::string& chkpoint
         const string freqs (smnm.str(2)); // Freqs,Red Masses,Frc cnsts, IR Inten, other
         const string nmods (smnm.str(4)); // Normal mode coods (Natm * Ndim * 3 = Nnmc)
 
-        ///cout << " DATA: " << Ndim << " : " << freqs << " : " << Nnmc << " : " << nmods << endl;
+        //cout << "---- DATA ----: Nat: " << Natm << " \n " << Ndim << " : " << freqs << "\n : " << Nnmc << " : " << nmods << endl;
 
         // Get the force constants
-        cout << "Get FrcCnst ... " << endl;
         auto flts_begin = sregex_iterator(freqs.begin(), freqs.end(), patt_sflt);
         auto flts_end = flts_begin;
 
@@ -499,24 +496,21 @@ inline void getcrdsandnmchkpoint(const std::string& chkpoint
         }
 
         // Get the Normal modes
-        cout << "Get NrmModes ... " << endl;
         flts_begin = sregex_iterator(nmods.begin(), nmods.end(), patt_sflt);
         flts_end = sregex_iterator();
 
         nc.clear();
         nc.reserve(Nnmc);
 
-        auto flts_na = flts_begin;
+        //auto flts_na = flts_begin;
+	//advance (flts_na,3*Natm-1);
 
-        cout << "Iterate NMC ... " << endl;
-        for ( sregex_iterator i = flts_begin; flts_na != flts_end; ) {
-
-            advance (flts_na,3*Natm);
+        for ( sregex_iterator i = flts_begin; i != flts_end; ) {
 
             vector<glm::vec3> mode;
             mode.reserve(Natm);
 
-            for ( ;i != flts_na; ) {
+	    for ( unsigned j = 0; j < Natm; ++j ) {
 
                 std::smatch x = *i;
                 advance(i,1);
@@ -527,13 +521,12 @@ inline void getcrdsandnmchkpoint(const std::string& chkpoint
                 std::smatch z = *i;
                 advance(i,1);
 
-                cout << "MODE :  [" << x.str() << "," << y.str() << "," << z.str() << "]" << endl;
                 mode.push_back(glm::vec3 (atof(x.str().c_str())
                                           ,atof(y.str().c_str())
                                           ,atof(z.str().c_str())));
 
-                //cout << "Normal Modes: [" << mode.back().x << "," << mode.back().y << "," << mode.back().z << "]" << endl;
-            }
+                //cout << "    Normal Modes: Atom " << j << " [" << mode.back().x << "," << mode.back().y << "," << mode.back().z << "]" << endl;
+	    }
 
             nc.push_back(mode);
         }
