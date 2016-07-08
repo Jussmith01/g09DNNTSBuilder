@@ -538,7 +538,7 @@ inline void getcrdsandnmchkpoint(const std::string& chkpoint
         cerr << "Error: Cannot find frequency block in checkpoint file!" << endl;
         exit(1);
     }
-
+    cout << "END ... " << endl;
 };
 
 /*----------------------------------------
