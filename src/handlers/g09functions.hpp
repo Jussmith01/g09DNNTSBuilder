@@ -508,6 +508,7 @@ inline void getcrdsandnmchkpoint(const std::string& chkpoint
 
         auto flts_na = flts_begin;
 
+        cout << "Iterate NMC ... " << endl;
         for ( sregex_iterator i = flts_begin; flts_na != flts_end; ) {
 
             advance (flts_na,3*Natm);
@@ -526,6 +527,7 @@ inline void getcrdsandnmchkpoint(const std::string& chkpoint
                 std::smatch z = *i;
                 advance(i,1);
 
+                cout << "MODE :  [" << x.str() << "," << y.str() << "," << z.str() << "]" << endl;
                 mode.push_back(glm::vec3 (atof(x.str().c_str())
                                           ,atof(y.str().c_str())
                                           ,atof(z.str().c_str())));
