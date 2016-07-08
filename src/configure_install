@@ -1,7 +1,7 @@
 Executable:bin/Release/dnntsbuilder
 $c++:
 	compiler:
-		g++-4.9
+		g++
 	flags:
 		-std=c++11 -D_FORCE_INLINES -O3 -I../include -I../../InternalCoordinatesAPI/src -fopenmp
 	dir:
@@ -29,7 +29,7 @@ $cuda:
 $ENDcuda
 $linkerflags:
 	compiler:
-		g++-4.9 -L../lib -L../../InternalCoordinatesAPI/lib
+		g++ -L../lib -L../../InternalCoordinatesAPI/lib
 	flags:
 		-s -lInternalCoordinateAPI -fopenmp
 	DONE
