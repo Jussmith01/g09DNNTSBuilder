@@ -510,7 +510,7 @@ inline void getcrdsandnmchkpoint(const std::string& chkpoint
             vector<glm::vec3> mode;
             mode.reserve(Natm);
 
-	    for ( unsigned j = 0; j < Natm; ++j ) {
+            for ( unsigned j = 0; j < Natm; ++j ) {
 
                 std::smatch x = *i;
                 advance(i,1);
@@ -526,7 +526,7 @@ inline void getcrdsandnmchkpoint(const std::string& chkpoint
                                           ,atof(z.str().c_str())));
 
                 //cout << "    Normal Modes: Atom " << j << " [" << mode.back().x << "," << mode.back().y << "," << mode.back().z << "]" << endl;
-	    }
+            }
 
             nc.push_back(mode);
         }
@@ -535,7 +535,7 @@ inline void getcrdsandnmchkpoint(const std::string& chkpoint
         cerr << "Error: Cannot find frequency block in checkpoint file!" << endl;
         exit(1);
     }
-    cout << "END ... " << endl;
+    //cout << "END ... " << endl;
 };
 
 /*----------------------------------------

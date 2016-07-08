@@ -98,8 +98,8 @@ class inputParameters {
         string instr( (istreambuf_iterator<char>(ipt)), istreambuf_iterator<char>() );
         ipt.close();
 
-        unsigned cntr = 0;
-        ++cntr; cout << "TEST " << cntr << endl;
+        //unsigned cntr = 0;
+        //++cntr; cout << "TEST " << cntr << endl;
         regex pattern_parametr("([^\\s]+)\\s*=\\s*([^\\s^#^!]+)\\s*",regex_constants::optimize);
         if (regex_search(instr,pattern_parametr)) {
             sregex_iterator items(instr.begin(),instr.end(),pattern_parametr);
@@ -111,39 +111,39 @@ class inputParameters {
             dnntsErrorcatch(std::string("ERROR: No parameters detected in the input file."));
         }
 
-        ++cntr; cout << "TEST " << cntr << endl;
+        //++cntr; cout << "TEST " << cntr << endl;
         regex pattern_crdblock("\\$coordinates.*\\n([^&]*)",regex_constants::optimize);
         smatch cm;
         if (regex_search(instr,cm,pattern_crdblock))
             m_crds = cm.str(1);
 
-        ++cntr; cout << "TEST " << cntr << endl;
+        //++cntr; cout << "TEST " << cntr << endl;
         regex pattern_conblock("\\$connectivity.*\\n([^&]*)",regex_constants::optimize);
         smatch cn;
         if (regex_search(instr,cn,pattern_conblock))
             m_conn = cn.str(1);
 
-        ++cntr; cout << "TEST " << cntr << endl;
+        //++cntr; cout << "TEST " << cntr << endl;
         regex pattern_rndblock("\\$randrange.*\\n([^&]*)",regex_constants::optimize);
         smatch rm;
         if (regex_search(instr,rm,pattern_rndblock))
             m_rand = rm.str(1);
 
-        ++cntr; cout << "TEST " << cntr << endl;
+        //++cntr; cout << "TEST " << cntr << endl;
         regex pattern_scnblock("\\$scanrange.*\\n([^&]*)",regex_constants::optimize);
         smatch sm;
         if (regex_search(instr,sm,pattern_scnblock)) {
             m_scan = sm.str(1);
         }
 
-        ++cntr; cout << "TEST " << cntr << endl;
+        //++cntr; cout << "TEST " << cntr << endl;
         regex pattern_ncblock("\\$normalmodes.*\\n([^&]*)",regex_constants::optimize);
         smatch nm;
         if (regex_search(instr,sm,pattern_ncblock)) {
             m_norm = sm.str(1);
         }
 
-        ++cntr; cout << "TEST " << cntr << endl;
+        //++cntr; cout << "TEST " << cntr << endl;
 
         if ((m_rand.size() > 0 || m_rand.size() > 0) && m_conn.size() == 0 ) {
             dnntsErrorcatch(std::string("ERROR: If randrange or scanrange is set then connectivity must also be set."));
